@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script>
+		$(function() {
+			var table = makeDataTable('#docs', {
+				table: 'VatCode',
+				select: 'vatcode.html',
+				columns: [
+					'Code',
+					'VatDescription',
+					'#Rate'
+				]
+			});
+			addButton('New VAT code', 'vatcode.html?id=0');
+		});
+	</script>
+</head>
+<body>
+<table id="docs" cellspacing="0" width="100%"></table>
+</body>
+</html>

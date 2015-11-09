@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+<head>
+{{#with Record}}
+	<script>
+$(function() {
+	var record = loadRecord();
+	var names = record.Names;
+	var accounts = record.Accounts;
+	function calculateDocument() {
+		record.header.Amount = round(record.header.NewBalance - record.header.ExistingBalance);
+	}
+	calculateDocument();
+	var form = makeForm('#form', {
+		table: 'Document',
+		data: record.header,
+		saveAndNew: true,
+		columns: [
+			{
+				data: 'DocumentDate',
+				type: 'dateInput'
+			},
+			{
+				data: 'Name',
+				type: 'autoComplete',
+				selectOptions: names,
+				confirmAdd: true
+			},
+			{
+				data: 'DocumentIdentifier',
+				heading: 'Trans No',
+				type: 'textInput'
+			},
+			{
+				data: 'DocumentMemo',
+				type: 'textInput',
+				attributes: 'size="50"'
+			},
+			{
+				data: 'ExistingBalance',
+				type: 'decimalField'
+			},
+			{
+				data: 'NewBalance',
+				type: 'decimalInput'
+			},
+			{
+				data: 'Amount',
+				type: 'decimalField'
+			},
+			{
+				data: 'AccountId',
+				type: 'selectInput',
+				selectOptions: accounts
+			}
+		]
+	});
+	form.bind('changed.field', function(e, newValue, rowData, col, input) {
+		switch(col.name) {
+			case 'Name':
+				var name = _.find(names, function (v) {
+					return v.value == newValue;
+				});
+				rowData.NameAddressId = name ? name.id : 0;
+				break;
+			case 'NewBalance':
+				rowData.NewBalance = newValue;
+				calculateDocument();
+				form.draw();
+				return false;
+		}
+	});
+});
+	</script>
+{{/with}}
+</head>
+<body>
+	<table id="form"></table>
+</body>

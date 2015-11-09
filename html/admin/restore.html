@@ -1,0 +1,7 @@
+<h2 style="color:red;">Warning: This will replace all your data with the backup</h2>
+<p style="color:red;">Any changes made since the backup was taken will be lost.</p>
+<form method="POST" enctype="multipart/form-data" action="/Admin/Restore">
+	File to restore: <input type="file" name="file" />
+	<button type="submit">Restore</button>
+	<button type="button" href="/Admin">Cancel</button>
+</form>

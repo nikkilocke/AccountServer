@@ -1,0 +1,85 @@
+<head>{{#with Record}}
+	<script>
+		$(function() {
+			var record = loadRecord();
+			var today = new Date().toYMD() + "T00:00:00Z";
+			var form = makeForm('#form', {
+				data: record,
+				table: 'Account',
+				dialog: record.idAccount > 0,
+				// canDelete: record.Transactions == 0,
+				validate: function() {
+					if(!form.data.AccountName)
+						return "The account must have a name";
+					if(!form.data.AccountTypeId)
+						return "You must choose the type of account";
+				},
+				columns: [
+					{
+						data: 'AccountName',
+						type: 'textInput'
+					},
+					{
+						data: 'AccountDescription',
+						type: 'textInput',
+						sameRow: true
+					},
+					{
+						data: 'HideAccount',
+						type: 'checkboxInput',
+						sameRow: true
+					}
+				]
+			});
+			if(form.data.idAccount)
+				form.find('select').prop('disabled', true);
+			if(record.idAccount) {
+				var table = makeDataTable('#docs', {
+					table: 'Document',
+					select: function (row) {
+						return openDocument(row, form.data.idAccount);
+					},
+					columns: [
+						'/DocumentDate',
+						'DocumentIdentifier/Id',
+						'DocType/Type',
+						'DocumentName',
+						'DocumentMemo',
+						'DocumentAccountName',
+						{
+							data: 'DocumentAmount',
+							heading: 'Money Out',
+							type: 'credit'
+						},
+						{
+							data: 'DocumentAmount',
+							heading: 'Money In',
+							type: 'debit'
+						}
+					],
+					rowCallback: function (row, data) {
+						if (data.DocumentDate > today) {
+							$(row).addClass('future');
+						}
+					}
+				});
+				addButton('Buy', 'document.html?id=0&type=' + DocType.Buy + '&acct=' + record.idAccount);
+				addButton('Sell', 'document.html?id=0&type=' + DocType.Sell + '&acct=' + record.idAccount);
+				addButton('New cheque', '/banking/document.html?id=0&type=' + DocType.Cheque + '&acct=' + record.idAccount);
+				addButton('New deposit', '/banking/document.html?id=0&type=' + DocType.Deposit + '&acct=' + record.idAccount);
+				addButton('New transfer', 'transfer.html?id=0&acct=' + record.idAccount);
+				addButton('Balance adjustment', 'balanceadjustment.html?id=0&acct=' + record.idAccount);
+				jumpButton('Portfolio', 'portfolio.html');
+				actionButton('Audit').click(function () {
+					goto('/reports/audithistory.html?id=' + record.idAccount + '&table=Accounts');
+				});
+			}
+		});
+	</script>
+	{{/with}}
+</head>
+<body>
+<table><tr><th>Cash balance</th><td>{{Record.CashBalance:0.00}}</td><th>Current cash balance</th><td>{{Record.CurrentBalance:0.00}}</td><th>Current value</th><td>{{Record.Value:0.00}}</td></tr></table>
+<table id="form" width="100%"></table>
+<table id="docs" cellspacing="0" width="100%"></table>
+</body>

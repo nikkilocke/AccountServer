@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<head>
+{{#with Record}}
+	<script>
+$(function() {
+	var record = loadRecord();
+	record.header.ClearedBalance = record.header.OpeningBalance;
+	var form = makeHeaderDetailForm('#form', '#docs', {
+		data: record,
+		header: {
+			table: 'Account',
+			canDelete: false,
+			columns: [
+				{
+					sameRow: true,
+					data: 'OpeningBalance',
+					type: 'decimalField'
+				},
+				{
+					sameRow: true,
+					data: 'EndingBalance',
+					type: 'decimalInput'
+				},
+				{
+					sameRow: true,
+					data: 'ClearedBalance',
+					type: 'decimalField'
+				},
+				{
+					sameRow: true,
+					data: 'Difference',
+					type: 'decimalField'
+				}
+			]
+		},
+		detail: {
+			table: 'Document',
+			columns: [
+				'/DocumentDate',
+				'DocType',
+				'DocumentIdentifier/Id',
+				'DocumentName',
+				'#Amount',
+				{
+					data: 'Cleared',
+					heading: '',
+					type: 'checkboxInput'
+				},
+			]
+		}
+	});
+	calculate();
+	form.header.fields.EndingBalance.cell.find(':input').focus();
+	function saveDataAndGoto(url) {
+		message("Saving data - please wait...");
+		postJson('/Banking/ReconcilePost', {
+			Temporary: true,
+			header: record.header,
+			detail: record.detail
+		}, function() {
+			goto(url);
+		});
+	}
+	function calculate() {
+		var bal = record.header.OpeningBalance;
+		endingBalance = record.header.EndingBalance || 0;
+		_.each(record.detail, function(row) {
+			if(row.Cleared) bal = round(bal + row.Amount);
+		});
+		record.header.ClearedBalance = bal;
+		record.header.Difference = round(endingBalance - bal);
+		form.header.draw();
+	}
+	form.header.bind('changed.field', function(e, newValue, rowData, col, input) {
+		if(col.name == 'EndingBalance') {
+			record.header.EndingBalance = newValue;
+			calculate();
+		}
+	});
+	form.detail.bind('changed.field', function(e, newValue, rowData, col, input) {
+		if(col.name == 'Cleared') {
+			rowData.Cleared = newValue ? '*' : '';
+			calculate();
+		}
+	});
+	actionButton('Leave')
+			.click(function() {
+				saveDataAndGoto('Detail?id={{header.idAccount}}');
+			});
+	actionButton('Save and Print')
+			.click(function() {
+				message("Saving data - please wait...");
+				postJson('/banking/reconcilepost.html', {
+					header: record.header,
+					detail: record.detail,
+					print: true
+				}, function() {
+					var url = getGoto('/reports/auditreconciliation.html?id=0');
+					var newSettings = {
+						ReportType: 'auditreconciliation',
+						ReportName: "Reconciliation Report",
+						filters: {
+							"DateChanged": {
+								range: 2
+							},
+							"Account": [record.header.idAccount]
+						},
+						sorting: {}
+					};
+					$('#reportForm').remove();
+					var form = $('<form id="reportForm" method="POST" action="' + url + '"><input name="json" type="hidden" value="" />');
+					form.appendTo($('body'));
+					form.find('input').val(JSON.stringify(newSettings));
+					form[0].submit();
+				});
+			});
+	addButton('New cheque', 'document.html?id=0&type=' + DocType.Cheque + '&acct=' + record.idAccount);
+	addButton('New deposit', 'document.html?id=0&type=' + DocType.Deposit + '&acct=' + record.idAccount);
+	addButton('New transfer', 'transfer.html?id=0&acct=' + record.idAccount);
+	form.detail.on('dblclick', 'tbody tr', function(e) {
+		var data = form.detail.rowData($(this));
+		var s = documentUrl(data);
+		if(s)
+			saveDataAndGoto(s + "&type=" + data.DocumentTypeId + '&acct=' + record.header.idAccount);
+		e.preventDefault();
+		return false;
+	});
+	function checkAll(value) {
+		_.each(record.detail, function(d) {
+			d.Cleared = value;
+		});
+		calculate();
+		form.detail.draw();
+	}
+	$('button#checkAll').click(function() {
+		checkAll(1);
+	});
+	$('button#unCheckAll').click(function() {
+		checkAll(0);
+	});
+});
+	</script>
+{{/with}}
+</head>
+<body>
+	<table id="form"></table>
+	<table id="docs" cellspacing="0" width="100%"></table>
+	<button id="checkAll">Check all</button>
+	<button id="unCheckAll">Uncheck all</button>
+</body>

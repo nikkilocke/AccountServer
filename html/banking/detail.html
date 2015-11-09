@@ -1,0 +1,120 @@
+<head>{{#with Record}}
+	<script>
+		$(function() {
+			var record = loadRecord();
+			var today = new Date().toYMD() + "T00:00:00Z";
+			var form = makeForm('#form', {
+				data: record,
+				table: 'Account',
+				dialog: record.idAccount > 0,
+				// canDelete: record.Transactions == 0,
+				validate: function() {
+					if(!form.data.AccountName)
+						return "The account must have a name";
+					if(!form.data.AccountTypeId)
+						return "You must choose the type of account";
+				},
+				columns: [
+					{
+						data: 'AccountName',
+						type: 'textInput'
+					},
+					{
+						data: 'AccountTypeId',
+						type: 'selectInput',
+						selectOptions: [
+							{ id: AcctType.Bank, value: 'Bank'},
+							{ id: AcctType.CreditCard, value: 'Credit Card'}
+						],
+					},
+					{
+						data: 'AccountCode',
+						type: 'textInput',
+						sameRow: true
+					},
+					{
+						data: 'AccountDescription',
+						type: 'textInput'
+					},
+					{
+						data: 'NextChequeNumber',
+						heading: 'Next Cheque',
+						type: 'intInput'
+					},
+					{
+						data: 'NextDepositNumber',
+						heading: 'Deposit',
+						type: 'intInput',
+						sameRow: true
+					},
+					{
+						data: 'HideAccount',
+						type: 'checkboxInput',
+						sameRow: true
+					},
+					{
+						data: 'StatementFormat',
+						type: 'textAreaInput'
+					}
+				]
+			});
+			if(form.data.idAccount)
+				form.find('select').prop('disabled', true);
+			if(record.idAccount) {
+				var table = makeDataTable('#docs', {
+					table: 'Document',
+					select: function (row) {
+						return openDocument(row, form.data.idAccount);
+					},
+					columns: [
+						'/DocumentDate',
+						'DocumentIdentifier/Id',
+						'DocType/Type',
+						'DocumentName',
+						'DocumentMemo',
+						'DocumentAccountName',
+						'Clr',
+						{
+							data: 'DocumentAmount',
+							heading: 'Payment',
+							type: 'credit'
+						},
+						{
+							data: 'DocumentAmount',
+							heading: 'Deposit',
+							type: 'debit'
+						},
+						{
+							data: 'Balance',
+							type: 'bracket'
+						}
+					],
+					rowCallback: function (row, data) {
+						if (data.DocumentDate > today) {
+							$(row).addClass('future');
+						}
+					}
+				});
+				addButton('Import statement', 'statementimport.html?id=' + record.idAccount);
+				if (record.AccountTypeId == AcctType.Bank) {
+					addButton('New cheque', 'document.html?id=0&type=' + DocType.Cheque + '&acct=' + record.idAccount);
+					addButton('New deposit', 'document.html?id=0&type=' + DocType.Deposit + '&acct=' + record.idAccount);
+				} else {
+					addButton('New charge', 'document.html?id=0&type=' + DocType.CreditCardCharge + '&acct=' + record.idAccount);
+					addButton('New credit', 'document.html?id=0&type=' + DocType.CreditCardCredit + '&acct=' + record.idAccount);
+				}
+				addButton('New transfer', 'transfer.html?id=0&acct=' + record.idAccount);
+				addButton('Reconcile', 'reconcile.html?id=' + record.idAccount);
+				actionButton('Audit').click(function () {
+					goto('/reports/audithistory.html?id=' + record.idAccount + '&table=Accounts');
+				});
+			}
+		});
+	</script>
+	{{/with}}
+</head>
+<body>
+<table><tr><th>Balance</th><td>{{Record.Balance:0.00}}</td><th>Current balance</th><td>{{Record.CurrentBalance:0.00}}</td></tr></table>
+<table id="form" width="100%"></table>
+<table id="docs" cellspacing="0" width="100%"></table>
+</body>

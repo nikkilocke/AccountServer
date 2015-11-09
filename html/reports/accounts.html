@@ -1,0 +1,30 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<head>
+	<script src="/report.js" type="text/javascript"></script>
+<script>
+$(function() {
+	var record = initialiseReport(function(row) {
+		openDetail(row);
+	});
+});
+</script>
+</head>
+<body>
+{{include reports/reportbody.html}}
+</body>

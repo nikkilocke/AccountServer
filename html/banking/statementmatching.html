@@ -1,0 +1,173 @@
+<head>{{#with Record}}
+	<style>
+		#import tr.warning input {
+			display: none;
+		}
+		#docs tr.nosame input[data-col=Same] {
+			display: none;
+		}
+	</style>
+	<script>
+		$(function() {
+			var record = loadRecord();
+			var submitUrl = defaultUrl('Post');
+			var current = {};
+			var id = getParameter('id');
+			function zeroRanks() {
+				_.each(record.transactions, function(t) {
+					t.Rank = 0;
+				});
+			}
+			zeroRanks();
+			var imp = makeListForm('#import', {
+				data: record.import,
+				select: function(row) {
+					if(!row.Date)
+						return false;
+					imp.find('tr').removeClass('current');
+					$(this).closest('tr').addClass('current');
+					current = row;
+					var words = _.filter(current.Name.toUpperCase().split(' '), function(n) { return n; });
+					_.each(record.transactions, function(t) {
+						var rank = 0;
+						_.each(words, function(w) {
+							if(t.DocumentName.toUpperCase().indexOf(w) >= 0
+								|| t.DocumentMemo.toUpperCase().indexOf(w) >= 0)
+								rank++;
+							if(t.DocumentAmount == current.Amount)
+								rank += 10 * words.length;
+							var d = Math.abs(Date.parse(t.DocumentDate) - Date.parse(current.Date)) / 86400000;
+							if(d <= 7 && !t.Matched)
+								rank += words.length * (8 - d) / 8;
+							t.Rank = Math.round(10 * rank / words.length);
+						});
+					});
+					docs.api().order([docs.fields['Rank'].index, 'desc']);
+					docs.dataReady(record.transactions);
+				},
+				columns: [
+					'/Date',
+					'Id/Id',
+					'Name',
+					'Memo',
+					{
+						data: 'Amount',
+						heading: 'Payment',
+						type: 'credit'
+					},
+					{
+						data: 'Amount',
+						heading: 'Deposit',
+						type: 'debit'
+					},
+					{
+						data: 'New',
+						hint: 'Create a new transaction',
+						type: 'checkboxInput'
+					},
+					{
+						data: 'Transfer',
+						hint: 'Create a new transfer',
+						type: 'checkboxInput'
+					}
+				]
+			});
+			var docs = makeDataTable('#docs', {
+				table: 'Document',
+				data: {},
+				iDisplayLength: 10,
+				select: function (row) {
+					return openDocument(row, id);
+				},
+				rowCallback: function (row, data) {
+					if (!data.Matched && data.DocumentAmount == current.Amount) {
+							if(Math.abs(Date.parse(data.DocumentDate) - Date.parse(current.Date)) <= 604800000) {
+								$(row).addClass('matches');
+							}
+						$(row).removeClass('nosame');
+						//$(row).find('input[data-col=Same]').show();
+					} else {
+						$(row).addClass('nosame');
+						//$(row).find('input[data-col=Same]').hide();
+					}
+				},
+				columns: [
+					'/DocumentDate',
+					'DocumentIdentifier/Id',
+					'DocType/Type',
+					'DocumentName',
+					'DocumentMemo',
+					'DocumentAccountName/Account',
+					'Clr/C',
+					{
+						data: 'DocumentAmount',
+						type: 'amount'
+					},
+					{
+						data: 'Same',
+						hint: 'This is the same transaction',
+						type: 'checkboxInput'
+					},
+					{
+						data: 'New',
+						hint: 'Create a new transaction like this one',
+						type: 'checkboxInput'
+					},
+					{
+						data: 'Rank',
+						type: 'int',
+						visible: false,
+						searchable: false
+					}
+				]
+			});
+			$.fn.dataTable.ext.search.push(
+					function(settings, dataArray, dataIndex, data) {
+						if(current.Amount < 0)
+							return data.DocumentAmount < 0;
+						else if(current.Amount > 0)
+							return data.DocumentAmount > 0;
+						else
+							return true;
+					}
+			);
+			docs.bind('changed.field', function(e, newValue, rowData, col, input) {
+				switch(col.name) {
+					case 'New':
+					case 'Same':
+						postJson('statementmatchingpost.html', {
+							id: id,
+							type: col.name,
+							current: _.indexOf(record.import, current),
+							transaction: _.indexOf(record.transactions, rowData)
+						});
+						break;
+				}
+				return false;
+			});
+			imp.bind('changed.field', function(e, newValue, rowData, col, input) {
+				switch(col.name) {
+					case 'New':
+					case 'Transfer':
+						current = rowData;
+						postJson('statementmatchingpost.html', {
+							id: id,
+							type: col.name,
+							current: _.indexOf(record.import, current),
+							transaction: -1
+						});
+						break;
+				}
+				return false;
+			});
+			$('button#Back').off('click').click(function() {
+				window.location = '/banking/detail?id=' + id;
+			});
+		});
+	</script>
+	{{/with}}
+</head>
+<body>
+<table id="import" width="100%"></table>
+<table id="docs" width="100%"></table>
+</body>

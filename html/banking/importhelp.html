@@ -1,0 +1,22 @@
+<p>Statement Format tells the system how to recognise a single line of a pasted statement.</p>
+<p>Fields and delimiters are indicated by a word in {curly brackets}.</p>
+<table>
+	<tr><td class="header">Field or delimiter</td><td class="header">Description</td></tr>
+	<tr><td class="header">{Date}</td><td>Document date (required)</td></tr>
+	<tr><td class="header">{Id}</td><td>Document Identifier (e.g. cheque number)</td></tr>
+	<tr><td class="header">{Name}</td><td>Document Name (required)</td></tr>
+	<tr><td class="header">{Memo}</td><td>Document memo - if this is not present, the Name will be used for the memo.</td></tr>
+	<tr><td class="header">{Amount}</td><td>Amount (for statements which do not list payments and deposits separately). If a minus sign, or the letters "CR" are present, a deposit is assumed.</td></tr>
+	<tr><td class="header">{Payment}</td><td>Payment (e.g. cheque) amount (for statements which list payments and deposits separately).</td></tr>
+	<tr><td class="header">{Deposit}</td><td>Deposit amount (for statements which list payments and deposits separately).</td></tr>
+	<tr><td class="header">{Any}</td><td>Use as a placeholder to indicate any irrelevant information.</td></tr>
+	<tr><td class="header">{Optional:Anything here}</td><td>If there are items which appear on some lines but not others, place them in Optional, between the colon (':') and close curly bracket ('}').
+		N.B. You cannot use curly brackets here, except {Tab}, {Newline} and {Any}.</td></tr>
+	<tr><td class="header">{Tab}</td><td>Tab character, or end of table column.</td></tr>
+	<tr><td class="header">{Newline}</td><td>New line, or end of table row.</td></tr>
+</table>
+<p>Examples:</p>
+<table>
+	<tr><td class="header">Barclaycard</td><td>{Date}{Newline}{Name}{Tab}{Any}{Tab}{Any}{Tab}{Any}{Tab}{Newline}{Any}{Newline}{Amount}{Newline}</td></tr>
+	<tr><td class="header">Coop bank</td><td>{Date}{Tab}{Name}{Tab}{Deposit}{Tab}{Payment}{Optional:{Tab}{Any}}{Newline}</td></tr>
+</table>

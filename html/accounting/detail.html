@@ -1,0 +1,78 @@
+<head>{{#with Record}}
+	<script>
+		$(function() {
+			var record = loadRecord();
+			var form = makeForm('#form', {
+				data: record.header,
+				table: 'Account',
+				dialog: record.header.idAccount > 0,
+				canDelete: !record.Transactions,
+				validate: function() {
+					if(!form.data.AccountName)
+						return "The account must have a name";
+					if(!form.data.AccountTypeId)
+						return "You must choose the type of account";
+				},
+				columns: [
+					{
+						data: 'AccountName',
+						type: 'textInput'
+					},
+					{
+						data: 'AccountTypeId',
+						type: 'selectInput',
+						selectOptions: record.AccountTypes
+					},
+					{
+						data: 'AccountCode',
+						type: 'textInput'
+					},
+					{
+						data: 'AccountDescription',
+						type: 'textInput'
+					},
+					{
+						data: 'HideAccount',
+						type: 'checkboxInput'
+					}
+				]
+			});
+			if(record.header.idAccount) {
+				form.find('select').prop('disabled', true);
+				if(record.header.AccountTypeId == AcctType.Security)
+					form.fields.AccountName.cell.find(':input').prop('disabled', true);
+				var table = makeDataTable('#docs', {
+					table: 'Document',
+					select: function (row) {
+						return openDocument(row, form.data.idAccount);
+					},
+					columns: [
+						'/DocumentDate',
+						'DocumentIdentifier/Id',
+						'DocType/Type',
+						'DocumentName',
+						'DocumentMemo',
+						'DocumentAccountName',
+						{
+							data: 'DocumentAmount',
+							type: 'credit'
+						},
+						{
+							data: 'DocumentAmount',
+							type: 'debit'
+						}
+					]
+				});
+				addButton('New journal', 'document.html?id=0&acct=' + record.idAccount);
+				actionButton('Audit').click(function () {
+					goto('/reports/audithistory.html?id=' + record.header.idAccount + '&table=Accounts');
+				});
+			}
+		});
+	</script>
+	{{/with}}
+</head>
+<body>
+<table id="form"></table>
+<table id="docs" cellspacing="0" width="100%"></table>
+</body>

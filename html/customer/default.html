@@ -1,0 +1,33 @@
+<head>
+	<script>
+$(function() {
+	makeDataTable('#docs', {
+		table: 'NameAddress',
+		select: '/customer/detail.html',
+		columns: [
+			'Name',
+			'Address',
+			'Telephone',
+			'@Email',
+			'Contact',
+			{
+				data: 'Hidden',
+				heading: 'Hidden',
+				type: 'checkbox'
+			},
+			{
+				data: 'Outstanding',
+				heading: 'No o/s',
+				nonZero: {
+					zeroText: 'Outstanding only',
+					nonZeroText: 'Show all'
+				}
+			}
+		]
+	});
+});
+	</script>
+</head>
+<body>
+<table id="docs" cellspacing="0" width="100%"></table>
+</body>

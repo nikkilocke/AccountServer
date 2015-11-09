@@ -1,0 +1,33 @@
+<head>
+	<script>
+		$(function() {
+			var record = loadRecord();
+			var form = makeForm('#record', {
+				table: 'VatCode',
+				data: record,
+				columns: [
+					{
+						data: 'Code',
+						type: 'textInput'
+					},
+					{
+						data: 'VatDescription',
+						type: 'textInput'
+					},
+					{
+						data: 'Rate',
+						type: 'decimalInput'
+					}
+				]
+			});
+			if(record.idVatCode) {
+				actionButton('Audit').click(function () {
+					goto('/reports/audithistory.html?id=' + record.idVatCode + '&table=VatCodes');
+				});
+			}
+		});
+	</script>
+</head>
+<body>
+<table id="record"></table>
+</body>

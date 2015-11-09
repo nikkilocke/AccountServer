@@ -1,0 +1,15 @@
+ <form method="POST" enctype="multipart/form-data" action="/Admin/ImportFile">
+	 <table>
+	 	<tr><td>File to import</td><td><input type="file" name="file" /></td></tr>
+		<tr><td>Date Format</td><td><select name="dateFormat">
+			<option value="">Local format</option>
+			<option value="MM/dd/yyyy">US format (MM/dd/yyyy)</option>
+			<option value="dd/MM/yyyy">UK format (dd/MM/yyyy)</option>
+		</select></td></tr>
+		<tr><td colspan="2">
+			<button type="submit">Import</button>
+			<button type="button" href="/">Cancel</button>
+		</td></tr>
+	 </table>
+ </form>
+ <div><a href="/admin/importhelp.html" target="_blank">Help on import file formats</a></div>

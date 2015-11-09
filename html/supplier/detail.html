@@ -1,0 +1,81 @@
+<head>
+	<script>
+$(function() {
+	var record = loadRecord();
+	var form = makeForm('#record', {
+		table: 'NameAddress',
+		data: record,
+		dialog: record.idNameAddress > 0,
+		columns: [
+			{
+				data: 'Name',
+				type: 'textInput'
+			},
+			{
+				data: 'Address',
+				type: 'textAreaInput'
+			},
+			{
+				data: 'Telephone',
+				type: 'textInput'
+			},
+			{
+				data: 'Email',
+				type: 'textInput'
+			},
+			{
+				data: 'Contact',
+				type: 'textInput'
+			},
+			{
+				data: 'Hidden',
+				type: 'checkboxInput'
+			}
+		]
+	});
+	if(record.idNameAddress) {
+		var table = makeDataTable('#docs', {
+			table: 'Document',
+			select: function (data) {
+				var s = data.DocumentTypeId == 5 ? 'payment' : 'document';
+				goto('/supplier/' + s + '.html?id=' + data.idDocument + '&type=' + data.DocumentTypeId);
+			},
+			columns: [
+				'/DocumentDate',
+				'DocType',
+				'DocumentIdentifier',
+				'DocumentMemo',
+				{
+					data: 'Amount',
+					type: 'debit'
+				},
+				{
+					data: 'Amount',
+					type: 'credit'
+				},
+				{
+					type: 'decimal',
+					data: 'Outstanding',
+					nonZero: {
+						zeroText: 'Outstanding only',
+						nonZeroText: 'Show all'
+					}
+				}
+			]
+		});
+		if(record.idNameAddress) {
+			actionButton('Audit').click(function () {
+				goto('/reports/audithistory.html?id=' + record.idNameAddress + '&table=Names');
+			});
+		}
+	}
+});
+	</script>
+</head>
+<body>
+<table style="width: 100%;">
+	<tr><th>Phone</th><td>{{Record.Telephone}}</td><th>Email</th><td><a href="mailto:{{Record.Email}}">{{Record.Email}}</a></td><th>Contact</th><td>{{Record.Contact}}</td><th>Outstanding</th><td>{{Record.Outstanding:0.00}}</td></tr>
+</table>
+<table id="record"></table>
+<table id="docs" cellspacing="0" width="100%"></table>
+</body>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+	<meta charset="UTF-8">
+	<title>{{{Record.header.DocType}}} {{{Record.header.DocumentIdentifier}}}</title>
+	<style>
+		tr.total td.n:not(:empty) {
+			border-top: 1px solid black;
+			border-bottom: 3px double black;
+		}
+		th, td {
+			vertical-align: top;
+			margin-top: 5px;
+			margin-bottom: 5px;
+		}
+		th {
+			text-align: left;
+		}
+		td.n, th.n, td.ni, th.ni {
+			text-align: right;
+		}
+		th.ni {
+			padding-right: 16px;
+		}
+		#invoiceTo {
+			margin-top: 2.75cm;
+			margin-left: 1cm;
+		}
+		#theirAddress {
+			margin-top: 1cm;
+			margin-left: 1cm;
+			width: 7cm;
+		}
+		#ourName {
+			font-family: "Cooper Black", "Verdana", "Arial", sans-serif;
+			font-weight: bold;
+			font-size: 30px;
+			margin-top: 1cm;
+		}
+		#hdr {
+			width: 100%;
+		}
+		#hdr td {
+			vertical-align: top;
+		}
+		#detail {
+			width: 90%;
+			margin-top: 1cm;
+			margin-left: 1cm;
+			border-collapse: collapse;
+		}
+		#detail td, #detail th {
+			border: 1px solid black;
+		}
+		#memo {
+			margin-top: 1cm;
+			margin-left: 1cm;
+		}
+		button {
+			float: right;
+		}
+		@media print {
+			button {
+				display: none;
+			}
+		}
+	</style>
+</head>
+<body onload="window.print();">
+<button onclick="window.close();">Close Window</button>
+<div id="body">
+<table id="hdr">
+	<tr>
+		<td>
+			<div id="invoiceTo">Invoice to:</div>
+			<div id="theirAddress">{{{Record.header.DocumentAddress}}}</div>
+		</td>
+		<td>
+			<div id="ourName">{{{Settings.CompanyName}}}</div>
+			<table>
+				<tr><th>Address:</th><td>{{{Settings.CompanyAddress}}}</td></tr>
+				<tr><th>Phone:</th><td>{{{Settings.CompanyPhone}}}</td></tr>
+				<tr><th>Email:</th><td><a href="mailto:{{{Settings.CompanyEmail}}}">{{{Settings.CompanyEmail}}}</a></td></tr>
+				<tr><th>WebSite:</th><td><a href="http://{{{Settings.WebSite}}}">{{{Settings.WebSite}}}</a></td></tr>
+				<tr><th>VAT Reg no:</th><td>{{{Settings.VatRegistration}}}</td></tr>
+				<tr><th>Company no:</th><td>{{{Settings.CompanyNumber}}}</td></tr>
+				<tr><th>{{{Record.header.DocType}}} no:</th><td><b>{{{Record.header.DocumentIdentifier}}}</b></td></tr>
+				<tr><th>Tax Date:</th><td><b>{{{Record.header.DocumentDate:D}}}</b></td></tr>
+			</table>
+		</td>
+	</tr>
+</table>
+<div id="memo">{{{Record.header.DocumentMemo}}}</div>
+<table id="detail">
+	<thead>
+	<tr>
+		<th class="ni">Qty</th>
+		<th>Memo</th>
+		<th class="n">Unit Price</th>
+		<th class="n">Vat Code</th>
+		<th class="n">Vat</th>
+		<th class="n">Vat Rate</th>
+		<th class="n">Net</th>
+	</tr>
+	</thead>
+	<tbody>
+	{{#each Record.detail}}
+	<tr>
+		<td class="ni">{{{Qty}}}</td>
+		<td>{{{Memo}}}</td>
+		<td class="n">{{{UnitPrice:0.00}}}</td>
+		<td>{{{Code}}}</td>
+		<td class="n">{{{VatAmount:0.00}}}</td>
+		<td class="n">{{{VatRate}}}</td>
+		<td class="n">{{{LineAmount:0.00}}}</td>
+	</tr>
+	{{/each}}
+	</tbody>
+	<tfoot>
+	<tr>
+		<th colspan="6">Total Net</td>
+		<th id="net" class="n">{{{Record.TotalNet:0.00}}}</td>
+	</tr>
+	<tr>
+		<td colspan="6">Total Vat</td>
+		<td id="vat" class="n">{{{Record.TotalVat:0.00}}}</td>
+	</tr>
+	<tr>
+		<th colspan="6">{{{Record.header.DocType}}} Total</td>
+		<th id="gross" class="n">{{{Record.Total:0.00}}}</td>
+	</tr>
+	</tfoot>
+</table>
+</div>
+</body>
+</html>
