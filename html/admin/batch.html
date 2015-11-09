@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script>
+function checkStatus() {
+	get('/admin/batchstatus.html', { id: '!{{Batch.Id}}' }, function(result) {
+		if(result.data) {
+			$('#progressbar').progressbar({value: result.data.PercentComplete});
+			$('#status').text(result.data.Status);
+		}
+		if(result.error) {
+			message(result.error);
+		} else if(result.redirect) {
+			window.location = result.redirect;
+		} else {
+			setTimeout(checkStatus, 1000);
+		}
+	});
+}
+$(function() {
+	$('#progressbar').progressbar();
+	checkStatus();
+});
+</script>
+</head>
+<body>
+<div id="progressbar"></div>
+<div id="status"></div>
+</body>
+</html>

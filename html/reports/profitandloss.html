@@ -1,0 +1,54 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<head>
+	<style>
+		.total {
+			font-weight: bold;
+		}
+		tr.totalSpacer {
+			height: 20px;
+		}
+		tr.total td.n:not(:empty) {
+			border-bottom: none;
+		}
+		tr.total2 td.n:not(:empty) {
+			border-bottom: 3px double black;
+		}
+		tr.subacct td.sa {
+			padding-left: 20px;
+		}
+		tr.subacctTotal td.s {
+			border-top: 1px solid black;
+		}
+	</style>
+	<script src="/report.js" type="text/javascript"></script>
+<script>
+$(function() {
+	initialiseReport(function(row, record) {
+		if(!row || !row.recordId || !row.recordId.idAccount)
+			return false;
+		postReportSettings('journals', record.settings, {
+			Account: [row.recordId.idAccount]
+		});
+	});
+});
+</script>
+</head>
+<body>
+{{include reports/reportbody.html}}
+</body>

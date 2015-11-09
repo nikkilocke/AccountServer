@@ -1,0 +1,76 @@
+<head>
+	<script>
+$(function() {
+	var record = loadRecord();
+	var form = makeHeaderDetailForm('#record', '#docs', {
+		data: record,
+		validate: function() {
+			for(var i = 1; i < record.detail.length; i++) {
+				var d = record.detail[i].Date.replace('T00:00:00', '');
+				for(var j = 0; j < i; j++) {
+					if(j == 0) console.log(d + ' vs ' + record.detail[j].Date);
+					if(d == record.detail[j].Date.replace('T00:00:00', '')) {
+						form.detail.find('#r' + j + 'cDate').focus();
+						return '2 prices with same date: ' + formatDate(d);
+					}
+				}
+			}
+		},
+		header: {
+			table: 'Security',
+			columns: [
+				{
+					data: 'SecurityName',
+					type: 'textInput'
+				},
+				{
+					data: 'Ticker',
+					type: 'textInput'
+				}
+			]
+		},
+		detail: {
+			table: 'StockPrice',
+			columns: [
+				{
+					data: 'Date',
+					type: 'dateInput'
+				},
+				{
+					data: 'Price',
+					type: 'doubleInput'
+				},
+				{
+					data: 'Delete',
+					type: 'checkboxInput'
+				}
+			]
+		}
+	});
+	form.detail.bind('changed.field', function(e, newValue, rowData, col, input) {
+		if(col.name == 'Delete') {
+			var i = _.indexOf(record.detail, rowData);
+			if(i >= 0) {
+				record.detail.splice(i, 1);
+				form.detail.dataReady(record.detail);
+			}
+			return false;
+		}
+	});
+	actionButton('New price').click(function() {
+		record.detail.unshift({
+			SecurityId: record.header.idSecurity,
+			Date: new Date().toYMD(),
+			Price: 0,
+			Unit: 7
+		});
+		form.detail.dataReady(record.detail);
+	});
+});
+	</script>
+</head>
+<body>
+<table><tr><th>Security</th><td>{{Record.header.SecurityName}}</td><th>Ticker</th><td>{{Record.header.Ticker}}</td></tr></table>
+<table id="record"></table>
+<table id="docs" cellspacing="0"></table>
+</body>

@@ -1,0 +1,83 @@
+<head>
+	<script>
+$(function() {
+	var record = loadRecord();
+	var form = makeForm('#record', {
+		table: 'Schedule',
+		data: record,
+		canDelete: record.idSchedule > 0,
+		select: '/company/job.html',
+		columns: [
+			{
+				data: 'ActionDate',
+				type: 'dateInput'
+			},
+			{
+				data: 'RepeatType',
+				type: 'selectInput',
+				selectOptions: repeatSelectOptions
+			},
+			{
+				data: 'Task',
+				type: 'textInput'
+			}
+		]
+	});
+	if(!record.idSchedule) {
+		var originalDate = record.ActionDate;
+		var dateChanged;
+		form.bind('changed.field', function(e, newValue, rowData, col, input) {
+			if(col.name == 'RepeatType' && !dateChanged) {
+				var d = new Date(parseDate(originalDate))
+				switch(newValue) {
+					case '0':
+						break;
+					case '1':	// Daily
+						d.addDays(1);
+						break;
+					case '2':	// Weekly
+						d.addDays(7);
+						break;
+					case '3':	// Monthly
+						d.addMonths(1);
+						break;
+					case '4':	// Quarterly
+						d.addMonths(3);
+						break;
+					case '5':	// Yearly
+						d.addYears(1);
+						break;
+					default:
+						return;
+				}
+				rowData.ActionDate = d.toYMD();
+				rowData.RepeatType = newValue;
+				form.draw();
+				return false;
+			} else if(col.name == 'ActionDate' && newValue != rowData.ActionDate) {
+				dateChanged = true;
+			}
+		});
+	}
+	if (record.idSchedule) {
+		var button = actionButton('Action').click(function () {
+			if (unsavedInput) {
+				message('You must save your changes first');
+				return;
+			}
+			postJson(getGoto('/company/jobaction.html?id=' + record.idSchedule), function (d) {
+				if (d.id)
+					window.location.reload();
+				else
+					goback();
+			});
+		});
+		button.text(record.Url ? record.Post ? 'Post Doc' : 'Action Job' : 'Job Done');
+	}
+});
+	</script>
+</head>
+<body>
+<table id="record"></table>
+<div id="scheduleinfo"></div>
+</body>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<head>
+	{{#with Record}}
+	<script>
+		$(function() {
+			var record = loadRecord();
+			var form = makeForm('#record', {
+				table: 'Settings',
+				data: record.header,
+				columns: [
+					{
+						data: 'CompanyName',
+						type: 'textInput'
+					},
+					{
+						data: 'CompanyAddress',
+						type: 'textAreaInput'
+					},
+					{
+						data: 'CompanyPhone',
+						type: 'textInput'
+					},
+					{
+						data: 'CompanyEmail',
+						type: 'textInput'
+					},
+					{
+						data: 'WebSite',
+						type: 'textInput'
+					},
+					{
+						data: 'VatRegistration',
+						type: 'textInput'
+					},
+					{
+						data: 'CompanyNumber',
+						heading: 'Company Number',
+						type: 'textInput'
+					},
+					{
+						data: 'DefaultBankAccount',
+						type: 'selectInput',
+						selectOptions: record.BankAccounts
+					},
+					{
+						data: 'YearStartMonth',
+						type: 'selectInput',
+						selectOptions: [
+							{ id: 1, value: 'January' },
+							{ id: 2, value: 'February' },
+							{ id: 3, value: 'March' },
+							{ id: 4, value: 'April' },
+							{ id: 5, value: 'May' },
+							{ id: 6, value: 'June' },
+							{ id: 7, value: 'July' },
+							{ id: 8, value: 'August' },
+							{ id: 9, value: 'September' },
+							{ id: 10, value: 'October' },
+							{ id: 11, value: 'November' },
+							{ id: 12, value: 'December' }
+						]
+					},
+					{
+						data: 'YearStartDay',
+						type: 'selectInput',
+						selectOptions: [
+							{ id: 0, value: 'First day of month'},
+							{ id: 1, value: 'First Sunday' },
+							{ id: 2, value: 'First Monday' },
+							{ id: 3, value: 'First Tuesday' },
+							{ id: 4, value: 'First Wednesday' },
+							{ id: 5, value: 'First Thursday' },
+							{ id: 6, value: 'First Friday' },
+							{ id: 7, value: 'First Saturday' }
+						]
+					},
+					'/YearStart',
+					'/YearEnd',
+					{
+						data: 'NextInvoiceNumber',
+						type: 'intInput'
+					},
+					{
+						data: 'NextBillNumber',
+						type: 'intInput'
+					},
+					{
+						data: 'NextJournalNumber',
+						type: 'intInput'
+					},
+					{
+						data: 'DatabaseLogging',
+						type: 'selectInput',
+						selectOptions: [
+							{ id: 0, value: 'None' },
+							{ id: 1, value: 'Writes' },
+							{ id: 2, value: 'Reads and writes' }
+						]
+					},
+					{
+						data: 'Skin',
+						type: 'selectInput',
+						selectOptions: record.Skins
+					},
+					{
+						data: 'MailServer',
+						type: 'textInput'
+					},
+					{
+						data: 'MailPort',
+						type: 'intInput'
+					},
+					{
+						data: 'MailSSL',
+						type: 'checkboxInput'
+					},
+					{
+						data: 'MailUserName',
+						type: 'textInput'
+					},
+					{
+						data: 'MailPassword',
+						type: 'textInput'
+					},
+					'DbVersion',
+					'AppVersion'
+				]
+			});
+		});
+	</script>
+	{{/with}}
+</head>
+<body>
+<table id="record"></table>
+</body>

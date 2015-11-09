@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script>
+		$(function() {
+			var table = makeDataTable('#docs', {
+				table: 'Account',
+				select: function(row) {
+					openDetail(row);
+				},
+				columns: [
+					'AcctType',
+					'AccountName',
+					'AccountDescription',
+					{
+						data: 'HideAccount',
+						heading: 'Hidden',
+						type: 'checkbox',
+						nonZero: {
+							zeroText: 'Hide hidden',
+							nonZeroText: 'Show all'
+						}
+					}
+				]
+			});
+		});
+	</script>
+</head>
+<body>
+<div></div>
+<table id="docs" cellspacing="0" width="100%"></table>
+</body>
+</html>

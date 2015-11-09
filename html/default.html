@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+	<meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	<link href="/jquery-ui.structure.css" rel="stylesheet" type="text/css" />
+	<link href="/jquery-ui.theme.css" rel="stylesheet" type="text/css" />
+	<link href="/jquery.multiselect.css" rel="stylesheet" type="text/css" />
+	<link href="/jquery.dataTables.css" rel="stylesheet" type="text/css" />
+	<script src="/jquery.js" type="text/javascript"></script>
+	<script src="/underscore.js" type="text/javascript"></script>
+	<script src="/jquery-ui.js" type="text/javascript"></script>
+	<script src="/jquery.dataTables.js" type="text/javascript"></script>
+	<script src="/jquery.multiselect.js" type="text/javascript"></script>
+	<script src="/bowser.js" type="text/javascript"></script>
+	<link id="defaultStyles" href="/default.css" rel="stylesheet" type="text/css" />
+	<link href="/skin/{{Settings.Skin}}.css" rel="stylesheet" type="text/css" />
+	<script src="/default.js" type="text/javascript"></script>
+	<script src="/skin/{{Settings.Skin}}.js" type="text/javascript"></script>
+	<title>{{Config.Filename}} - {{Settings.CompanyName}} - {{{Title}}}</title>
+	{{Head}}
+{{#if Record}}
+	<script>
+		function loadRecord() {
+			return '!{{Record}}';
+		}
+	</script>
+{{/if}}
+</head>
+<body>
+<img id="menuicon" src="/images/menu.png" />
+<div id="header">
+<div id="heading">{{Config.Filename}} - {{{Settings.CompanyName}}} - {{{Title}}}</div>
+<div id="menu1">&nbsp;<button id="company" href="/company/default.html">Company</button><button id="customer" href="/customer/default.html">Customers</button><button id="supplier" href="/supplier/default.html">Suppliers</button><button id="banking" href="/banking/default.html">Banking</button><button id="investments" href="/investments/default.html">Investments</button><button id="accounting" href="/accounting/default.html">Accounting</button><button id="reports" href="/reports/default.html">Reports</button><button id="admin" href="/admin/default.html">Admin</button></div>
+<div id="menu2">&nbsp;{{#each Menu}}<button id="{{Id}}" href="{{Url}}"{{#if Disabled}} disabled="disabled"{{/if}}>{{Text}}</button>{{/each}}</div>
+<div id="menu3">&nbsp;</div>
+</div>
+<div id="spacer"></div>
+<div id="body">
+<div id="message">{{Message}}&nbsp;</div>
+{{Body}}
+</div>
+</body>
+</html>

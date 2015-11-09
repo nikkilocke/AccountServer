@@ -1,0 +1,32 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<head>
+	<script src="/report.js" type="text/javascript"></script>
+<script>
+$(function() {
+	var record = initialiseReport(function(row) {
+		if(!row || !row.recordId || !row.recordId.idProduct)
+			return false;
+		goto('/customer/product.html?id=' + row.recordId.idProduct);
+	});
+});
+</script>
+</head>
+<body>
+{{include reports/reportbody.html}}
+</body>

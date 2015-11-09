@@ -1,0 +1,20 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Express 2012 for Windows Desktop
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AccountServer", "AccountServer.csproj", "{1681E2F3-7956-45F8-A650-48742C192102}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1681E2F3-7956-45F8-A650-48742C192102}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1681E2F3-7956-45F8-A650-48742C192102}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1681E2F3-7956-45F8-A650-48742C192102}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1681E2F3-7956-45F8-A650-48742C192102}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

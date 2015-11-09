@@ -1,0 +1,38 @@
+<head>
+	<script>
+$(function() {
+	$('#data').bind('paste', function(e) {
+		var data = e.originalEvent.clipboardData.getData('text/html');
+		if(data) {
+			data = data.replace("\r", "").replace("\n", ' ');
+			data = data.replace(/<th.*?<\/th>/ig, '');
+			data = data.replace(/<\/td>/ig, "\t");
+			data = data.replace(/<\/tr>/ig, "\r\n");
+			data = data.replace(/<[^>]*>/g, '');
+			data = data.trim();
+			$('#data').val(data);
+			e.preventDefault();
+		}
+	});
+});
+	</script>
+</head>
+<body>
+</head><form method="POST" enctype="multipart/form-data" action="/banking/statementimportpost.html?id={{Record.Id}}">
+	<table>
+		<tr><td>Paste statement data here</td><td><textarea id="data" name="data" rows="25" cols="50"></textarea></td></tr>
+		<tr><td>Statement Format</td><td><textarea name="format" rows="5" cols="50">{{Record.StatementFormat}}</textarea></td></tr>
+		<tr><td>Or import a QIF file</td><td><input type="file" name="file" /></td></tr>
+		<tr><td>Date Format</td><td><select name="dateFormat">
+			<option value="">Local format</option>
+			<option value="MM/dd/yyyy">US format (MM/dd/yyyy)</option>
+			<option value="dd/MM/yyyy">UK format (dd/MM/yyyy)</option>
+		</select></td></tr>
+		<tr><td colspan="2">
+			<button type="submit">Import</button>
+			<button type="button" href="/banking/default.html">Cancel</button>
+		</td></tr>
+	</table>
+</form>
+<div><a href="/banking/importhelp.html" target="_blank">Help on Statement Format</a></div>
+</body>

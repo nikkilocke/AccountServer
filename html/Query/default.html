@@ -1,0 +1,19 @@
+<head>
+	<script>
+		$(function() {
+			var table = makeDataTable('#docs', {
+				table: '{{Table}}',
+				columns: [// {{#each Headings}}
+					{
+						data: '{{Name}}',
+						type: '{{Value}}'
+					},// {{/each}}
+				]
+			});
+		});
+	</script>
+</head>
+<body>
+<div></div>
+<table id="docs" cellspacing="0" width="100%"></table>
+</body>

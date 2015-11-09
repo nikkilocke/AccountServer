@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script>
+		$(function() {
+			var table = makeDataTable('#docs', {
+				table: 'Product',
+				select: 'product.html',
+				columns: [
+					'ProductName',
+					'ProductDescription',
+					'#UnitPrice',
+					'Code/Vat code',
+					'AccountName/Account',
+					'Unit'
+				]
+			});
+			addButton('New product', 'product.html?id=0');
+		});
+	</script>
+</head>
+<body>
+<table id="docs" cellspacing="0" width="100%"></table>
+</body>
+</html>

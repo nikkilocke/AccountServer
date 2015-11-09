@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+<head>
+{{#with Record}}
+	<script>
+$(function() {
+	var record = loadRecord();
+	var names = record.Names;
+	var securities = record.Securities;
+	var accounts = record.Accounts;
+	var readonly = record.header.DocumentOutstanding != record.header.DocumentAmount;
+	var sign = record.header.DocumentTypeId == DocType.Sell ? -1 : 1;
+	record.header.Unit = 7;
+	function calculateDocument() {
+		record.header.Value = round(record.header.Quantity * record.header.Price);
+		record.header.DocumentAmount = record.header.Value + sign * record.header.Fee;
+	}
+	calculateDocument();
+	var form = makeForm('#form', {
+		table: 'Document',
+		data: record.header,
+		canDelete: !readonly && record.header.idDocument,
+		saveAndNew: true,
+		columns: [
+			{
+				data: 'DocumentDate',
+				type: 'dateInput'
+			},
+			{
+				data: 'DocumentName',
+				type: 'autoComplete',
+				selectOptions: names,
+				confirmAdd: true
+			},
+			{
+				data: 'DocumentIdentifier',
+				heading: 'Trans No',
+				type: 'textInput'
+			},
+			{
+				data: 'DocumentMemo',
+				type: 'textInput',
+				attributes: 'size="50"'
+			},
+			{
+				data: 'SecurityName',
+				type: 'autoComplete',
+				selectOptions: securities,
+				confirmAdd: true
+			},
+			{
+				data: 'Quantity',
+				type: 'doubleInput'
+			},
+			{
+				data: 'Price',
+				type: 'doubleInput'
+			},
+			{
+				data: 'Value',
+				type: 'decimalField'
+			},
+			{
+				data: 'FeeAccount',
+				type: 'selectInput',
+				selectOptions: accounts
+			},
+			{
+				data: 'Fee',
+				type: 'decimalInput'
+			},
+			{
+				data: 'FeeMemo',
+				type: 'textInput'
+			},
+			{
+				data: 'DocumentAmount',
+				heading: 'Total Amount',
+				type: 'decimalField'
+			}
+		]
+	});
+	if(readonly)
+		form.fields.DocumentName.cell.find(':input').prop('disabled', true);
+	else
+		form.bind('changed.field', function(e, newValue, rowData, col, input) {
+			switch(col.name) {
+				case 'Quantity':
+				case 'Price':
+				case 'Fee':
+					rowData[col.name] = newValue;
+					break;
+				case 'DocumentName':
+					var name = _.find(names, function (v) {
+						return v.value == newValue;
+					});
+					rowData.DocumentNameAddressId = name ? name.id : 0;
+					return;
+				case 'SecurityName':
+					var security = _.find(securities, function (v) {
+						return v.value == newValue;
+					});
+					rowData.SecurityId = security ? security.id : 0;
+					return;
+				default:
+					return;
+			}
+			calculateDocument();
+			form.draw();
+			return false;
+		});
+});
+	</script>
+{{/with}}
+</head>
+<body>
+	<table id="form"></table>
+</body>

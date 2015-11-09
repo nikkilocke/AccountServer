@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script>
+		$(function() {
+			var table = makeDataTable('#docs', {
+				table: 'NameAddress',
+				select: '/banking/name.html',
+				columns: [
+					'Name',
+					'Address',
+					'PostCode',
+					'Telephone',
+					'@Email',
+					'Contact',
+					{
+						data: 'Hidden',
+						heading: 'Hidden',
+						type: 'checkbox',
+						nonZero: {
+							zeroText: 'Hide hidden',
+							nonZeroText: 'Show all'
+						}
+					}
+				]
+			});
+			addButton('New Name record', 'name.html?id=0');
+		});
+	</script>
+</head>
+<body>
+<table id="docs" cellspacing="0" width="100%"></table>
+</body>
+</html>

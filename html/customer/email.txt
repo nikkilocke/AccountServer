@@ -1,0 +1,5 @@
+{{#with Record}}{{Settings.CompanyName}} {{header.DocType}} {{header.DocumentIdentifier}}
+Dear {{customer.Contact}},
+
+Attached please find our {{header.doctype}} for {{header.DocumentDate:d}}.
+{{/with}}

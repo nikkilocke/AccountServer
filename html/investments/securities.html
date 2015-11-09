@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script>
+		$(function() {
+			makeDataTable('#docs', {
+				table: 'Security',
+				select: '/investments/security.html',
+				columns: [
+					'SecurityName',
+					'Ticker'
+				]
+			});
+			addButton('New Security', 'security.html?id=0');
+		});
+	</script>
+</head>
+<body>
+<div></div>
+<table id="docs" cellspacing="0" width="100%"></table>
+</body>
+</html>

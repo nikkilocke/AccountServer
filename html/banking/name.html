@@ -1,0 +1,45 @@
+<head>
+	<script>
+$(function() {
+	var record = loadRecord();
+	var form = makeForm('#record', {
+		table: 'NameAddress',
+		data: record,
+		columns: [
+			{
+				data: 'Name',
+				type: 'textInput'
+			},
+			{
+				data: 'Address',
+				type: 'textAreaInput'
+			},
+			{
+				data: 'Telephone',
+				type: 'textInput'
+			},
+			{
+				data: 'Email',
+				type: 'textInput'
+			},
+			{
+				data: 'Contact',
+				type: 'textInput'
+			},
+			{
+				data: 'Hidden',
+				type: 'checkboxInput'
+			}
+		]
+	});
+	if(record.idNameAddress) {
+		actionButton('Audit').click(function () {
+			goto('/reports/audithistory.html?id=' + record.idNameAddress + '&table=Names');
+		});
+	}
+});
+	</script>
+</head>
+<body>
+<table id="record"></table>
+</body>

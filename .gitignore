@@ -1,0 +1,7 @@
+/html/.idea
+/Debug
+/Release
+/obj
+/packages
+/libs
+/*.suo

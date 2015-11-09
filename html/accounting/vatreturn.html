@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<head>
+	<style>
+#vat100a {
+	min-width: 15cm;
+	border-collapse: collapse;
+	margin-bottom: 0.5cm;
+}
+#vat100a td {
+	border: 1px solid black;
+}
+#vat100b {
+	min-width: 15cm;
+	margin-bottom: 0.5cm;
+	font-size: 0.75em;
+}
+#vat100b td.boxno {
+	color: white;
+	background-color: black;
+	min-width: 0.75cm;
+	text-align: center;
+	-webkit-print-color-adjust: exact;
+}
+#vat100b td.prompt {
+	text-align: right;
+}
+#vat100b td.spacer {
+	width: 5px;
+}
+#vat100b td.value {
+	border: 1px solid black;
+	min-width: 2cm;
+}
+@media print {
+	#form {
+		display: none;
+	}
+}
+	</style>
+	<script>
+$(function() {
+	var record = loadRecord();
+	var form = makeForm('#form', {
+		validate: function () {
+		},
+		submit: null,
+		data: record.payment,
+		table: 'Document',
+		canDelete: false,
+		columns: [
+			{
+				data: 'DocumentName',
+				type: 'autoComplete',
+				selectOptions: record.names,
+				confirmAdd: true
+			},
+			{
+				data: 'DocumentDate',
+				type: 'dateInput'
+			},
+			{
+				data: 'DocumentIdentifier',
+				heading: 'Cheque No',
+				type: 'docIdInput'
+			},
+			{
+				data: 'DocumentAccountId',
+				heading: 'Account',
+				type: 'selectInput',
+				selectOptions: record.accounts
+			},
+			{
+				data: 'idDocument',
+				heading: 'Other VAT returns',
+				type: 'selectInput',
+				selectOptions: record.otherReturns,
+				emptyValue: 0,
+				emptyOption: 'Current',
+				date: true,
+				attributes: 'class="nosave"'
+			}
+		]
+	});
+	if(record.payment.idDocument) {
+		form.find(':input').prop('disabled', true);
+		form.find('select#r0cidDocument').prop('disabled', false);
+	} else {
+		actionButton('Save and Print')
+				.click(function() {
+					if (!record.payment.DocumentAccountId) {
+						message("Must choose an account");
+						return;
+					}
+					message("Saving data - please wait...");
+					postJson("/accounting/vatreturnpost.html", {
+						return: record.return,
+						payment: record.payment
+					}, function (data) {
+						record.payment.idDocument = data.id;
+						form.find(':input').prop('disabled', true);
+						form.find('select#r0cidDocument').prop('disabled', false);
+						window.print();
+					});
+				});
+
+	}
+	form.bind('changed.field', function (e, newValue, rowData, col, input) {
+		if (col.name == 'DocumentName') {
+			var name = _.find(record.names, function (v) {
+				return v.value == newValue;
+			});
+			rowData.DocumentNameAddressId = name ? name.id : 0;
+		} else if(col.name == 'idDocument') {
+			message("Loading VAT return");
+			window.location = '/accounting/vatreturn.html?id=' + newValue;
+		}
+	});
+});
+	</script>
+</head>
+<body>
+	{{#with Record.return}}<h3>Value Added Tax Return</h3>
+	<table id="vat100a">
+		<tr>
+			<td>Registration Number<br/>{{Settings.VatRegistration}}</td>
+			<td>Name<br/>{{Settings.CompanyName}}</td>
+		</tr>
+		<tr>
+			<td>Reporting Period<br/>From: {{Start:d}} To: {{End:d}}</td>
+			<td>Due Date<br/>{{Due:d}}</td>
+		</tr>
+	</table>
+	<table id="vat100b">
+		<tr>
+			<td class="prompt">VAT due in this period on sales and other outputs </td>
+			<td class="spacer"></td>
+			<td class="boxno">1</td>
+			<td class="n value">{{Sales.Vat:0.00}}</td>
+		</tr>
+		<tr>
+			<td class="prompt">VAT due in this period on acquisitions from other EC member states </td>
+			<td class="spacer"></td>
+			<td class="boxno">2</td>
+			<td class="n value">0.00</td>
+		</tr>
+		<tr>
+			<td class="prompt">Total VAT due (the sum of boxes 1 and 2)</td>
+			<td class="spacer"></td>
+			<td class="boxno">3</td>
+			<td class="n value">{{Sales.Vat:0.00}}</td>
+		</tr>
+		<tr>
+			<td class="prompt">VAT reclaimed in this period on purchases and other inputs </td>
+			<td class="spacer"></td>
+			<td class="boxno">4</td>
+			<td class="n value">{{Purchases.Vat:0.00}}</td>
+		</tr>
+		<tr>
+			<td class="prompt boxno">Net VAT to be paid to Customs or reclaimed by you</td>
+			<td class="spacer"></td>
+			<td class="boxno">5</td>
+			<td class="n value">{{ToPay:0.00}}</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td class="prompt">Total value of sales and all other outputs excluding any VAT</td>
+			<td class="spacer"></td>
+			<td class="boxno">6</td>
+			<td class="n value">{{Sales.Net:0}}</td>
+		</tr>
+		<tr>
+			<td class="prompt">Total value of purchases and all other inputs excluding any VAT</td>
+			<td class="spacer"></td>
+			<td class="boxno">7</td>
+			<td class="n value">{{Purchases.Net:0}}</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td class="prompt">Total value of all supplies of goods and related services to other EC Member States</td>
+			<td class="spacer"></td>
+			<td class="boxno">8</td>
+			<td class="n value">0</td>
+		</tr>
+		<tr>
+			<td class="prompt">Total value of all acquisitions of goods and related services to other EC Member States</td>
+			<td class="spacer"></td>
+			<td class="boxno">9</td>
+			<td class="n value">0</td>
+		</tr>
+	</table>{{/with}}
+	<table id="form"></table>
+</body>

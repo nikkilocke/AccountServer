@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+<head>
+{{#with Record}}
+	<script>
+$(function() {
+	var record = loadRecord();
+	var form = makeHeaderDetailForm('#form', '#docs', {
+		data: record,
+		submit: null,
+		header: {
+			table: 'Document',
+			canDelete: false,
+			columns: [
+				'DocType',
+				'DocumentName/Supplier',
+				'DocumentAddress',
+				'/DocumentDate',
+				'DocumentIdentifier/Cheque No',
+				'DocumentMemo',
+				'#DocumentAmount',
+				'#DocumentOutstanding'
+			]
+		},
+		detail: {
+			table: 'Document',
+			select: function(row) {
+				openDocument(row)
+			},
+			columns: [
+				'DocType',
+				'/DocumentDate',
+				'DocumentIdentifier/Invoice No',
+				'DocumentMemo',
+				'#DocumentAmount',
+				'#DocumentOutstanding',
+				'#PaymentAmount'
+			]
+		}
+	});
+	actionButton('Print').click(function() {
+		window.print();
+	});
+});
+	</script>
+{{/with}}
+</head>
+<body>
+	<table id="form"></table>
+	<table id="docs"></table>
+</body>

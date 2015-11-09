@@ -1,0 +1,30 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<head>
+	<script src="/report.js" type="text/javascript"></script>
+<script>
+$(function() {
+	var report = initialiseReport(function(row) {
+		return openDocument(row.recordId);
+	});
+});
+</script>
+</head>
+<body>
+{{include reports/reportbody.html}}
+</body>

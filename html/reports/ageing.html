@@ -1,0 +1,43 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<head>
+	<script src="/report.js" type="text/javascript"></script>
+<script>
+$(function() {
+	var record = initialiseReport(function(row) {
+		if(!row || !row.recordId || !row.recordId.AccountId || !row.recordId.NameAddressId)
+			return false;
+		var url;
+		switch(row.recordId.AccountId) {
+			case 1:
+				url = '/customer/detail';
+				break;
+			case 2:
+				url = '/supplier/detail';
+				break;
+			default:
+				return false;
+		}
+		goto(url + '.html?id=' + row.recordId.NameAddressId);
+	});
+});
+</script>
+</head>
+<body>
+{{include reports/reportbody.html}}
+</body>

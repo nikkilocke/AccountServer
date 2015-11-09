@@ -1,0 +1,32 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<head>
+	<script src="/report.js" type="text/javascript"></script>
+<script>
+$(function() {
+	var record = initialiseReport(function(row) {
+		if(!row || !row.recordId || !row.recordId.idSecurity)
+			return false;
+		goto('/investments/security.html?id=' + row.recordId.idSecurity);
+	});
+});
+</script>
+</head>
+<body>
+{{include reports/reportbody.html}}
+</body>

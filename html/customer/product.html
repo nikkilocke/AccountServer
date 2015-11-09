@@ -1,0 +1,56 @@
+<head>
+	<script>
+		$(function() {
+			var record = loadRecord();
+			var form = makeForm('#form', {
+				data: record.header,
+				table: 'Product',
+				canDelete: record.allowDelete,
+				validate: function() {
+					if(!form.data.VatCodeId)
+						return "The product must have a VAT code";
+					if(!form.data.AccountId)
+						return "You product must have an account";
+				},
+				columns: [
+					{
+						data: 'ProductName',
+						type: 'textInput'
+					},
+					{
+						data: 'ProductDescription',
+						type: 'textInput'
+					},
+					{
+						data: 'UnitPrice',
+						type: 'decimalInput'
+					},
+					{
+						data: 'VatCodeId',
+						type: 'selectInput',
+						selectOptions: record.VatCodes
+					},
+					{
+						data: 'AccountId',
+						type: 'selectInput',
+						selectOptions: record.Accounts
+					},
+					{
+						data: 'Unit',
+						type: 'selectInput',
+						selectOptions: unitOptions
+					}
+				]
+			});
+			if(record.header.idProduct) {
+				actionButton('Audit').click(function () {
+					goto('/reports/audithistory.html?id=' + record.header.idProduct + '&table=Products');
+				});
+			}
+		});
+	</script>
+</head>
+<body>
+<table id="form"></table>
+<table id="docs" cellspacing="0" width="100%"></table>
+</body>

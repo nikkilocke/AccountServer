@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+<head>
+{{#with Record}}
+	<script>
+$(function() {
+	var record = loadRecord();
+	var vatCodes = record.VatCodes;
+	var vatCodesHash = hashFromArray(vatCodes);
+	var names = record.Names;
+	var emptyRow = {
+		'@class': 'noDeleteButton',
+		AccountId: null,
+		Memo: '',
+		VatCodeId: null,
+		VatRate: 0.00,
+		VatAmount: 0.00,
+		LineAmount: 0.00
+	};
+	var readonly = record.header.DocumentOutstanding != record.header.DocumentAmount;
+	var dataEntered = readonly || record.detail.length > 0;
+	record.header.StatementAmount = record.header.DocumentAmount;
+	function calculateDocument() {
+		record.header.Net = record.header.Vat = 0;
+		_.each(record.detail, function (line) {
+			record.header.Net += line.LineAmount;
+			record.header.Vat += line.VatAmount;
+		});
+		record.header.Net = round(record.header.Net);
+		record.header.Vat = round(record.header.Vat);
+		record.header.DocumentAmount = round(record.header.Net + record.header.Vat);
+	}
+	calculateDocument();
+	record.detail.push(_.clone(emptyRow));
+	var headerColumns = [
+		'DocumentAccountName/Account',
+		{
+			data: 'DocumentName',
+			type: 'autoComplete',
+			selectOptions: names,
+			confirmAdd: true
+		},
+		{
+			data: 'Net',
+			type: 'decimalField'
+		},
+		{
+			sameRow: true,
+			data: 'Vat',
+			type: 'decimalField'
+		},
+		{
+			sameRow: true,
+			data: 'DocumentAmount',
+			heading: 'Total',
+			type: 'decimalField'
+		}
+	];
+	if(matchingStatement())
+		headerColumns.push({
+			sameRow: true,
+			data: 'StatementAmount',
+			type: 'decimalField'
+		});
+	headerColumns.push(
+		{
+			data: 'DocumentDate',
+			type: 'dateInput'
+		},
+		{
+			data: 'DocumentIdentifier',
+			heading: 'Cheque No',
+			type: 'docIdInput'
+		},
+		{
+			data: 'DocumentMemo',
+			type: 'textInput',
+			attributes: 'size="50"'
+		});
+	var form = makeHeaderDetailForm('#form', '#docs', {
+		validate: function() {
+			for(var i = 0; i < form.data.detail.length - 1; i++) {
+				var row = form.data.detail[i];
+				if(!row.AccountId)
+					return "Line " + (i + 1) + " must have an account";
+			}
+		},
+		data: record,
+		header: {
+			table: 'Document',
+			canDelete: !readonly && record.header.idDocument,
+			validate: function() {
+				if(matchingStatement() && record.header.StatementAmount != record.header.DocumentAmount) {
+					return 'The document amount must be ' + formatNumber(record.header.StatementAmount);
+				}
+			},
+			saveAndNew: true,
+			columns: headerColumns
+		},
+		detail: {
+			table: 'Line',
+			deleteRows: function(data) {
+				if($(this).index() == record.detail.length - 1)
+					return false;
+				if((data.LineAmount != 0 || data.VatAmount != 0)
+					&& !confirm('Amounts are not zero - are you sure?'))
+					return false;
+				return function() {
+					calculateDocument();
+					form.header.draw();
+				};
+			},
+			columns: [
+				{
+					data: 'AccountId',
+					type: 'selectInput',
+					selectOptions: record.Accounts
+				},
+				{
+					data: 'VatCodeId',
+					type: 'selectInput',
+					selectOptions: vatCodes
+				},
+				{
+					data: 'LineAmount',
+					type: 'decimalInput'
+				},
+
+				{
+					data: 'VatAmount',
+					heading: 'Vat',
+					type: 'decimalInput'
+				},
+				{
+					data: 'Memo',
+					type: 'textInput',
+					attributes: 'size="50"'
+				}
+			]
+		}
+	});
+	function calculateLine(line, newValues) {
+		var originalNet = line.LineAmount;
+		var originalVat = line.VatAmount;
+		_.extend(line, newValues);
+		if(newValues.VatAmount === undefined)
+			line.VatAmount = round(line.LineAmount * line.VatRate / 100);
+		form.data.header.Net = round(form.data.header.Net + line.LineAmount - originalNet);
+		form.data.header.Vat = round(form.data.header.Vat + line.VatAmount - originalVat);
+		form.data.header.DocumentAmount = round(form.data.header.Net + form.data.header.Vat);
+		form.header.draw();
+	}
+	function checkForNewRow() {
+		if(form.data.detail[form.data.detail.length - 1].AccountId) {
+			form.detail.find('tbody tr.noDeleteButton').removeClass('noDeleteButton');
+			form.detail.addRow(_.clone(emptyRow));
+			$('#docs input#r' + (form.data.detail.length - 1) + 'cVatAmount').prop('disabled', true);
+			return true;
+		}
+	}
+	function disableVatAmounts() {
+		for(var r = 0; r < form.data.detail.length; r++) {
+			if(form.data.detail[r].VatCodeId == null)
+				$('#docs input#r' + r + 'cVatAmount').prop('disabled', true);
+		}
+	}
+	if(readonly)
+		form.header.fields.AccountName.cell.find(':input').prop('disabled', true);
+	checkForNewRow();
+	disableVatAmounts();
+	form.header.bind('changed.field', function(e, newValue, rowData, col, input) {
+		if(col.name == 'DocumentName') {
+			var name = _.find(names, function(v) { return v.value == newValue});
+			rowData.DocumentNameAddressId = name ? name.id : 0;
+			if(!dataEntered && name && name.id && record.header.DocumentAccountId && newValue) {
+				get('/banking/documentlast.html', {
+					id: name.id,
+					type: record.header.DocumentTypeId,
+					acct: record.header.DocumentAccountId
+				}, function(data) {
+					if(data.header) {
+						record.header.DocumentIdentifier = data.header.DocumentIdentifier;
+						record.header.DocumentMemo = data.header.DocumentMemo;
+						record.header.DocumentAmount = data.header.DocumentAmount;
+						record.detail = data.detail;
+						calculateDocument();
+						form.header.draw();
+						form.detail.dataReady(record.detail);
+						checkForNewRow();
+						disableVatAmounts();
+					}
+				});
+			}
+		}
+	});
+	form.detail.bind('changed.field', function(e, newValue, rowData, col, input) {
+		dataEntered = true;
+		var newValues = {};
+		newValues[col.name] = newValue;
+		//noinspection FallThroughInSwitchStatementJS
+		switch(col.name) {
+			case 'VatCodeId':
+				var vatCode = vatCodesHash[newValue] || { Rate: 0.00 };
+				newValues.VatRate = vatCode.Rate;
+				$('#docs input#r' + form.detail.rowIndex(input) + 'cVatAmount').prop('disabled', !newValue);
+			case 'LineAmount':
+			case 'VatAmount':
+				break;
+			default:
+				setTimeout(checkForNewRow, 10);	// Wait for data to be updated after we return
+				return;
+		}
+		calculateLine(rowData, newValues);
+		form.detail.drawRow(input);
+		checkForNewRow();
+		return false;		// We have updated the line - don't do it again
+	});
+	if(matchingStatement()) {
+		form.header.find('#r0cDocumentAccountId').prop('disabled', true);
+		if(record.header.DocumentNameAddressId == 0 && record.header.DocumentName) {
+			var namecol = form.header.fields.DocumentName;
+			namecol.change(record.header.DocumentName, record.header, namecol, namecol.cell);
+		}
+	} else {
+		if (record.header.idDocument) {
+			actionButton('Memorise').click(function () {
+				if (unsavedInput) {
+					message('You must save the changes first');
+					return;
+				}
+				goto('/banking/memorise.html?id=' + record.header.idDocument);
+			});
+			actionButton('Audit').click(function () {
+				goto('/reports/audithistory.html?id=' + record.header.idDocument + '&table=Transactions');
+			});
+		}
+		actionButton('Print').click(function () {
+			if (unsavedInput) {
+				message('You must save the changes first');
+				return;
+			}
+			window.print();
+		});
+	}
+});
+	</script>
+{{/with}}
+</head>
+<body>
+	<table id="form"></table>
+	<table id="docs" cellspacing="0" width="100%"></table>
+</body>

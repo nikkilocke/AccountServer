@@ -1,0 +1,39 @@
+div#header button {
+    background:none;
+    border:none;
+    margin-top: 0;
+    margin-bottom: 0;
+    font: inherit;
+    cursor: pointer;
+    font-weight: bold;
+    color: blue;
+    padding: 0 5px 0 0;
+    border-right: 1px solid black;
+}
+div#header button.highlight {
+    color: black;
+}
+div#header button:last-child {
+    border-right: none;
+}
+@media screen and (min-width:700px) {
+    #menu1, #menu2, #menu3 {
+        min-height: 12px;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+    div#header button {
+        min-height: 12px;
+    }
+    #spacer {
+        height: 44px;
+    }
+}
+table.listform tbody tr:nth-child(odd),
+    table.listform tbody tr:nth-child(odd) input:enabled,
+    table.listform tbody tr:nth-child(odd) select:enabled {
+    background-color: #e7ffe4;
+}
+table.dataTable tbody tr.odd {
+    background-color: #e7ffe4;
+}
