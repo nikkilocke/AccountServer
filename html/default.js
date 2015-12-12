@@ -133,6 +133,7 @@ $(function() {
 		// Button to set document number field to <next>, so C# will fill it in with the next one.
 		$(this).prev('input[type="text"]').val('<next>').trigger('change');
 	});
+
 	if(!touchScreen) {
 		// Moving focus to a field selects the contents (except on touch screens)
 		var focusInput;
@@ -434,6 +435,14 @@ function formatNumberWithCommas(number) {
 	return (number + '00').substr(0, p + 3);
 }
 
+function formatWholeNumberWithCommas(number) {
+	number = formatNumberWithCommas(number);
+	var p = number.indexOf(decPoint);
+	if(p >= 0)
+		number = number.substr(0, p);
+	return number;
+}
+
 /**
  * Format a decimal number to 2 places with commas, and brackets if negative.
  * @param number
@@ -663,6 +672,14 @@ var Type = {
 		draw: formatNumberWithCommas,
 		sClass: 'n'
 	},
+	wholeDecimal: {
+		render: {
+			display: formatWholeNumberWithCommas,
+			filter: formatNumber
+		},
+		draw: formatWholeNumberWithCommas,
+		sClass: 'n'
+	},
 	bracket: {
 		render: {
 			display: formatNumberWithBrackets,
@@ -772,6 +789,15 @@ var Type = {
 					data = opt.value;
 			}
 			return data;
+		}
+	},
+	image: {
+		defaultContent: function(index, col) {
+			return '<img data-col="' + col.name + '" ' + col.attributes + '/>';
+		},
+		render: function(data, type, row, meta) {
+			var col = meta.settings.oInit.columns[meta.col];
+			return '<img src="' + data + '" id="r' + meta.row + 'c' + meta.settings.oInit.columns[meta.col].name + '" data-col="' + col.name + '" ' + col.attributes + '/>';
 		}
 	},
 	autoComplete: {
@@ -936,7 +962,7 @@ var Type = {
 			return '<input type="number" data-col="' + col.name + '"value="0" ' + col.attributes + '/>';
 		},
 		draw: function(data, rowno, row) {
-			return '<input type="text" id="r' + rowno + 'c' + this.name + '" data-col="' + this.name + '" value="' + toUnit(data, row.Unit) + '" ' + this.attributes + '/>';
+			return '<input type="number" id="r' + rowno + 'c' + this.name + '" data-col="' + this.name + '" value="' + toUnit(data, row.Unit) + '" ' + this.attributes + '/>';
 		},
 		update: function(cell, data, rowno, row) {
 			var i = cell.find('input');
@@ -1505,10 +1531,10 @@ function makeDataTable(selector, options) {
 		_setAjaxObject(options, 'Listing', '');
 	$(selector).addClass('form');
 	// Make sure there is a table heading
-	var heading = $(selector).find('thead tr');
-	if (heading.length == 0) heading = $('<tr></tr>').appendTo($('<thead></thead>').appendTo($(selector)));
-	var columns = {};
-	// Process the columns
+	var heading = $(selector).find('thead');
+	if (heading.length == 0) heading = $('<thead></thead>').appendTo($(selector));
+	heading = $('<tr></tr>').appendTo(heading);
+	var columns = {}
 	_.each(options.columns, function (col, index) {
 		// Set up the column - add any missing functions, etc.
 		options.columns[index] = col = _setColObject(col, tableName, index);
@@ -1589,6 +1615,7 @@ function makeDataTable(selector, options) {
 	// Attach event handler to input fields
 	$('body').off('change', selector + ' :input');
 	$('body').on('change', selector + ' :input', function() {
+		$('button#Back').text('Cancel');
 		var col = table.fields[$(this).attr('data-col')];
 		if(col) {
 			var row = table.row(this);
@@ -1781,12 +1808,16 @@ function makeForm(selector, options) {
 				$(this).focus();
 				return;
 			}
-			if(col.change && col.change(val, result.data, col, this) == false) {
-				$(this).val(result.data[col.data])
-					.focus();
-				return;
+			if(col.change) {
+				var nval = col.change(val, result.data, col, this);
+				if(val === false) {
+					$(this).val(result.data[col.data])
+						.focus();
+					return;
+				} else if(nval !== undefined && nval !== null)
+					val = nval;
 			}
-			if($(selector).triggerHandler('changed.field', [val, result.data, col, this]) != false) {
+			if($(selector).triggerHandler('changed.field', [val, result.data, col, this]) !== false) {
 				if(this.type == 'file') {
 					var img = $(this).prev('img');
 					var submitHref = defaultUrl('Upload');
@@ -2120,7 +2151,7 @@ function makeListForm(selector, options) {
 				$(this).focus();
 				return;
 			}
-			if(table.triggerHandler('changed.field', [val, table.data[rowIndex], col, this]) != false) {
+			if(table.triggerHandler('changed.field', [val, table.data[rowIndex], col, this]) !== false) {
 				if(this.type == 'file') {
 					var img = $(this).prev('img');
 					var submitHref = defaultUrl('Upload');
@@ -2153,7 +2184,7 @@ function makeListForm(selector, options) {
 		}
 	});
 	/**
-	 * Draw an individual row bu index
+	 * Draw an individual row by index
 	 * @param rowIndex
 	 */
 	function drawRow(rowIndex) {
@@ -2755,17 +2786,25 @@ function hashFromArray(array, key) {
 }
 
 /**
+ * Stores the current url and datatable "Show All" parameters
+ * @returns {string}
+ */
+function getTableUrl() {
+	var dt = [];
+	$('button[data-nz]').each(function() {
+		dt.push($(this).attr('data-nz') == 'true' ? 1 : 0);
+	});
+	return urlParameter('dt', dt.toString());
+}
+
+/**
  * Build a url which stores the current url and datatable "Show All" parameters as "from"
  * @param {string} url base url to go to
  * @returns {string}
  */
 function getGoto(url) {
-	var dt = [];
-	$('button[data-nz]').each(function() {
-		dt.push($(this).attr('data-nz') == 'true' ? 1 : 0);
-	});
-	var search = urlParameter('dt', dt.toString(), window.location.search);
-	return urlParameter('from', encodeURIComponent(window.location.pathname + search), url);
+	var current = getTableUrl();
+	return urlParameter('from', encodeURIComponent(current), url);
 }
 
 /**

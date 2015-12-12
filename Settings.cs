@@ -24,9 +24,8 @@ namespace AccountServer {
 		public static AppSettings Default = new AppSettings();
 
 		public void Save(string filename) {
-			using (StreamWriter w = new StreamWriter(filename)) {
+			using (StreamWriter w = new StreamWriter(filename))
 				w.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(this, Newtonsoft.Json.Formatting.Indented));
-			}
 		}
 
 		static public void Load(string filename) {

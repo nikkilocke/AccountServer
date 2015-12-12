@@ -114,11 +114,13 @@ namespace AccountServer {
 			}
 			if (view) {
 				bool? result = db.ViewsMatch(code as View, database as View);
+				if (result == true)
+					return;
 				if (result == false) {
 					db.DropTable(database);
 					db.CreateTable(code);
-				}
 				return;
+				}
 			}
 			// Lists of changes
 			List<Field> insert = new List<Field>();

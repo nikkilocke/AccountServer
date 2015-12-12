@@ -30,7 +30,6 @@ namespace AccountServer {
 			createDatabase(connectionString);
 			_conn = new SqliteConnection();
 			_conn.ConnectionString = connectionString;
-			System.Diagnostics.Debug.WriteLine("Opening connection {0}", _conn.GetHashCode());
 			_conn.Open();
 		}
 
@@ -86,7 +85,6 @@ namespace AccountServer {
 		public void Dispose() {
 			Rollback();
 			if (_conn != null) {
-				System.Diagnostics.Debug.WriteLine("Closing connection {0}", _conn.GetHashCode());
 				_conn.Dispose();
 				_conn = null;
 			}
@@ -463,6 +461,18 @@ namespace AccountServer {
 				DateTime d1 = DateTime.Parse(args[0].ToString());
 				DateTime d2 = DateTime.Parse(args[1].ToString());
 				return (d1 - d2).TotalDays;
+			} catch (Exception ex) {
+				WebServer.Log("Exception: {0}", ex);
+				return null;
+			}
+		}
+	}
+
+	[SqliteFunctionAttribute(Name = "NOW", Arguments = 0, FuncType = FunctionType.Scalar)]
+	class Now : SqliteFunction {
+		public override object Invoke(object[] args) {
+			try {
+				return Utils.Now.ToString("yyyy-MM-ddThh:mm:ss");
 			} catch (Exception ex) {
 				WebServer.Log("Exception: {0}", ex);
 				return null;

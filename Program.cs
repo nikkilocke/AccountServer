@@ -44,14 +44,15 @@ namespace AccountServer {
 						windows = true;
 						break;
 				}
-				if (flags["culture"] != null) {
-					CultureInfo c = new CultureInfo(flags["culture"]);
+				// Default to UK culture and time (specify empty culture and/or tz to use machine values)
+				if (flags["culture"] != "") {
+					CultureInfo c = new CultureInfo(flags["culture"] ?? "en-GB");
 					Thread.CurrentThread.CurrentCulture = c;
 					CultureInfo.DefaultThreadCurrentCulture = c;
 					CultureInfo.DefaultThreadCurrentUICulture = c;
 				}
-				if(flags["tz"] != null)
-					Utils._tz = TimeZoneInfo.FindSystemTimeZoneById(flags["tz"]);
+				if(!string.IsNullOrEmpty(flags["tz"]))
+					Utils._tz = TimeZoneInfo.FindSystemTimeZoneById(flags["tz"] ?? (windows ? "GMT Standard Time" : "GB"));
 				if (flags["now"] != null) {
 					DateTime now = Utils.Now;
 					DateTime newDate = DateTime.Parse(flags["now"]);

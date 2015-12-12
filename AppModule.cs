@@ -161,6 +161,10 @@ namespace AccountServer {
 		/// </summary>
 		public string Title;
 
+		static public IEnumerable<AppModule> Jobs {
+			get { return _jobs.Values; }
+		}
+
 		public Settings Settings {
 			get { return _settings; }
 		}
@@ -218,37 +222,45 @@ namespace AccountServer {
 			/// <param name="action">Action to run the job</param>
 			public BatchJob(AppModule module, string redirect, Action action) {
 				_module = module;
+				_redirect = redirect ?? "/" + module.Module.ToLower() + "/" + module.Method.ToLower() + ".html";
+				Status = "";
+				Records = 100;
+				module.Batch = this;
 				// Get the next job number
 				lock (_jobs) {
 					Id = ++_lastJob;
 					_jobs[Id] = module;
 				}
-				_redirect = redirect ?? "/" + module.Module.ToLower() + "/" + module.Method.ToLower() + ".html";
-				Status = "";
-				Records = 100;
 				module.Log("Started batch job {0}", Id);
-				new Thread(new ThreadStart(delegate() {
-					try {
-						action();
-					} catch (Exception ex) {
-						WebServer.Log("Batch job {0} Exception: {1}", Id, ex);
-						Status = "An error occurred";
-						Error = ex.Message;
-					}
-					WebServer.Log("Finished batch job {0}", Id);
-					Finished = true;
-					module.CloseDatabase();
-					Thread.Sleep(60000);	// 1 minute delay in case of calls to get status
+				new Task(delegate() {
+					Thread.Sleep(500);	// 1/2 second to allow module page to return
+					runBatch(action);
+					_module.CloseDatabase();
+					Thread.Sleep(60000);	// 1 minute
 					lock (_jobs) {
 						_jobs.Remove(Id);
 					}
-				})) {
-					IsBackground = true,
-					Name = this.GetType().Name
-				}.Start();
-				module.Batch = this;
+				}).Start();
 				module.Module = "admin";
 				module.Method = "batch";
+			}
+
+			void runBatch(Action action) {
+				try {
+				_module.LogString = new StringBuilder();
+				_module.Log("Running batch job {0}", Id);
+					action();
+				} catch (Exception ex) {
+					_module.Log("Batch job {0} Exception: {1}", Id, ex);
+					Status = "An error occurred";
+					Error = ex.Message;
+				}
+				_module.Log("Finished batch job {0}", Id);
+				WebServer.Log(_module.LogString.ToString());
+				_module.LogString = null;
+				_module.Record = null;
+				_module.Batch = null;
+				Finished = true;
 			}
 
 			/// <summary>
@@ -393,13 +405,13 @@ namespace AccountServer {
 				}
 			} catch (Exception ex) {
 				Log("Exception: {0}", ex);
-				if (ex is DatabaseException)
-					Log(((DatabaseException)ex).Sql);	// Log Sql of all database exceptions
-				if (method == null || method.ReturnType == typeof(void)) throw;	// Will produce exception page
 				while (ex is TargetInvocationException) {
 					// Strip off TargetInvokationExceptions so message is meaningful
 					ex = ex.InnerException;
 				}
+				if (ex is DatabaseException)
+					Log(((DatabaseException)ex).Sql);	// Log Sql of all database exceptions
+				if (method == null || method.ReturnType == typeof(void)) throw;	// Will produce exception page
 				// Send an AjaxReturn object indicating the error
 				WriteResponse(new AjaxReturn() { error = ex.Message }, null, HttpStatusCode.OK);
 			}
@@ -753,16 +765,21 @@ WHERE Journal.DocumentId = " + document.idDocument));
 		/// </summary>
 		public string Template(string filename, object obj) {
 			string body = LoadTemplate(filename, obj);
-			Match m = Regex.Match(body, @"<head>(.*)</head>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-			if (m.Success) {
-				this.Head = m.Groups[1].Value;
-				body = body.Replace(m.Value, "");
-			} else {
-				this.Head = "";
-			}
-			m = Regex.Match(body, @"<body>(.*)</body>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-			this.Body = m.Success ? m.Groups[1].Value : body;
+			this.Head = extractSection("head", ref body);
+			this.Body = extractSection("body", ref body);
+			if (this.Body == "")
+				this.Body = body;
 			return LoadTemplate("default", this);
+		}
+
+		string extractSection(string name, ref string template) {
+			Match m = Regex.Match(template, "<" + name + ">(.*)</" + name + ">", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+			if (m.Success) {
+				template = template.Replace(m.Value, "");
+				return m.Groups[1].Value;
+			} else {
+				return "";
+			}
 		}
 
 		public void Redirect(string url) {
@@ -816,6 +833,8 @@ WHERE Journal.DocumentId = " + document.idDocument));
 		public AjaxReturn PostRecord(JsonObject record, bool audit) {
 			AjaxReturn retval = new AjaxReturn();
 			try {
+				if (record.Id <= 0)
+					record.Id = null;
 				Database.Update(record, audit);
 				retval.id = record.Id;
 			} catch (Exception ex) {

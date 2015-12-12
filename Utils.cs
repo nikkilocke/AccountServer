@@ -90,18 +90,22 @@ namespace AccountServer {
 			if (self == null)
 				return false;
 			JToken val = self[name];
-			if(val == null || val.Type == JTokenType.Null)
+			if (val == null || val.Type == JTokenType.Null)
 				return false;
 			string v = val.To<string>().Trim().ToLower();
-			switch (v) {
-				case "false":
-				case "0":
-				case "":
-				case "null":
-				case "undefined":
-					return false;
-				default:
-					return true;
+			try {
+				switch (v) {
+					case "false":
+					case "0":
+					case "":
+					case "null":
+					case "undefined":
+						return false;
+					default:
+						return true;
+				}
+			} catch (Exception ex) {
+				throw new CheckException(ex, "{0} value '{1}' was not recognised as a boolean value", name, v);
 			}
 		}
 
@@ -109,7 +113,14 @@ namespace AccountServer {
 		/// this[name] as a DateTime
 		/// </summary>
 		public static DateTime AsDate(this JObject self, string name) {
-			return self[name].To<DateTime>();
+			Utils.Check(self != null, "{0} date missing", name);
+			JToken val = self[name];
+			Utils.Check(val != null && val.Type != JTokenType.Null, "{0} date missing", name);
+			try {
+				return val.To<DateTime>();
+			} catch (Exception ex) {
+				throw new CheckException(ex, "{0} value '{1}' was not recognised as a date", name, val.To<String>());
+			}
 		}
 
 		/// <summary>

@@ -28,7 +28,7 @@ namespace AccountServer {
 			_sessions = new Dictionary<string, Session>();
 			_empty = new Session(null);
 			// Start thread to expire sessions after 30 mins of inactivity
-			new Thread(new ThreadStart(delegate() {
+			new Task(delegate() {
 				for (; ; ) {
 					Thread.Sleep(180000);	// 30 mins
 					DateTime now = Utils.Now;
@@ -40,7 +40,7 @@ namespace AccountServer {
 						}
 					}
 				}
-			})) { IsBackground = true, Name = "SessionExpirer" }.Start();
+			}).Start();
 		}
 
 		static public void Log(string s) {
@@ -83,13 +83,23 @@ namespace AccountServer {
 			_listener.Stop(); 
 		}
 
+		public IEnumerable<Session> Sessions {
+			get {
+				return _sessions.Values;
+			}
+		}
+
 		void ProcessRequest(object listenerContext) {
+			DateTime started = DateTime.Now;
 			HttpListenerContext context = null;
 			AppModule module = null;
 			StringBuilder log = new StringBuilder();
 			try {
 				context = (HttpListenerContext)listenerContext;
-				log.AppendFormat("{0}:", context.Request.RawUrl);
+				log.AppendFormat("{0} {1}:{2}:[ms]:", 
+					context.Request.RemoteEndPoint.Address,
+					context.Request.Headers["X-Forwarded-For"],
+					context.Request.RawUrl);
 				Session session = null;
 				string filename = HttpUtility.UrlDecode(context.Request.Url.AbsolutePath).Substring(1);
 				if (filename == "") filename = "company";
@@ -141,41 +151,50 @@ namespace AccountServer {
 			} catch (Exception ex) {
 				while (ex is TargetInvocationException)
 					ex = ex.InnerException;
-				log.AppendFormat("Request error: {0}\r\n", ex);
-				if (module == null || !module.ResponseSent) {
-					try {
-						module = new AppModule();
-						module.Session = _empty;
-						module.LogString = log;
-						module.Context = context;
-						module.Module = "exception";
-						module.Method = "default";
-						module.Title = "Exception";
-						module.Exception = ex;
-						module.WriteResponse(module.Template("exception", module), "text/html", HttpStatusCode.InternalServerError);
-					} catch (Exception ex1) {
-						log.AppendFormat("Error displaying exception: {0}\r\n", ex1);
-						if (module == null || !module.ResponseSent) {
-							try {
-								module.WriteResponse("Error displaying exception:" + ex.Message, "text/plain", HttpStatusCode.InternalServerError);
-							} catch {
+				if (ex is System.Net.Sockets.SocketException) {
+					log.AppendFormat("Request error: {0}\r\n", ex.Message);
+				} else {
+					log.AppendFormat("Request error: {0}\r\n", ex);
+					if (module == null || !module.ResponseSent) {
+						try {
+							module = new AppModule();
+							module.Session = _empty;
+							module.LogString = log;
+							module.Context = context;
+							module.Module = "exception";
+							module.Method = "default";
+							module.Title = "Exception";
+							module.Exception = ex;
+							module.WriteResponse(module.Template("exception", module), "text/html", HttpStatusCode.InternalServerError);
+						} catch (Exception ex1) {
+							log.AppendFormat("Error displaying exception: {0}\r\n", ex1);
+							if (module == null || !module.ResponseSent) {
+								try {
+									module.WriteResponse("Error displaying exception:" + ex.Message, "text/plain", HttpStatusCode.InternalServerError);
+								} catch {
+								}
 							}
 						}
 					}
 				}
 			}
+			if (context != null) {
+				try {
+						context.Response.Close();
+				} catch {
+				}
+			}
 			try {
-				Log(log.ToString());
+				Log(log.ToString().Replace(":[ms]:", ":" + Math.Round((DateTime.Now - started).TotalMilliseconds, 0) + " ms:"));
 			} catch {
 			}
-			if (context != null)
-				context.Response.Close();
 		}
 
 		public class BaseSession {
 			public JObject Object { get; private set; }
 			public DateTime Expires;
 			public string Cookie { get; private set; }
+			public WebServer Server;
 
 			public BaseSession(WebServer server) {
 				if (server != null) {
@@ -191,6 +210,7 @@ namespace AccountServer {
 						Object = new JObject();
 						server._sessions[Cookie] = (Session)this;
 					}
+					Server = server;
 				}
 			}
 		}

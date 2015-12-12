@@ -230,6 +230,7 @@ namespace AccountServer {
 				Field fld = new Field(field.Name, pt, length, nullable, pk != null && pk.AutoIncrement, defaultValue);
 				if (pk != null) {
 					primary.Add(new Tuple<int, Field>(pk.Sequence, fld));
+					Utils.Check(primaryName == null || primaryName == pk.Name, "2 Primary keys defined on {0}", tbl.Name);
 					primaryName = pk.Name;
 				}
 				// See if the field is in one or more indexes
