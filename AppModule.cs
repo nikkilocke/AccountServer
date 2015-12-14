@@ -647,7 +647,7 @@ namespace AccountServer {
 
 		protected void fixNameAddress(Extended_Document document, string nameType) {
 			if (document.DocumentNameAddressId == null || document.DocumentNameAddressId == 0) {
-				document.DocumentNameAddressId = string.IsNullOrWhiteSpace(document.DocumentAddress) ? 1 : 
+				document.DocumentNameAddressId = string.IsNullOrWhiteSpace(document.DocumentName) ? 1 : 
 					Database.ForeignKey("NameAddress",
 						"Type", nameType,
 						"Name", document.DocumentName,
