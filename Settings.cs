@@ -19,6 +19,8 @@ namespace AccountServer {
 		public int SlowQuery = 100;
 		public string WebFolder = "html";
 		public bool SessionLogging;
+		public int DatabaseLogging;
+		public bool PostLogging;
 		static public NameValueCollection CommandLineFlags;
 
 		public static AppSettings Default = new AppSettings();

@@ -50,6 +50,10 @@ namespace AccountServer {
 		/// </summary>
 		bool _total;
 		/// <summary>
+		/// Whether to show a grand total (not, e.g., for the VAT detail report!)
+		/// </summary>
+		bool _grandTotal = true;
+		/// <summary>
 		/// Whether to split lines
 		/// </summary>
 		bool _split;
@@ -696,6 +700,7 @@ ORDER BY " + string.Join(",", sort.Select(s => s + (_sortDescending ? " DESC" : 
 		public object VatDetailPost(JObject json) {
 			initialiseReport(json);
 			_total = true;
+			_grandTotal = false;
 			addTable("Vat_Journal");
 			fieldFor("idDocument")["heading"] = "Trans no";
 			fieldFor("DocumentIdentifier")["heading"] = "Doc Id";
@@ -1443,7 +1448,8 @@ JOIN Security ON idSecurity = SecurityId")) {
 						yield return spacer;
 					}
 				}
-				yield return totalRecord(sortFields.Length);
+				if(_grandTotal)
+					yield return totalRecord(sortFields.Length);
 			}
 		}
 

@@ -424,7 +424,6 @@ namespace AccountServer {
 		public int NextBillNumber;
 		[DefaultValue("1")]
 		public int NextJournalNumber;
-		public int DatabaseLogging;
 		[DefaultValue("smtp.gmail.com")]
 		public string MailServer;
 		[DefaultValue("587")]

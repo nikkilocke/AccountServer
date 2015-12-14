@@ -65,10 +65,8 @@ namespace AccountServer {
 
 		public Database Database {
 			get {
-				if (_db == null) {
+				if (_db == null) 
 					_db = new Database();
-					_db.Logging = (LogLevel)_settings.DatabaseLogging;
-				}
 				return _db;
 			}
 		}
@@ -415,6 +413,15 @@ namespace AccountServer {
 				// Send an AjaxReturn object indicating the error
 				WriteResponse(new AjaxReturn() { error = ex.Message }, null, HttpStatusCode.OK);
 			}
+			if (Config.PostLogging && PostParameters != null) {
+				foreach (KeyValuePair<string, JToken> p in PostParameters) {
+					Log("\t{0}={1}", p.Key,
+						p.Key == "json" ? JObject.Parse(p.Value.ToString()).ToString(Formatting.Indented).Replace("\n", "\n\t") :
+						p.Value.Type == JTokenType.Object ? "file " + ((JObject)p.Value)["Name"] :
+						p.Value.ToString());
+				}
+			}
+
 		}
 
 		/// <summary>

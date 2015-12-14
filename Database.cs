@@ -388,6 +388,7 @@ namespace AccountServer {
 
 		Database(DbInterface db) {
 			_db = db;
+			Logging = (LogLevel)Math.Min(2, Math.Max(AppSettings.Default.DatabaseLogging, 0));
 		}
 
 		/// <summary>
