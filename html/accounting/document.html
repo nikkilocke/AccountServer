@@ -127,29 +127,6 @@ $(function() {
 	if(readonly)
 		form.header.fields.AccountName.cell.find(':input').prop('disabled', true);
 	checkForNewRow();
-	form.header.bind('changed.field', function(e, newValue, rowData, col, input) {
-		if(col.name == 'DocumentName') {
-			emptyRow.Name = newValue;
-			var name = _.find(names, function(v) { return v.value == newValue});
-			rowData.DocumentNameAddressId = name ? name.id : 0;
-			if(!dataEntered && name && name.id && newValue) {
-				get('/accounting/journallast.html', {
-					id: name.id,
-					type: record.header.DocumentTypeId
-				}, function(data) {
-					if(data.header) {
-						record.header.DocumentIdentifier = data.header.DocumentIdentifier;
-						record.header.DocumentMemo = data.header.DocumentMemo;
-						record.detail = data.detail;
-						calculateDocument();
-						form.header.draw();
-						form.detail.dataReady(record.detail);
-						checkForNewRow();
-					}
-				});
-			}
-		}
-	});
 	form.detail.bind('changed.field', function(e, newValue, rowData, col, input) {
 		dataEntered = true;
 		if(col.name == 'Credit' || col.name == 'Debit') {

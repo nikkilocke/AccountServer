@@ -122,12 +122,20 @@ $(function() {
 			case 'Paid':
 				var amount = newValue ? Math.min(Math.max(form.data.header.Remaining, 0), rowData.Outstanding) : 0;
 				updateAmount(rowData, amount);
-				if(newValue && amount != rowData.Outstanding)
-					message('Item outstanding exceeds remaining amount - reduced to ' + amount);
+				if(newValue && amount != rowData.Outstanding) {
+					if(amount == 0) {
+						newValue = false;
+						if (form.data.header.DocumentAmount == 0) {
+							message('You have not entered the amount the customer paid');
+							$('#r0cDocumentAmount').focus();
+						}
+					} else
+						message('Item outstanding exceeds remaining amount - reduced to ' + amount);
+				}
 				rowData.Paid = newValue;
 				rowData.AmountPaid = amount;
 				form.detail.drawRow(input);
-				break;
+				return false;	// We have already drawn the row
 			case 'AmountPaid':
 				updateAmount(rowData, newValue);
 				break;
