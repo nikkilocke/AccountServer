@@ -9,7 +9,6 @@ $(function() {
 			data = data.replace(/<\/td>/ig, "\t");
 			data = data.replace(/<\/tr>/ig, "\r\n");
 			data = data.replace(/<[^>]*>/g, '');
-			data = data.trim();
 			$('#data').val(data);
 			e.preventDefault();
 		}
