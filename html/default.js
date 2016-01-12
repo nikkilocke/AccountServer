@@ -638,28 +638,13 @@ var Type = {
 	},
 	date: {
 		render: function(data, type, row, meta) {
-			switch(type) {
-				case 'display':
-				case 'filter':
-					return colRender(data, type, row, meta);
-				default:
-					return data ? data.substr(0, 10) : data;
-			}
+			return colRender(data ? data.substr(0, 10) : data, type, row, meta);
 		},
 		draw: function(data, rowno, row) {
 			return formatDate(data);
 		}
 	},
 	dateTime: {
-		render: function(data, type, row, meta) {
-			switch(type) {
-				case 'display':
-				case 'filter':
-					return colRender(data, type, row, meta);
-				default:
-					return data;
-			}
-		},
 		draw: function(data, rowno, row) {
 			return formatDateTime(data);
 		}
@@ -697,15 +682,7 @@ var Type = {
 		sClass: 'n'
 	},
 	amount: {
-		render: function(data, type, row, meta) {
-			switch(type) {
-				case 'display':
-				case 'filter':
-					return colRender(data, type, row, meta);
-				default:
-					return data;
-			}
-		},
+		render: numberRender,
 		draw: function(data, rowno, row) {
 			return formatNumberWithCommas(Math.abs(data));
 		},
@@ -715,15 +692,7 @@ var Type = {
 		// Displays abs value only if negative
 		name: 'Credit',
 		heading: 'Credit',
-		render: function(data, type, row, meta) {
-			switch(type) {
-				case 'display':
-				case 'filter':
-					return colRender(data, type, row, meta);
-				default:
-					return data;
-			}
-		},
+		render: numberRender,
 		draw: function(data, rowno, row) {
 			if(row["Credit"] !== undefined)
 				data = -row["Credit"];
@@ -735,15 +704,7 @@ var Type = {
 		// Displays value only if positive (or 0)
 		name: 'Debit',
 		heading: 'Debit',
-		render: function(data, type, row, meta) {
-			switch(type) {
-				case 'display':
-				case 'filter':
-					return colRender(data, type, row, meta);
-				default:
-					return data;
-			}
-		},
+		render: numberRender,
 		draw: function(data, rowno, row) {
 			if(row["Debit"] !== undefined)
 				data = row["Debit"];
@@ -760,14 +721,6 @@ var Type = {
 		sClass: 'n'
 	},
 	email: {
-		render: function(data, type, row, meta) {
-			switch(type) {
-				case 'display':
-					return colRender(data, type, row, meta);
-				default:
-					return data;
-			}
-		},
 		draw: function(data, rowno, row) {
 			return data ? '<a href="mailto:' + data + '">' + data + '</a>' : '';
 		}
@@ -2613,8 +2566,37 @@ function colUpdate(selector, cell, data, rowno, col, row) {
  * @returns {string}
  */
 function colRender(data, type, row, meta) {
-	var col = meta.settings.oInit.columns[meta.col];
-	return col.draw(data, meta.row, row);
+	switch(type) {
+		case 'display':
+		case 'filter':
+			var col = meta.settings.oInit.columns[meta.col];
+			return col.draw(data, meta.row, row);
+		default:
+			return data;
+	}
+}
+
+//noinspection JSUnusedLocalSymbols
+/**
+ * Default render function for a number
+ * @param data
+ * @param {string} type
+ * @param row
+ * @param {*} meta
+ * @param {number} meta.row
+ * @param {number} meta.col
+ * @param {Array} meta.settings.oInit.columns
+ * @returns {string}
+ */
+function numberRender(data, type, row, meta) {
+	switch(type) {
+		case 'display':
+			return colRender(data, type, row, meta);
+		case 'filter':
+			return formatNumber(data);
+		default:
+			return data;
+	}
 }
 
 //noinspection JSUnusedLocalSymbols,JSUnusedLocalSymbols
