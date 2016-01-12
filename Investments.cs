@@ -51,33 +51,8 @@ GROUP BY idAccount ORDER BY AccountName");
 		/// <summary>
 		/// List all transactions for account
 		/// </summary>
-		public IEnumerable<Extended_Document> DetailListing(int id) {
-			Extended_Document last = null;
-			int lastId = 0;
-			foreach (JObject l in Database.Query(@"SELECT Journal.idJournal, Document.*, NameAddress.Name As DocumentName, DocType, Journal.Cleared, Journal.Amount As DocumentAmount, AccountName As DocumentAccountName
-FROM Journal
-LEFT JOIN Document ON idDocument = Journal.DocumentId
-LEFT JOIN DocumentType ON DocumentType.idDocumentType = Document.DocumentTypeId
-LEFT JOIN NameAddress ON NameAddress.idNameAddress = Journal.NameAddressId
-LEFT JOIN Journal AS J ON J.DocumentId = Journal.DocumentId AND J.AccountId <> Journal.AccountId
-LEFT JOIN Account ON Account.idAccount = J.AccountId
-WHERE Journal.AccountId = " + id + @"
-ORDER BY DocumentDate DESC, idDocument DESC, J.JournalNum")) {
-				Extended_Document line = l.To<Extended_Document>();
-				if (last != null) {
-					if (lastId == l.AsInt("idJournal")) {
-						if (last.DocumentTypeId != (int)DocType.Buy && last.DocumentTypeId != (int)DocType.Sell)
-							last.DocumentAccountName = "-split-";
-						continue;
-					}
-					yield return last;
-					last = null;
-				}
-				last = line;
-				lastId = l.AsInt("idJournal");
-			}
-			if (last != null)
-				yield return last;
+		public IEnumerable<JObject> DetailListing(int id) {
+			return detailsWithBalance(id).Reverse();
 		}
 
 		/// <summary>

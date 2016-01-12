@@ -652,6 +652,47 @@ namespace AccountServer {
 			return result;
 		}
 
+		/// <summary>
+		/// List all the journals that post to this account, along with document info and the balance after the posting.
+		/// Detects documents which are splits (i.e. have more than 2 journals) and sets the DocumentAccountName to "-split-"
+		/// </summary>
+		protected IEnumerable<JObject> detailsWithBalance(int id) {
+			JObject last = null;	// previous document
+			int lastId = 0;			// Id of previous journal
+			decimal balance = 0;	// Running total balance
+			// Query gets all journals to this account, joined to document header
+			// Then joins to any other journals for this document, so documents with only 2 journals
+			// will appear once, but if there are more than 2 journals the document will appear more times
+			foreach (JObject l in Database.Query(@"SELECT Journal.idJournal, Document.*, NameAddress.Name As DocumentName, DocType, Journal.Cleared AS Clr, Journal.Amount As DocumentAmount, AccountName As DocumentAccountName
+FROM Journal
+LEFT JOIN Document ON idDocument = Journal.DocumentId
+LEFT JOIN DocumentType ON DocumentType.idDocumentType = Document.DocumentTypeId
+LEFT JOIN NameAddress ON NameAddress.idNameAddress = Journal.NameAddressId
+LEFT JOIN Journal AS J ON J.DocumentId = Journal.DocumentId AND J.AccountId <> Journal.AccountId
+LEFT JOIN Account ON Account.idAccount = J.AccountId
+WHERE Journal.AccountId = " + id + @"
+ORDER BY DocumentDate, idDocument")) {
+				if (last != null) {
+					if (lastId == l.AsInt("idJournal")) {
+						// More than 1 line in this document
+						last["DocumentAccountName"] = "-split-";
+						// Only emit each journal to this account once
+						continue;
+					}
+					balance += last.AsDecimal("DocumentAmount");
+					last["Balance"] = balance;
+					yield return last;
+				}
+				last = l;
+				lastId = l.AsInt("idJournal");
+			}
+			if (last != null) {
+				balance += last.AsDecimal("DocumentAmount");
+				last["Balance"] = balance;
+				yield return last;
+			}
+		}
+
 		protected void fixNameAddress(Extended_Document document, string nameType) {
 			if (document.DocumentNameAddressId == null || document.DocumentNameAddressId == 0) {
 				document.DocumentNameAddressId = string.IsNullOrWhiteSpace(document.DocumentName) ? 1 : 
