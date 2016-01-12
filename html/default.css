@@ -195,6 +195,10 @@ input::-webkit-inner-spin-button,
 input::-webkit-outer-spin-button {
     -webkit-appearance: none;
 }
+ul.menu {
+    position: absolute;
+    display: block;
+}
 @media print {
     #heading {
         color: black;

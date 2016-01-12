@@ -1544,6 +1544,17 @@ function makeDataTable(selector, options) {
 	} else {
 		selectClick(selector, null);
 	}
+	if(options.download || options.download === undefined) {
+		actionButton('Download').click(function () {
+			var i = table.api().page.info();
+			table.api().page.len(-1);
+			table.api().draw();
+			var data = tableData(selector);
+			table.api().page.len(i.length);
+			table.api().draw();
+			download(this, data);
+		});
+	}
 	// "Show All" functionality
 	_.each(nzColumns, function(nz) {
 		var zText = nz.zeroText || ('Show all ' + nz.heading);
@@ -2840,6 +2851,66 @@ function hasParameter(name) {
  */
 function matchingStatement() {
 	return window.location.pathname == '/banking/statementmatch.html';
+}
+
+function tableData(selector) {
+	var data = $(selector).html();
+	data = data.replace("\r", "").replace("\n", ' ');
+	data = data.replace(/<\/t[dh]>/ig, "\t");
+	data = data.replace(/<\/tr>/ig, "\r\n");
+	data = data.replace(/<[^>]*>/g, '');
+	data = data.replace(/&nbsp;/ig, ' ');
+	return data;
+}
+
+function download(button, data) {
+	var menu = $('ul.menu');
+	if(menu.length)	{
+		menu.remove();
+		return;
+	}
+	menu = $('<ul class="menu"><li id="txt">Tab-delimited</li><li id="csv">CSV</li><li id="clip">Copy to clipboard</li></ul>');
+	var p = $(button).offset();
+	menu.css('left', p.left + 'px').css('top', (p.top + $(button).height()) + 'px');
+	menu.appendTo(body);
+	var mnu = menu.menu({
+		select: function (e, ui) {
+			switch (ui.item[0].id) {
+				case 'txt':
+					downloadFile(document.title + '.txt', data);
+					break;
+				case 'csv':
+					downloadFile(document.title + '.csv',
+						data.replace(/\t/g, ','));
+					break;
+				case 'clip':
+					/*
+					document.dispatchEvent(new ClipboardEvent('copy', {
+						dataType: 'text/plain',
+						data: data
+					}));
+					*/
+					var txt = $('<textarea></textarea>');
+					txt.text(data);
+					txt.appendTo('body');
+					txt.select();
+					document.execCommand('copy');
+					txt.remove();
+					break;
+			}
+			menu.remove();
+		}
+	});
+}
+
+function downloadFile(filename, text) {
+	var element = document.createElement('a');
+	element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+	element.setAttribute('download', filename);
+	element.style.display = 'none';
+	document.body.appendChild(element);
+	element.click();
+	document.body.removeChild(element);
 }
 
 /**
