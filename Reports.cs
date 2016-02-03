@@ -1053,7 +1053,7 @@ JOIN Security ON idSecurity = SecurityId")) {
 		}
 
 		List<JObject> addInvestmentGains(List<JObject> data, params object[] p) {
-			string prior = null;
+			string priorPeriod = null;
 			Dictionary<int, decimal> stockValues = new Dictionary<int, decimal>();
 			for (int i = 0; i < p.Length; i += 2) {
 				string field = (string)p[i];
@@ -1063,8 +1063,9 @@ JOIN Security ON idSecurity = SecurityId")) {
 					if (securityAcct == null)
 						continue;
 					decimal gain = securityValue.Value;
-					if (prior != null)
-						gain -= stockValues[(int)securityValue.AccountId];
+					decimal priorPeriodGain;
+					if (priorPeriod != null && stockValues.TryGetValue((int)securityValue.AccountId, out priorPeriodGain))
+						gain -= priorPeriodGain;
 					securityAcct[field] = securityAcct.AsDecimal(field) - gain;
 					stockValues[(int)securityValue.AccountId] = securityValue.Value;
 					JObject parentAcct = data.FirstOrDefault(a => a.AsInt("idAccount") == securityValue.ParentAccountId);
@@ -1073,7 +1074,7 @@ JOIN Security ON idSecurity = SecurityId")) {
 						Log(parentAcct.ToString());
 					}
 				}
-				prior = field;
+				priorPeriod = field;
 			}
 			return data;
 		}
