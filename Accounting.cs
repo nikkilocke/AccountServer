@@ -79,7 +79,7 @@ ORDER BY DocumentDate DESC, idDocument DESC")) {
 		public AjaxReturn DetailDelete(int id) {
 			Database.BeginTransaction();
 			FullAccount account = Database.Get<FullAccount>(id);
-			Utils.Check(account.idAccount == id, "Account nto found");
+			Utils.Check(account.idAccount == id, "Account not found");
 			Utils.Check(!account.Protected, "Cannot delete a protected account");
 			Utils.Check(Database.QueryOne("SELECT idJournal FROM Journal WHERE AccountId = " + id) == null, "Cannot delete - there are transactions");
 			Database.Delete("Account", id, true);
@@ -158,8 +158,7 @@ ORDER BY DocumentDate DESC, idDocument DESC")) {
 			Extended_Document document = json.header;
 			JObject oldDoc = getCompleteDocument(document.idDocument);
 			checkDocType(document.DocumentTypeId, DocType.GeneralJournal);
-			if (document.idDocument == null)
-				allocateDocumentIdentifier(document);
+			allocateDocumentIdentifier(document);
 			decimal total = 0, vat = 0;
 			int lineNum = 1;
 			Database.Update(document);

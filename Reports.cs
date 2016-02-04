@@ -282,6 +282,7 @@ namespace AccountServer {
 
 		public object AgeingPost(JObject json) {
 			initialiseReport(json);
+			// Can select Sales or Purchases
 			JObject [] accountSelect = new JObject[] {
 				new JObject().AddRange("id", (int)Acct.SalesLedger, "value", "Sales Ledger"),
 				new JObject().AddRange("id", (int)Acct.PurchaseLedger, "value", "Purchase Ledger")
@@ -304,7 +305,7 @@ namespace AccountServer {
 			_sortOrder = "";
 			_total = true;
 			setDefaultFields(json, "AccountId", "Name", "Current", "b1", "b31", "b61", "old", "Total");
-			setFilters(json);	// we need filters now!
+			setFilters(json);	// we account filter value setting now
 			string where = account.Active ? account.Where() : "AccountId IN (1, 2)";
 			return finishReport(json, @"(SELECT AccountId, NameAddressId, Name, Outstanding, 
     DATEDIFF(" + Database.Quote(Utils.Today) + @", DocumentDate) AS age
@@ -435,7 +436,7 @@ ORDER BY " + string.Join(",", sort.Select(s => s + (_sortDescending ? " DESC" : 
 			_sortOrder = "idAccountType,AcctType,AccountName";
 			makeSortable("idAccountType,AcctType,AccountCode,AccountName=Account Type", "AccountName", "AccountCode,AccountName=AccountCode", "Name", "DocumentDate", "DocumentIdentifier=Doc Id", "DocType");
 			setDefaultFields(json, "AcctType", "AccountName", "Amount", "Memo", "Name", "DocType", "DocumentDate", "DocumentIdentifier");
-			setFilters(json);	// we need filters now!
+			setFilters(json);	// we need account filter now!
 			string where = account.Active ? "\r\nAND " + account.Where() : "";
 			// Need opening balance before start of period
 			// Journals in period
@@ -725,6 +726,9 @@ ORDER BY " + string.Join(",", sort.Select(s => s + (_sortDescending ? " DESC" : 
 LEFT JOIN (SELECT idDocument AS idVatPaid, DocumentDate AS VatPaidDate FROM Document) AS Payment ON Payment.idVatPaid = VatPaid", "Vat_Journal");
 		}
 
+		/// <summary>
+		/// Delete memorised report
+		/// </summary>
 		public AjaxReturn DeleteReport(int id) {
 			Report report = Database.Get<Report>(id);
 			Utils.Check(report.ReportGroup == "Memorised Reports", "Report not found");
@@ -916,6 +920,9 @@ LEFT JOIN (SELECT idDocument AS idVatPaid, DocumentDate AS VatPaidDate FROM Docu
 			return "\r\nWHERE " + string.Join("\r\nAND ", where);
 		}
 
+		/// <summary>
+		/// Return the filters as a JObject, for the javascript to display in edit report dialog
+		/// </summary>
 		JObject getFilters() {
 			JObject result = new JObject();
 			foreach (Filter f in _filters) {
@@ -924,6 +931,10 @@ LEFT JOIN (SELECT idDocument AS idVatPaid, DocumentDate AS VatPaidDate FROM Docu
 			return result;
 		}
 
+		/// <summary>
+		/// Set up an audit trail report
+		/// </summary>
+		/// <param name="json">The posted report parameters</param>
 		void initialiseAuditReport(JObject json) {
 			initialiseReport(json);
 			if (_changeTypeNotRequired) {
@@ -939,6 +950,10 @@ LEFT JOIN (SELECT idDocument AS idVatPaid, DocumentDate AS VatPaidDate FROM Docu
 			_filters.Add(_dates);
 		}
 
+		/// <summary>
+		/// Set up any report
+		/// </summary>
+		/// <param name="json">The posted report parameters</param>
 		void initialiseReport(JObject json) {
 			string reportType = OriginalMethod.ToLower().Replace("post", "");
 			Utils.Check(json.AsString("ReportType").ToLower() == reportType, "Invalid report type");
@@ -951,6 +966,10 @@ LEFT JOIN (SELECT idDocument AS idVatPaid, DocumentDate AS VatPaidDate FROM Docu
 			_sel = new Select();
 		}
 
+		/// <summary>
+		/// Set up _sortOrders available for report
+		/// </summary>
+		/// <param name="fieldNames">Fields to sort on - multiple fields in a single sort expressed as "Sortname=field,field,..."</param>
 		void makeSortable(params string[] fieldNames) {
 			_sortOrders = new JArray();
 			_sortOrders.Add(new JObject().AddRange("id", "", "value", "Default"));
@@ -962,6 +981,11 @@ LEFT JOIN (SELECT idDocument AS idVatPaid, DocumentDate AS VatPaidDate FROM Docu
 			}
 		}
 
+		/// <summary>
+		/// Read a memorised report (or set up a default report record if id doesn't exist)
+		/// </summary>
+		/// <param name="type">Default report type</param>
+		/// <param name="defaultName">Default report name</param>
 		JObject readReport(int id, string type, string defaultName) {
 			Report report = Database.Get<Report>(id);
 			JObject json;
@@ -983,6 +1007,11 @@ LEFT JOIN (SELECT idDocument AS idVatPaid, DocumentDate AS VatPaidDate FROM Docu
 			return json;
 		}
 
+		/// <summary>
+		/// Add Retained Earnings account to list of accounts (if it is not already there)
+		/// </summary>
+		/// <param name="data">List of accounts</param>
+		/// <returns>Modified list including retained earnings account</returns>
 		List<JObject> addRetainedEarnings(IEnumerable<JObject> data) {
 			List<JObject> result = data.ToList();
 			if (result.FirstOrDefault(r => r.AsInt("idAccount") == (int)Acct.RetainedEarnings) == null) {
@@ -1002,6 +1031,9 @@ LEFT JOIN (SELECT idDocument AS idVatPaid, DocumentDate AS VatPaidDate FROM Docu
 			return result;
 		}
 
+		/// <summary>
+		/// Create a new Journal record for an investment gain
+		/// </summary>
 		JObject newJournal(JObject jnl, decimal gain, bool loss, string securityName, DateTime [] period) {
 			jnl["idJournal"] = 0;
 			jnl["DocumentDate"] = period[1].AddDays(-1);
@@ -1014,25 +1046,36 @@ LEFT JOIN (SELECT idDocument AS idVatPaid, DocumentDate AS VatPaidDate FROM Docu
 			return jnl;
 		}
 
+		/// <summary>
+		/// Add journals for investment gains to data
+		/// </summary>
+		/// <param name="period">Start and end of period over which to calculate gains</param>
+		/// <param name="account">Accounts to include</param>
+		/// <param name="data">Exdisting list of journals</param>
+		/// <returns>List with gain journals added</returns>
 		List<JObject> addInvestmentGains(DateTime [] period, RecordFilter account, List<JObject> data) {
+			// Current values of stock for each account id
 			Dictionary<int, decimal> stockValues = new Dictionary<int, decimal>();
+			// Get values for each stock at start of period
 			foreach (Investments.SecurityValue securityValue in Database.Query<Investments.SecurityValue>(Investments.SecurityValues(period[0].AddDays(-1)))) {
 				JObject jnl = data.FirstOrDefault(a => a.AsInt("idAccount") == securityValue.ParentAccountId && a.AsInt("DocumentTypeId") == (int)DocType.OpeningBalance);
 				if (jnl == null)
-					continue;
+					continue;		// No opening balance, so not wanted
 				decimal gain = securityValue.Value;
-				stockValues[(int)securityValue.AccountId] = securityValue.Value;
-				jnl["Amount"] = jnl.AsDecimal("Amount") + gain;
+				stockValues[(int)securityValue.AccountId] = securityValue.Value;	// Save value at start of period
+				jnl["Amount"] = jnl.AsDecimal("Amount") + gain;		// Add to the opening balance
 			}
+			// Now get values at end of period
 			foreach (Investments.SecurityValueWithName securityValue in Database.Query<Investments.SecurityValueWithName>(
 				"SELECT * FROM (" + Investments.SecurityValues(period[1].AddDays(-1)) + @") AS SV
 JOIN Security ON idSecurity = SecurityId")) {
 				decimal gain = 0;
 				int ind;
 				stockValues.TryGetValue((int)securityValue.AccountId, out gain);
-				gain = securityValue.Value - gain;
+				gain = securityValue.Value - gain;	// Gain is difference between start and end of period values
 				JObject jnl = data.LastOrDefault(a => a.AsInt("idAccount") == securityValue.ParentAccountId);
 				if (jnl != null && gain != 0) {
+					// Add extra journal for parent account
 					ind = data.IndexOf(jnl);
 					jnl = newJournal(new JObject(jnl), gain, gain < 0, securityValue.SecurityName, period);
 					data.Insert(ind + 1, jnl);
@@ -1045,6 +1088,7 @@ JOIN Security ON idSecurity = SecurityId")) {
 						jnl["AccountId"] = securityValue.AccountId;
 						if (account.Active && !account.Test(jnl))
 							continue;
+						// Add extra journal for gain
 						newJournal(jnl, -gain, gain < 0, securityValue.SecurityName, period);
 					}
 				}
@@ -1052,22 +1096,35 @@ JOIN Security ON idSecurity = SecurityId")) {
 			return data;
 		}
 
+		/// <summary>
+		/// Add values for investment gains in each of the supplied periods
+		/// </summary>
+		/// <param name="data">Records for each account that may have gains</param>
+		/// <param name="p">List of field names (to add the gains to) and dates (at which the values are calculated), alternating</param>
+		/// <returns>The modified data</returns>
 		List<JObject> addInvestmentGains(List<JObject> data, params object[] p) {
 			string priorPeriod = null;
+			// To hold current value for each account
 			Dictionary<int, decimal> stockValues = new Dictionary<int, decimal>();
+			// Process each period in turn
 			for (int i = 0; i < p.Length; i += 2) {
-				string field = (string)p[i];
-				DateTime date = (DateTime)p[i + 1];
+				string field = (string)p[i];		// First item is name of field to accumulate gains into
+				DateTime date = (DateTime)p[i + 1];	// Second item is date at which to calculate value
+				// Get the value of all securities on the date (actually, the day before)
 				foreach (Investments.SecurityValue securityValue in Database.Query<Investments.SecurityValue>(Investments.SecurityValues(date.AddDays(-1)))) {
+					// Is the account in our data
 					JObject securityAcct = data.FirstOrDefault(a => a.AsInt("idAccount") == securityValue.AccountId);
 					if (securityAcct == null)
-						continue;
-					decimal gain = securityValue.Value;
-					decimal priorPeriodGain;
-					if (priorPeriod != null && stockValues.TryGetValue((int)securityValue.AccountId, out priorPeriodGain))
-						gain -= priorPeriodGain;
+						continue;	// No - ignore
+					decimal gain = securityValue.Value;		// Value as at date
+					decimal priorPeriodValue;				// Value at at previous period
+					if (priorPeriod != null && stockValues.TryGetValue((int)securityValue.AccountId, out priorPeriodValue))
+						gain -= priorPeriodValue;			// Gain is the increase in value
+					// "Add" the gain to the required field (It's a P & L account, so actually need to subtract)
 					securityAcct[field] = securityAcct.AsDecimal(field) - gain;
+					// Store the current value, for use when processing next period
 					stockValues[(int)securityValue.AccountId] = securityValue.Value;
+					// Roll values up to parent account, if required (it will be a Balance sheet account, so add this time)
 					JObject parentAcct = data.FirstOrDefault(a => a.AsInt("idAccount") == securityValue.ParentAccountId);
 					if (parentAcct != null) {
 						parentAcct[field] = parentAcct.AsDecimal(field) + gain;
@@ -1089,12 +1146,14 @@ JOIN Security ON idSecurity = SecurityId")) {
 			decimal retainedProfitCP = 0, retainedProfitPP = 0, retainedProfitOld = 0;
 			Dictionary<string, decimal[]> totals = new Dictionary<string, decimal[]>();
 			JObject spacer = new JObject().AddRange("@class", "totalSpacer");
+			// Make list of fields to total
 			foreach (ReportField f in _fields) {
-				if (!f.Include || f.Linked) continue;
+				if (!f.Include) continue;
 				string type = f.AsString("type");
 				if (type != "decimal" && type != "double" && type != "credit" && type != "debit") continue;
 				totals[f.Name] = new decimal[3];
 			}
+			// Function to add a total record (index is total level - 0=account type change, 1=heading change, 2=total assets/total liabilities & equity)
 			Func<int, JObject> totalRecord = delegate(int index) {
 				JObject t = new JObject().AddRange("@class", "total total" + index);
 				foreach (string f in totals.Keys.ToList()) {
@@ -1110,6 +1169,7 @@ JOIN Security ON idSecurity = SecurityId")) {
 				return t;
 			};
 			if(data.FirstOrDefault(r => r.AsInt("idAccount") == (int)Acct.RetainedEarnings) == null) {
+				// Need a retained earnings account line, so create one if missing
 				data = data.Concat(Enumerable.Repeat(new JObject().AddRange(
 						"idAccount", (int)Acct.RetainedEarnings,
 						"Heading", "Equities",
@@ -1128,16 +1188,19 @@ JOIN Security ON idSecurity = SecurityId")) {
 				string totalBreak = record.AsString(_sortOrder);
 				string heading = record.AsString("Heading");
 				if (record.AsInt("BalanceSheet") == 0) {
+					// Accumulate profit and loss postings
 					retainedProfitCP += record.AsDecimal("CurrentPeriod");
 					retainedProfitPP += record.AsDecimal("PreviousPeriod");
 					retainedProfitOld += record.AsDecimal("Old");
 					continue;
 				} else {
 					if (r.AsInt("idAccount") == (int)Acct.RetainedEarnings) {
+						// Add accumulated profit into retained earnings
 						record["PreviousPeriod"] = record.AsDecimal("PreviousPeriod") + retainedProfitOld;
 						record["CurrentPeriod"] = record.AsDecimal("CurrentPeriod") + retainedProfitPP;
-						record.Remove("idAccount");
+						record.Remove("idAccount");		// So user can't click on it to expand
 					}
+					// Balance sheet shows totals so far, so add in previous periods
 					record["PreviousPeriod"] = record.AsDecimal("PreviousPeriod") + record.AsDecimal("Old");
 					record["CurrentPeriod"] = record.AsDecimal("CurrentPeriod") + record.AsDecimal("PreviousPeriod");
 					record.Remove("Old");
@@ -1145,15 +1208,18 @@ JOIN Security ON idSecurity = SecurityId")) {
 				if (totalBreak != lastTotalBreak) {
 					if (last != null) {
 						if (lastTotalBreak != null) {
+							// Add total and spacer for account type change
 							spacer["Heading"] = lastHeading;
 							yield return totalRecord(0);
 							yield return spacer;
 							if (lastHeading != heading) {
+								// Add total and spacer for heading change
 								lastTotalBreak = lastHeading;
 								yield return totalRecord(1);
 								spacer.Remove("Heading");
 								yield return spacer;
 								if (lastHeading.Contains("Assets") && !heading.Contains("Assets")) {
+									// Add total and spacer for total assets
 									lastHeading = "Assets";
 									sign = 1;
 									yield return totalRecord(2);
@@ -1162,13 +1228,14 @@ JOIN Security ON idSecurity = SecurityId")) {
 							}
 						}
 					}
-					if (lastHeading != heading)
+					if (lastHeading != heading)	// Next heading if required
 						yield return new JObject().AddRange("@class", "title", "Heading", heading);
 					lastTotalBreak = totalBreak;
-					lastHeading = heading;
+					lastHeading = heading;		// Account type heading
 					yield return new JObject().AddRange("@class", "title", "Heading", heading, "AcctType", totalBreak);
 				}
 				sign = record.AsBool("Negate") ? -1 : 1;
+				// Accumulate totals
 				foreach (string f in totals.Keys.ToList()) {
 					decimal v = record.AsDecimal(f);
 					decimal[] tots = totals[f];
@@ -1178,6 +1245,7 @@ JOIN Security ON idSecurity = SecurityId")) {
 					record[f] = sign * v;
 				}
 				last = r;
+				// The record itself (now all totals and headings taken care of)
 				yield return record;
 				if (r.AsInt("idAccount") == (int)Acct.RetainedEarnings) {
 					// Generate Net Income posting
@@ -1198,6 +1266,7 @@ JOIN Security ON idSecurity = SecurityId")) {
 				}
 			}
 			if (last != null) {
+				// Liabilites and equity total
 				yield return totalRecord(0);
 				yield return spacer;
 				lastHeading = "Liabilities & Equity";
@@ -1216,12 +1285,14 @@ JOIN Security ON idSecurity = SecurityId")) {
 			int sign = 1;
 			Dictionary<string, decimal[]> totals = new Dictionary<string, decimal[]>();
 			JObject spacer = new JObject().AddRange("@class", "totalSpacer");
+			// Make list of fields to total
 			foreach (ReportField f in _fields) {
-				if (!f.Include || f.Linked) continue;
+				if (!f.Include) continue;
 				string type = f.AsString("type");
 				if (type != "decimal" && type != "double" && type != "credit" && type != "debit") continue;
 				totals[f.Name] = new decimal[3];
 			}
+			// Function to add a total record (index is total level - 0=account type change, 1=Gross Profit, 2=Net Profit)
 			Func<int, JObject> totalRecord = delegate(int index) {
 				JObject t = new JObject().AddRange("@class", "total total" + index);
 				foreach (string f in totals.Keys.ToList()) {
@@ -1239,9 +1310,11 @@ JOIN Security ON idSecurity = SecurityId")) {
 				if (totalBreak != lastTotalBreak) {
 					if (last != null) {
 						if (lastTotalBreak != null) {
+							// Total and spacer for account type change
 							yield return totalRecord(0);
 							yield return spacer;
 							if (lastHeading != heading) {
+								// Total and spacer for gross profit
 								lastTotalBreak = lastHeading;
 								sign = -1;
 								yield return totalRecord(1);
@@ -1251,9 +1324,11 @@ JOIN Security ON idSecurity = SecurityId")) {
 					}
 					lastTotalBreak = totalBreak;
 					lastHeading = heading;
+					// New account type heading
 					yield return new JObject().AddRange("@class", "title", "Heading", heading, "AcctType", totalBreak);
 				}
 				sign = record.AsBool("Negate") ? -1 : 1;
+				// Accumulate totals
 				foreach (string f in totals.Keys.ToList()) {
 					decimal v = record.AsDecimal(f);
 					decimal[] tots = totals[f];
@@ -1266,8 +1341,10 @@ JOIN Security ON idSecurity = SecurityId")) {
 				yield return record;
 			}
 			if (last != null) {
+				// Total and spacer for last account type change
 				yield return totalRecord(0);
 				yield return spacer;
+				// Total and spacer for gross profit
 				lastTotalBreak = lastHeading;
 				sign = -1;
 				yield return totalRecord(2);
@@ -1279,12 +1356,14 @@ JOIN Security ON idSecurity = SecurityId")) {
 			JObject last = null;
 			decimal retainedProfitOld = 0;
 			Dictionary<string, decimal> totals = new Dictionary<string, decimal>();
+			// Make list of fields to total
 			foreach (ReportField f in _fields) {
-				if (!f.Include || f.Linked) continue;
+				if (!f.Include) continue;
 				string type = f.AsString("type");
 				if (type != "decimal" && type != "double" && type != "credit" && type != "debit") continue;
 				totals[f.Name] = 0;
 			}
+			// Function to add a total record
 			Func<JObject> totalRecord = delegate() {
 				JObject t = new JObject().AddRange("@class", "total");
 				foreach (string f in totals.Keys.ToList()) {
@@ -1294,6 +1373,7 @@ JOIN Security ON idSecurity = SecurityId")) {
 				return t;
 			};
 			if (data.FirstOrDefault(r => r.AsInt("idAccount") == (int)Acct.RetainedEarnings) == null) {
+				// Must have retained earnings account, so add if missing
 				data = data.Concat(Enumerable.Repeat(new JObject().AddRange(
 						"idAccount", (int)Acct.RetainedEarnings,
 						"Heading", "Equities",
@@ -1310,18 +1390,21 @@ JOIN Security ON idSecurity = SecurityId")) {
 			foreach (JObject r in data) {
 				JObject record = new JObject(r);
 				if (record.AsInt("BalanceSheet") == 0) {
+					// Accumulate all P & L before previous period into retained profit
 					retainedProfitOld += record.AsDecimal("Old");
 				} else {
+					// For balance sheet, add values before previous period into current value
 					record["Amount"] = record.AsDecimal("Amount") + record.AsDecimal("Old");
 					if (r.AsInt("idAccount") == (int)Acct.RetainedEarnings) {
 						record["Amount"] = record.AsDecimal("Amount") + retainedProfitOld;
-						record.Remove("idAccount");
+						record.Remove("idAccount");	// So user can't click on it to expand
 					}
 					record.Remove("Old");
 				}
 				decimal v = record.AsDecimal("Amount");
 				if (v == 0)
 					continue;
+				// Accumulate totals
 				foreach (string f in totals.Keys.ToList()) {
 					decimal v1 = v;
 					if (f == "Credit") {
@@ -1341,6 +1424,9 @@ JOIN Security ON idSecurity = SecurityId")) {
 			}
 		}
 
+		/// <summary>
+		/// Move a field to a given position in the field list (e.g. to move sort fields to front)
+		/// </summary>
 		void positionField(string name, int position) {
 			ReportField f = fieldFor(name);
 			int p = _fields.IndexOf(f);
@@ -1350,21 +1436,29 @@ JOIN Security ON idSecurity = SecurityId")) {
 			_fields.Insert(position, f);
 		}
 
+		/// <summary>
+		/// Remove data from certain tables which repeats in a series of records, and add totals as required
+		/// </summary>
+		/// <param name="tables">List of tables with potentially repeating data</param>
+		/// <returns>Modified list</returns>
 		IEnumerable<JObject> removeRepeatsAndTotal(IEnumerable<JObject> data, params string[] tables) {
 			JObject last = null;
 			JObject spacer = new JObject().AddRange("@class", "totalSpacer");
+			// All fields in the repeating tables
 			HashSet<string> flds = new HashSet<string>(tables.SelectMany(t => Database.TableFor(t).Fields.Select(f => f.Name)));
+			// Our fields in the repeating tables
 			HashSet<string> fields = new HashSet<string>();
 			List<string> essentialFields = _fields.Where(f => f.Essential).Select(f => f.Name).ToList();
 			foreach (string f in _fields.Where(f => tables.Contains(f.Table)).Select(f => f.Name))
-				fields.Add(f);
+				fields.Add(f);	// One of our fields in a potentially repeating table (need to be at front)
 			foreach (string f in flds.Where(f => !fields.Contains(f)))
-				fields.Add(f);
+				fields.Add(f);	// Rest of potentially repeating fields
 			string[] sortFields = _sortFields == null ? new string[0] : _sortFields.Where(f => fieldFor(f).Include).ToArray();
 			string[] lastTotalBreak = new string[sortFields.Length + 1];
 			Dictionary<string, decimal[]> totals = new Dictionary<string, decimal[]>();
 			string firstStringField = null;
 			if (_total) {
+				// Build list of totalling fields
 				foreach (ReportField f in _fields) {
 					if (!f.Include) continue;
 					string type = f.AsString("type");
@@ -1375,6 +1469,7 @@ JOIN Security ON idSecurity = SecurityId")) {
 					totals[f.Name] = new decimal [sortFields.Length + 1];
 				}
 			}
+			// Function to generate total record - index is sort field number (sortFields.length for grand total)
 			Func<int, JObject> totalRecord = delegate(int level) {
 				JObject t = new JObject().AddRange("@class", "total");
 				foreach (string f in totals.Keys.ToList()) {
@@ -1392,11 +1487,12 @@ JOIN Security ON idSecurity = SecurityId")) {
 				JObject record = new JObject(r);
 				JObject id = null;
 				if (essentialFields.Count > 0) {
+					// Make recordId object with essential fields (for user click and expand)
 					id = new JObject();
 					foreach (string f in essentialFields) {
 						id[f] = record[f];
 						if (!fields.Contains(f))
-							record.Remove(f);
+							record.Remove(f);		// Don't want essential fields to interfere with checking for duplicates
 					}
 				}
 				if (last != null) {
@@ -1404,12 +1500,14 @@ JOIN Security ON idSecurity = SecurityId")) {
 						for (int level = sortFields.Length; level-- > 0; ) {
 							if (record.AsString(sortFields[level]) != lastTotalBreak[level]) {
 								if (lastTotalBreak[level] != null) {
+									// Output totals for this sort field
 									yield return totalRecord(level);
 									yield return spacer;
 								}
 							}
 						}
 					}
+					// Now remove duplicate fields
 					foreach (string f in fields) {
 						if (last.AsString(f) == record.AsString(f))
 							record.Remove(f);
@@ -1417,15 +1515,15 @@ JOIN Security ON idSecurity = SecurityId")) {
 							break;
 					}
 					if (record.IsAllNull())
-						continue;
+						continue;		// Everything repeats - ignore duplicate record
 				}
 				if(id != null)
 					record["recordId"] = id;
 				if (_total) {
+					// Cache total break values
 					for(int level = 0; level < sortFields.Length; level++)
 						lastTotalBreak[level] = r.AsString(sortFields[level]);
-				}
-				if (_total) {
+					// Accumulate totals
 					foreach (string f in totals.Keys.ToList()) {
 						decimal v = record.AsDecimal(f);
 						if (f == "Credit") {
@@ -1443,6 +1541,7 @@ JOIN Security ON idSecurity = SecurityId")) {
 				yield return record;
 			}
 			if (_total && last != null) {
+				// Print any pending sort field totals
 				for (int level = sortFields.Length; level-- > 0; ) {
 					if (lastTotalBreak[level] != null) {
 						yield return totalRecord(level);
@@ -1454,15 +1553,28 @@ JOIN Security ON idSecurity = SecurityId")) {
 			}
 		}
 
+		/// <summary>
+		/// Produce report output from original request, list of records, and list of potentially duplicate tables 
+		/// (i.e. parent tables of main record, which you want to look like headings)
+		/// </summary>
+		/// <param name="json">Original request</param>
+		/// <param name="report">Records</param>
+		/// <param name="tables">Potentially duplicate tables</param>
+		/// <returns>Json to send to javascript</returns>
 		public JObject reportJson(JObject json, IEnumerable<JObject> report, params string [] tables) {
+			// Use ReportName as right hand end of page title
 			Title = Regex.Replace(Title, "-[^-]*$", "- " + json.AsString("ReportName"));
 			if (_sortFields != null && _sortFields.Length > 0 && tables.Length > 0) {
+				// SortField table is always potentially duplicated - i.e. all the data from the table for the first sort field
+				// will repeat until sort field changes
 				ReportField sortField = fieldFor(_sortFields[0]);
 				tables[0] = sortField.Table;
+				// Move sort fields to front of field list
 				int p = 0;
 				foreach(string f in _sortFields)
 					positionField(f, p++);
 				if (_split) {
+					// Split report shows sort field data on 1 line, and main data on next line
 					ReportField fld = _fields.FirstOrDefault(f => f.Include && !tables.Contains(f.Table));
 					if(fld != null)
 						fld["newRow"] = true;
@@ -1483,6 +1595,9 @@ JOIN Security ON idSecurity = SecurityId")) {
 				);
 		}
 
+		/// <summary>
+		/// Set the default fields to include if a new report, or copy include flags from posted/read json settings if an existing one
+		/// </summary>
 		void setDefaultFields(JObject settings, params string [] fields) {
 			if (settings == null || settings["fields"] == null) {
 				foreach (string field in fields)
@@ -1497,6 +1612,9 @@ JOIN Security ON idSecurity = SecurityId")) {
 			}
 		}
 
+		/// <summary>
+		/// Read the filter settings from the posted json
+		/// </summary>
 		void setFilters(JObject json) {
 			if (json != null && json["filters"] != null) {
 				JObject fdata = (JObject)json["filters"];
@@ -1520,6 +1638,9 @@ JOIN Security ON idSecurity = SecurityId")) {
 				_sortFields = _sortOrder.Split(',');
 		}
 
+		/// <summary>
+		/// Class represents a field which may be included in a report
+		/// </summary>
 		public class ReportField : JObject {
 
 			public ReportField(string table, Field f)
@@ -1564,10 +1685,19 @@ JOIN Security ON idSecurity = SecurityId")) {
 				this["type"] = type;
 			}
 
+			/// <summary>
+			/// Always include the field in the data, even if the user does not select it
+			/// </summary>
 			public bool Essential;
 
+			/// <summary>
+			/// Table.Field
+			/// </summary>
 			public string FullFieldName;
 
+			/// <summary>
+			/// Just field name, without table
+			/// </summary>
 			public string FieldName {
 				get {
 					string[] parts = FullFieldName.Split('.', ' ');
@@ -1575,21 +1705,25 @@ JOIN Security ON idSecurity = SecurityId")) {
 				}
 			}
 
+			/// <summary>
+			/// Include the field in the report
+			/// </summary>
 			public bool Include {
 				get { return this.AsInt("Include") != 0; }
 				set { this["Include"] = value ? 1 : 0; }
 			}
 
-			public bool Linked {
-				get { return this.AsInt("Linked") != 0; }
-				set { this["Linked"] = value ? 1 : 0; }
-			}
-
+			/// <summary>
+			/// Set Essential flag (for chaining)
+			/// </summary>
 			public ReportField MakeEssential() {
 				Essential = true;
 				return this;
 			}
 
+			/// <summary>
+			/// Set Hidden flag (for chaining)
+			/// </summary>
 			public ReportField Hide() {
 				Hidden = true;
 				return this;
@@ -1607,6 +1741,9 @@ JOIN Security ON idSecurity = SecurityId")) {
 
 			public string Table;
 
+			/// <summary>
+			/// Don't include on field list in UI
+			/// </summary>
 			public bool Hidden;
 
 			public override string ToString() {
@@ -1615,6 +1752,10 @@ JOIN Security ON idSecurity = SecurityId")) {
 
 		}
 
+		/// <summary>
+		/// Class to filter data so only some items appear in the report.
+		/// Underlying JObject is used in javascript as field object to show filter selection field.
+		/// </summary>
 		public abstract class Filter : JObject {
 			string _fieldName;
 
@@ -1629,8 +1770,15 @@ JOIN Security ON idSecurity = SecurityId")) {
 
 			public bool Active { get; protected set; }
 
+			/// <summary>
+			/// Apply the filter automatically when generating SQL.
+			/// Set to false for filters used internally.
+			/// </summary>
 			public bool Apply = true;
 
+			/// <summary>
+			/// Full field name for use in WHERE statements
+			/// </summary>
 			protected string FieldName {
 				get { return _fieldName; }
 				set {
@@ -1640,16 +1788,31 @@ JOIN Security ON idSecurity = SecurityId")) {
 				}
 			}
 
+			/// <summary>
+			/// Field name in ourpur JObject data
+			/// </summary>
 			protected string JObjectFieldName;
 
+			/// <summary>
+			/// Currently selected filter value, as a JObject.
+			/// </summary>
 			public abstract JToken Data();
 
 			public string Name { get; private set; }
 
+			/// <summary>
+			/// Parse the current value from a JToken
+			/// </summary>
 			public abstract void Parse(JToken json);
 
+			/// <summary>
+			/// WHERE clause to match field to current value
+			/// </summary>
 			public abstract string Where();
 
+			/// <summary>
+			/// Test a JObject data to see if it satisfied the filter
+			/// </summary>
 			public abstract bool Test(JObject data);
 		}
 
@@ -1660,9 +1823,16 @@ JOIN Security ON idSecurity = SecurityId")) {
 				: this(name, fieldName, null) {
 			}
 
+			/// <summary>
+			/// Constructor
+			/// </summary>
+			/// <param name="name">Filter name</param>
+			/// <param name="fieldName">Field being filtered</param>
+			/// <param name="value">Default value (null = no filter)</param>
 			public BooleanFilter(string name, string fieldName, bool? value)
 				: base(name) {
 				FieldName = fieldName;
+				// Set up field object
 				this.AddRange("type", "selectFilter", "selectOptions", new JObject[] {
 					new JObject().AddRange("id", -1, "value", "No filter"),
 					new JObject().AddRange("id", 0, "value", "No"),
@@ -1709,10 +1879,16 @@ JOIN Security ON idSecurity = SecurityId")) {
 				this["type"] = "dateFilter";
 			}
 
+			/// <summary>
+			/// Return 2 DateTimes, representing the start and end of the filter
+			/// </summary>
 			public DateTime[] CurrentPeriod() {
 				return new DateTime[] { _start, _end };
 			}
 
+			/// <summary>
+			/// Return human-readable name for the filter selection
+			/// </summary>
 			public string PeriodName(DateTime[] period) {
 				switch (_range) {
 					case DateRange.All:
@@ -1755,6 +1931,9 @@ JOIN Security ON idSecurity = SecurityId")) {
 				Active = _range != DateRange.All;
 			}
 
+			/// <summary>
+			/// Return 2 dates representing the date period before the selected one
+			/// </summary>
 			public DateTime[] PreviousPeriod() {
 				DateTime [] result = new DateTime[2];
 				result[1] = _start;
@@ -1789,6 +1968,9 @@ JOIN Security ON idSecurity = SecurityId")) {
 				return result;
 			}
 
+			/// <summary>
+			/// Set the start and end dates for a selected range
+			/// </summary>
 			void setDates() {
 				switch (_range) {
 					case DateRange.All:
@@ -1852,9 +2034,18 @@ JOIN Security ON idSecurity = SecurityId")) {
 			}
 		}
 
+		/// <summary>
+		/// Select 1 or more of a list of record numbers
+		/// </summary>
 		public class RecordFilter : Filter {
 			protected List<int> _ids;
 
+			/// <summary>
+			/// Constructor
+			/// </summary>
+			/// <param name="name">Filter name</param>
+			/// <param name="fieldName">Field selecting on</param>
+			/// <param name="options">SelectOptions for the records</param>
 			public RecordFilter(string name, string fieldName, IEnumerable<JObject> options)
 				: base(name) {
 				FieldName = fieldName;
@@ -1893,6 +2084,9 @@ JOIN Security ON idSecurity = SecurityId")) {
 			}
 		}
 
+		/// <summary>
+		/// Select 1 of a list of strings
+		/// </summary>
 		public class SelectFilter : Filter {
 			List<string> _ids;
 
@@ -2108,6 +2302,9 @@ JOIN Security ON idSecurity = SecurityId")) {
 			}
 		}
 
+		/// <summary>
+		/// Special filter to select only transactions where the VAT has been paid on one or more dates
+		/// </summary>
 		public class VatPaidFilter : RecordFilter {
 			bool _null;
 

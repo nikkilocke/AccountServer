@@ -14,6 +14,9 @@ using System.Runtime.Serialization.Json;
 using Newtonsoft.Json.Linq;
 
 namespace AccountServer {
+	/// <summary>
+	/// Web Server - listens for connections, and services them
+	/// </summary>
 	public class WebServer {
 		HttpListener _listener;
 		bool _running;
@@ -43,6 +46,9 @@ namespace AccountServer {
 			}).Start();
 		}
 
+		/// <summary>
+		/// Log message to console and trace
+		/// </summary>
 		static public void Log(string s) {
 			s = s.Trim();
 			lock (_lock) {
@@ -51,6 +57,9 @@ namespace AccountServer {
 			}
 		}
 
+		/// <summary>
+		/// Log message to console and trace
+		/// </summary>
 		static public void Log(string format, params object[] args) {
 			try {
 				Log(string.Format(format, args));
@@ -59,6 +68,9 @@ namespace AccountServer {
 			}
 		}
 
+		/// <summary>
+		/// Start WebServer listening for connections
+		/// </summary>
 		public void Start() {
 			try {
 				_running = true;
@@ -83,17 +95,24 @@ namespace AccountServer {
 			_listener.Stop(); 
 		}
 
+		/// <summary>
+		/// All Active Sessions
+		/// </summary>
 		public IEnumerable<Session> Sessions {
 			get {
 				return _sessions.Values;
 			}
 		}
 
+		/// <summary>
+		/// Process a single request
+		/// </summary>
+		/// <param name="listenerContext"></param>
 		void ProcessRequest(object listenerContext) {
-			DateTime started = DateTime.Now;
+			DateTime started = DateTime.Now;			// For timing response
 			HttpListenerContext context = null;
 			AppModule module = null;
-			StringBuilder log = new StringBuilder();
+			StringBuilder log = new StringBuilder();	// Session log writes to here, and it is displayed at the end
 			try {
 				context = (HttpListenerContext)listenerContext;
 				log.AppendFormat("{0} {1}:{2}:[ms]:", 
@@ -102,10 +121,10 @@ namespace AccountServer {
 					context.Request.RawUrl);
 				Session session = null;
 				string filename = HttpUtility.UrlDecode(context.Request.Url.AbsolutePath).Substring(1);
-				if (filename == "") filename = "company";
+				if (filename == "") filename = "company";			// Default page is Company
 				string moduleName = null;
 				string methodName = null;
-				string baseName = filename.Replace(".html", "");
+				string baseName = filename.Replace(".html", "");	// Ignore .html - treat as a program request
 				if (baseName.IndexOf(".") < 0) {
 					// Urls of the form /ModuleName[/MethodName][.html] call a C# AppModule
 					string[] parts = baseName.Split('/');
@@ -141,11 +160,13 @@ namespace AccountServer {
 					context.Response.Cookies.Add(cookie);
 					cookie.Expires = session.Expires = Utils.Now.AddHours(1);
 				}
+				// Set up module
 				module.Session = session;
 				module.LogString = log;
 				if (moduleName.EndsWith("Module"))
 					moduleName = moduleName.Substring(0, moduleName.Length - 6);
 				using (module) {
+					// Call method
 					module.Call(context, moduleName, methodName);
 				}
 			} catch (Exception ex) {
@@ -190,6 +211,9 @@ namespace AccountServer {
 			}
 		}
 
+		/// <summary>
+		/// Simple session (we will actually use the derived class Session)
+		/// </summary>
 		public class BaseSession {
 			public JObject Object { get; private set; }
 			public DateTime Expires;

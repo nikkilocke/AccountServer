@@ -95,16 +95,23 @@ namespace AccountServer {
 
 		public StringBuilder LogString;
 
+		/// <summary>
+		/// Log to LogString (for showing in console with response data)
+		/// </summary>
 		public void Log(string s) {
 			if (LogString != null) LogString.AppendLine(s);
 		}
 
+		/// <summary>
+		/// Log to LogString (for showing in console with response data)
+		/// </summary>
 		public void Log(string format, params object[] args) {
 			if (LogString != null) LogString.AppendFormat(format + "\r\n", args);
 		}
 
 		public void Dispose() {
 			if (_db != null && Batch == null) {
+				// Don't close database if a batch job is using it
 				CloseDatabase();
 			}
 		}
@@ -159,6 +166,9 @@ namespace AccountServer {
 		/// </summary>
 		public string Title;
 
+		/// <summary>
+		/// All Modules running batch jobs
+		/// </summary>
 		static public IEnumerable<AppModule> Jobs {
 			get { return _jobs.Values; }
 		}
@@ -331,7 +341,6 @@ namespace AccountServer {
 		/// <summary>
 		/// Responds to a Url request. Set up the AppModule variables and call the given method
 		/// </summary>
-
 		public void Call(HttpListenerContext context, string moduleName, string methodName) {
 			Context = context;
 			OriginalModule = Module = moduleName.ToLower();
@@ -451,18 +460,22 @@ namespace AccountServer {
 						|| p.ParameterType == typeof(decimal)
 						|| p.ParameterType == typeof(string)
 						|| p.ParameterType == typeof(DateTime)) {
+						// Plain parameter - convert directly
 						o = val.ToObject(p.ParameterType);
 					} else if (p.ParameterType == typeof(UploadedFile)) {
+						// Uploaded file - "null" means null
 						if (val.ToString() == "null")
 							o = null;
 						else
 							o = val.ToObject(typeof(UploadedFile));
 					} else if (val.Type == JTokenType.String && val.ToString() == "null") {
-						o = null;		// "null" means null
+						o = null;		// "null" means null for any other type too
 					} else if (p.ParameterType == typeof(int?)
 						|| p.ParameterType == typeof(decimal?)) {
+						// Have dealt with "null" - convert in? or decimal?
 						o = val.ToObject(p.ParameterType);
 					} else {
+						// Everything else is assumed to arrive as a json string
 						o = val.ToObject<string>().JsonTo(p.ParameterType);
 					}
 					parms.Add(o);
@@ -485,7 +498,6 @@ namespace AccountServer {
 		/// <summary>
 		/// Get the last document of the given type with NameAddressId == id
 		/// </summary>
-
 		public object DocumentLast(int id, DocType type) {
 			JObject result = new JObject();
 			Extended_Document header = Database.QueryOne<Extended_Document>("SELECT * FROM Extended_Document WHERE DocumentTypeId = " + (int)type
@@ -507,27 +519,17 @@ namespace AccountServer {
 		/// </summary>
 		protected void allocateDocumentIdentifier(Extended_Document document) {
 			if ((document.idDocument == null || document.idDocument == 0) && document.DocumentIdentifier == "<next>") {
+				FullAccount acct = null;
 				DocType type = (DocType)document.DocumentTypeId;
-				int nextDocId = 0;
 				switch (type) {
-					case DocType.Invoice:
-					case DocType.Payment:
-					case DocType.CreditMemo:
-					case DocType.Bill:
-					case DocType.BillPayment:
-					case DocType.Credit:
-					case DocType.GeneralJournal:
-						nextDocId = Settings.NextNumber(type);
-						break;
 					case DocType.Cheque:
 					case DocType.Deposit:
 					case DocType.CreditCardCharge:
 					case DocType.CreditCardCredit:
-						FullAccount acct = Database.QueryOne<FullAccount>("*", "WHERE idAccount = " + document.DocumentAccountId, "Account");
-						nextDocId = acct.NextNumber(type);
+						acct = Database.QueryOne<FullAccount>("*", "WHERE idAccount = " + document.DocumentAccountId, "Account");
 						break;
 				}
-				document.DocumentIdentifier = nextDocId != 0 ? nextDocId.ToString() : "";
+				allocateDocumentIdentifier(document, acct);
 			}
 		}
 
@@ -693,6 +695,11 @@ ORDER BY DocumentDate, idDocument")) {
 			}
 		}
 
+		/// <summary>
+		/// Make sure the DocumentnameAddressId for a document is filled in,
+		/// creating a new record if DocumentName does not already exist in the NameAddress table.
+		/// </summary>
+		/// <param name="nameType">The type the NameAddress record must be (S, C or O)</param>
 		protected void fixNameAddress(Extended_Document document, string nameType) {
 			if (document.DocumentNameAddressId == null || document.DocumentNameAddressId == 0) {
 				document.DocumentNameAddressId = string.IsNullOrWhiteSpace(document.DocumentName) ? 1 : 

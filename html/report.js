@@ -52,7 +52,7 @@ function initialiseReport(select, update) {
 		});
 		// Field selector form
 		report.fieldForm = makeListForm('#fields', {
-			data: _.filter(fields, function(f) { return !f.Linked; }),
+			data: _fields,
 			submit: null,
 			columns: [
 				'heading/Name',
