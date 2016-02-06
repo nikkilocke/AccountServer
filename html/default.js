@@ -1153,11 +1153,13 @@ var Type = {
 	dateFilter: {
 		// Report date filter
 		defaultContent: function(index, col) {
-			return '<select data-col="' + col.name + '" ' + col.attributes + '/> <nobr><input type="date" disabled data-col="' + col.name + '" ' + col.attributes + '/> - <input type="date" disabled data-col="' + col.name + '" ' + col.attributes + '/></nobr>';
+			return '<select data-col="' + col.name + '" ' + col.attributes + '/> <nobr><input type="number" disabled data-col="' + col.name + '" ' + col.attributes + '/><input type="date" disabled data-col="' + col.name + '" ' + col.attributes + '/> - <input type="date" disabled data-col="' + col.name + '" ' + col.attributes + '/></nobr>';
 		},
 		draw: function(data, rowno, row) {
 			var range = data.range || 4;
 			var disabled = range == 12 ? '' : 'disabled ';
+			var countDisabled = range > 12 ? '' : 'disabled ';
+			var count = data.count ? data.count : '';
 			var start = data.start ? data.start.substr(0, 10) : '';
 			var end = data.end ? data.end.substr(0, 10) : '';
 			var select = '<select id="r' + rowno + 'c' + this.name + 'r" data-col="' + this.name + '" >'
@@ -1166,19 +1168,22 @@ var Type = {
 			addOptionsToSelect(jselect, dateSelectOptions, range);
 			select = $('<div />').append(jselect).html();
 			select = select.replace(' value="' + range + '"', ' value="' + range + '" selected');
-			return select + ' <nobr><input type="date" id="r' + rowno + 'c' + this.name + 's" data-col="' + this.name + '" value="' + start + '" ' + disabled + this.attributes + '/> - <input type="date" id="r' + rowno + 'c' + this.name + 'e" data-col="' + this.name + '" value="' + end + '" ' + disabled + this.attributes + '/></nobr>';
+			return select + ' <nobr><input type="number" id="r' + rowno + 'c' + this.name + 'c" data-col="' + this.name + '" value="' + count + '" ' + countDisabled + this.attributes + '/><input type="date" id="r' + rowno + 'c' + this.name + 's" data-col="' + this.name + '" value="' + start + '" ' + disabled + this.attributes + '/> - <input type="date" id="r' + rowno + 'c' + this.name + 'e" data-col="' + this.name + '" value="' + end + '" ' + disabled + this.attributes + '/></nobr>';
 		},
 		update: function(cell, data, rowno, row) {
 			var i = cell.find('select');
 			var range = data.range || 4;
+			var count = data.count ? data.count : '';
 			var start = data.start ? data.start.substr(0, 10) : '';
 			var end = data.end ? data.end.substr(0, 10) : '';
 			if(i.length && i.attr('id')) {
 				i.val(range);
 				i = cell.find('input');
 				i.prop('disabled', range != 12);
-				$(i[0]).val(start);
-				$(i[1]).val(end);
+				$(i[0]).prop('disabled', range <= 12);
+				$(i[0]).val(count);
+				$(i[1]).val(start);
+				$(i[2]).val(end);
 			} else {
 				cell.html(this.draw(data, rowno, row));
 			}
@@ -1186,11 +1191,14 @@ var Type = {
 		inputValue: function(field, row) {
 			var cell = $(field).closest('td');
 			var range = cell.find('select').val();
-			cell.find('input').prop('disabled', range != 12);
+			i = cell.find('input');
+			i.prop('disabled', range != 12);
+			$(i[0]).prop('disabled', range <= 12);
 			return {
 				range: range,
-				start: cell.find('input:first').val(),
-				end: cell.find('input:last').val()
+				count: $(i[0]).val(),
+				start: $(i[1]).val(),
+				end: $(i[2]).val()
 			};
 		}
 	},
@@ -1364,7 +1372,9 @@ var dateSelectOptions = [
 	{ id: 9, value: 'Last Month' },
 	{ id: 10, value: 'Last Quarter' },
 	{ id: 11, value: 'Last Year' },
-	{ id: 12, value: 'Custom' }
+	{ id: 12, value: 'Custom' },
+	{ id: 13, value: 'Last N Days' },
+	{ id: 14, value: 'Last N months' }
 
 ];
 

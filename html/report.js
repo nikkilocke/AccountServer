@@ -39,7 +39,16 @@ function initialiseReport(select, update) {
 				if (v.range > 1) {
 					var d = new Date(v.end);
 					d.setDate(d.getDate() - 1);
-					$('#reportDates').text(range.value + ': ' + formatDate(v.start) + ' - ' + formatDate(d));
+					var r = range.value;
+					switch(v.range) {
+						case 13:
+							r = v.count + ' days';
+							break;
+						case 14:
+							r = v.count + ' months';
+							break;
+					}
+					$('#reportDates').text(r + ': ' + formatDate(v.start) + ' - ' + formatDate(d));
 				}
 				break;
 			}

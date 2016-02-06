@@ -22,7 +22,9 @@ namespace AccountServer {
 			LastMonth,
 			LastQuarter,
 			LastYear,
-			Custom
+			Custom,
+			NDays,
+			NMonths,
 		}
 		/// <summary>
 		/// Fields which can be displayed in the report
@@ -1908,25 +1910,49 @@ JOIN Security ON idSecurity = SecurityId")) {
 					case DateRange.ThisYear:
 					case DateRange.LastYear:
 						return "Year Ending " + period[1].AddDays(-1).ToString("d");
+					case DateRange.NDays:
+						return (period[1] - period[0]).TotalDays + " days up to " + period[1].ToString("d");
+					case DateRange.NMonths:
+						return (period[1].Month - period[0].Month + 12 * (period[1].Year - period[0].Year)) + " months from " + period[0].ToString("d") + " - " + period[1].ToString("d");
 					default:
 						return period[0].ToString("d") + " - " + period[1].AddDays(-1).ToString("d");
 				}
 			}
 
 			public override JToken Data() {
-				return new JObject().AddRange(
+				JObject r = new JObject().AddRange(
 					"range", _range,
 					"start", _start,
 					"end", _end);
+				switch (_range) {
+					case DateRange.NDays:
+						r["count"] = (_end - _start).TotalDays;
+						break;
+					case DateRange.NMonths:
+						r["count"] = _end.Month - _start.Month + 12 * (_end.Year - _start.Year);
+						break;
+				}
+				return r;
 			}
 
 			public override void Parse(JToken json) {
 				_range = (DateRange)(json as JObject).AsInt("range");
-				if (_range == DateRange.Custom) {
-					_start = json["start"].To<DateTime>();
-					_end = json["end"].To<DateTime>();
-				} else {
-					setDates();
+				switch (_range) {
+					case DateRange.Custom:
+						_start = json["start"].To<DateTime>();
+						_end = json["end"].To<DateTime>();
+						break;
+					case DateRange.NDays:
+						_end = DateTime.Today;
+						_start = _end.AddDays(-(json as JObject).AsInt("count"));
+						break;
+					case DateRange.NMonths:
+						_end = DateTime.Today;
+						_start = _end.AddMonths(-(json as JObject).AsInt("count"));
+						break;
+					default:
+						setDates();
+						break;
 				}
 				Active = _range != DateRange.All;
 			}
@@ -1960,6 +1986,12 @@ JOIN Security ON idSecurity = SecurityId")) {
 					case DateRange.ThisYear:
 					case DateRange.LastYear:
 						result[0] = AppModule.AppSettings.YearStart(_start.AddDays(-1));
+						break;
+					case DateRange.NDays:
+						result[0] = result[1].AddDays((_end - _start).TotalDays);
+						break;
+					case DateRange.NMonths:
+						result[0] = result[1].AddMonths(-(_end.Month - _start.Month + 12 * (_end.Year - _start.Year)));
 						break;
 					default:
 						result[0] = _start.AddYears(-1);
@@ -2021,6 +2053,14 @@ JOIN Security ON idSecurity = SecurityId")) {
 						_end = AppSettings.YearStart(Utils.Today);
 						_start = AppSettings.YearStart(_end.AddDays(-1));
 						break;
+					case DateRange.NDays:
+						_end = Utils.Today;
+						_start = _end.AddDays(-7);
+						break;
+					case DateRange.NMonths:
+						_end = Utils.Today;
+						_start = _end.AddMonths(-1);
+						break;
 				}
 			}
 
@@ -2032,6 +2072,7 @@ JOIN Security ON idSecurity = SecurityId")) {
 				DateTime date = data.AsDate(JObjectFieldName);
 				return date >= _start && date < _end;
 			}
+
 		}
 
 		/// <summary>
