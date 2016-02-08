@@ -245,6 +245,7 @@ namespace AccountServer {
 					runBatch(action);
 					_module.CloseDatabase();
 					Thread.Sleep(60000);	// 1 minute
+					_module.Batch = null;
 					lock (_jobs) {
 						_jobs.Remove(Id);
 					}
@@ -267,7 +268,6 @@ namespace AccountServer {
 				WebServer.Log(_module.LogString.ToString());
 				_module.LogString = null;
 				_module.Record = null;
-				_module.Batch = null;
 				Finished = true;
 			}
 
@@ -393,6 +393,14 @@ namespace AccountServer {
 						PostParameters.AddRange(HttpUtility.ParseQueryString(data));
 					}
 					Parameters.AddRange(PostParameters);
+					if (Config.PostLogging) {
+						foreach (KeyValuePair<string, JToken> p in PostParameters) {
+							Log("\t{0}={1}", p.Key,
+								p.Key == "json" ? JObject.Parse(p.Value.ToString()).ToString(Formatting.Indented).Replace("\n", "\n\t") :
+								p.Value.Type == JTokenType.Object ? "file " + ((JObject)p.Value)["Name"] :
+								p.Value.ToString());
+						}
+					}
 				}
 			}
 			MethodInfo method = null;
@@ -422,15 +430,6 @@ namespace AccountServer {
 				// Send an AjaxReturn object indicating the error
 				WriteResponse(new AjaxReturn() { error = ex.Message }, null, HttpStatusCode.OK);
 			}
-			if (Config.PostLogging && PostParameters != null) {
-				foreach (KeyValuePair<string, JToken> p in PostParameters) {
-					Log("\t{0}={1}", p.Key,
-						p.Key == "json" ? JObject.Parse(p.Value.ToString()).ToString(Formatting.Indented).Replace("\n", "\n\t") :
-						p.Value.Type == JTokenType.Object ? "file " + ((JObject)p.Value)["Name"] :
-						p.Value.ToString());
-				}
-			}
-
 		}
 
 		/// <summary>
