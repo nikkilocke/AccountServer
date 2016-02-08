@@ -1784,7 +1784,7 @@ function makeForm(selector, options) {
 			}
 			if(col.change) {
 				var nval = col.change(val, result.data, col, this);
-				if(val === false) {
+				if(nval === false) {
 					$(this).val(result.data[col.data])
 						.focus();
 					return;
