@@ -2759,8 +2759,8 @@ function addOptionsToSelect(select, data, val, col) {
 			category = opt.category;
 			optgroup = $('<optgroup label="' + opt.category + '"></optgroup>').appendTo(select);
 		}
-		if(opt.class)
-			option.addClass(opt.class);
+		if(opt['class'])
+			option.addClass(opt['class']);
 		option.appendTo(opt.category ? optgroup : select);
 	});
 	if(!found && !multi) {

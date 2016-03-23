@@ -223,4 +223,8 @@ ul.menu {
     button.deleteButton {
         display: none;
     }
+    tr, td {
+        page-break-inside: avoid;
+        page-break-before:auto;
+    }
 }

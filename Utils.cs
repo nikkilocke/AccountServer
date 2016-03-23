@@ -320,7 +320,8 @@ namespace AccountServer {
 
 		public static DateTime Now {
 			get {
-				return TimeZoneInfo.ConvertTime(DateTime.UtcNow + _timeOffset, _tz);
+				DateTime n = DateTime.UtcNow + _timeOffset;
+				return n.Kind == DateTimeKind.Utc ? n : TimeZoneInfo.ConvertTime(n, _tz);
 			}
 		}
 
