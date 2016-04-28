@@ -348,6 +348,8 @@ namespace AccountServer {
 				return 0;
 			s = s.ToUpper();
 			self = self.ToUpper();
+			if (s.Contains(self) || self.Contains(s))
+				return 1;
 			int tot = 0;
 			int matched = 0;
 			foreach (Match m in Regex.Matches(self, @"\w+")) {

@@ -640,12 +640,12 @@ var Type = {
 		render: function(data, type, row, meta) {
 			return colRender(data ? data.substr(0, 10) : data, type, row, meta);
 		},
-		draw: function(data, rowno, row) {
+		download: function(data, rowno, row) {
 			return formatDate(data);
 		}
 	},
 	dateTime: {
-		draw: function(data, rowno, row) {
+		download: function(data, rowno, row) {
 			return formatDateTime(data);
 		}
 	},
@@ -655,6 +655,7 @@ var Type = {
 			filter: formatNumber
 		},
 		draw: formatNumberWithCommas,
+		download: formatNumber,
 		sClass: 'n'
 	},
 	wholeDecimal: {
@@ -663,6 +664,7 @@ var Type = {
 			filter: formatNumber
 		},
 		draw: formatWholeNumberWithCommas,
+		download: formatNumber,
 		sClass: 'n'
 	},
 	bracket: {
@@ -671,14 +673,11 @@ var Type = {
 			filter: formatNumber
 		},
 		draw: formatNumberWithBrackets,
+		download: formatNumber,
 		sClass: 'n'
 	},
 	double: {
-		render: {
-			display: formatDouble,
-			filter: formatDouble
-		},
-		draw: formatDouble,
+		download: formatDouble,
 		sClass: 'n'
 	},
 	amount: {
@@ -686,6 +685,7 @@ var Type = {
 		draw: function(data, rowno, row) {
 			return formatNumberWithCommas(Math.abs(data));
 		},
+		download: formatNumber,
 		sClass: 'n'
 	},
 	credit: {
@@ -697,6 +697,11 @@ var Type = {
 			if(row["Credit"] !== undefined)
 				data = -row["Credit"];
 			return data < 0 ? formatNumberWithCommas(-data) : '';
+		},
+		download: function(data, rowno, row) {
+			if(row["Credit"] !== undefined)
+				data = -row["Credit"];
+			return data < 0 ? formatNumber(-data) : '';
 		},
 		sClass: 'n'
 	},
@@ -710,14 +715,15 @@ var Type = {
 				data = row["Debit"];
 			return data >= 0 ? formatNumberWithCommas(data) : '';
 		},
+		download: function(data, rowno, row) {
+			if(row["Debit"] !== undefined)
+				data = row["Debit"];
+			return data >= 0 ? formatNumber(data) : '';
+		},
 		sClass: 'n'
 	},
 	int: {
-		render: {
-			display: formatInteger,
-			filter: formatInteger
-		},
-		draw: formatInteger,
+		download: formatInteger,
 		sClass: 'n'
 	},
 	email: {
@@ -735,7 +741,7 @@ var Type = {
 	},
 	select: {
 		// Displays appropriate text from selectOptions according to value
-		draw: function(data, rowno, row) {
+		download: function(data, rowno, row) {
 			if(this.selectOptions) {
 				var opt = _.find(this.selectOptions, function(o) { return o.id == data; });
 				if(opt)
@@ -748,9 +754,8 @@ var Type = {
 		defaultContent: function(index, col) {
 			return '<img data-col="' + col.name + '" ' + col.attributes + '/>';
 		},
-		render: function(data, type, row, meta) {
-			var col = meta.settings.oInit.columns[meta.col];
-			return '<img src="' + data + '" id="r' + meta.row + 'c' + meta.settings.oInit.columns[meta.col].name + '" data-col="' + col.name + '" ' + col.attributes + '/>';
+		draw: function(data, rowno, row) {
+			return '<img src="' + data + '" id="r' + rowno + 'c' + this.name + '" data-col="' + this.name + '" ' + this.attributes + '/>';
 		}
 	},
 	autoComplete: {
@@ -1442,6 +1447,7 @@ var unitDisplay = [
 ];
 
 var DataTable;
+var Forms = [];
 /**
  * Make a DataTable
  * Column options are:
@@ -1501,7 +1507,7 @@ function makeDataTable(selector, options) {
 	_.each(options.columns, function (col, index) {
 		// Set up the column - add any missing functions, etc.
 		options.columns[index] = col = _setColObject(col, tableName, index);
-		var title = myOption('heading', col);
+		var title = col.heading;
 		$('<th></th>').appendTo(heading).text(title).addClass(col.sClass).attr('title', col.hint);
 		// Add to columns hash by name
 		columns[col.name] = col;
@@ -1556,12 +1562,7 @@ function makeDataTable(selector, options) {
 	}
 	if(options.download || options.download === undefined) {
 		actionButton('Download').click(function () {
-			var i = table.api().page.info();
-			table.api().page.len(-1);
-			table.api().draw();
-			var data = tableData(selector);
-			table.api().page.len(i.length);
-			table.api().draw();
+			var data = downloadData(table.fields, table.api().data());
 			download(this, data);
 		});
 	}
@@ -1664,6 +1665,7 @@ function makeDataTable(selector, options) {
 	};
 	table.fields = columns;
 	DataTable = table.api();
+	Forms.push(table);
 	return table;
 }
 
@@ -1915,6 +1917,7 @@ function makeForm(selector, options) {
 	result.settings = options;
 	result.dataReady = dataReady;
 	result.draw = draw;
+	Forms.push(result);
 	if(options.data)
 		dataReady(options.data);
 	else if(options.ajax) {
@@ -2297,8 +2300,52 @@ function makeListForm(selector, options) {
 			cell = cell.next();
 		}
 	};
+	Forms.push(table);
 	return table;
 }
+
+/**
+ * The data for download. Returns array of arrays of fields.
+ */
+function downloadData(columns, record) {
+	var data = [];
+	var dataRow = [];
+	var skip;
+	_.each(columns, function(col, index) {
+		if(col.newRow) {
+			data.push(dataRow);
+			dataRow = [];
+		}
+		if(skip) {
+			skip--;
+			dataRow.push('');
+		} else {
+			dataRow.push(col.heading);
+			if (col.colspan)
+				skip = col.colspan - 1;
+		}
+	});
+	data.push(dataRow);
+	function buildRow(row, rowdata) {
+		dataRow = [];
+		_.each(columns, function(col, index) {
+			if(col.newRow) {
+				data.push(dataRow);
+				dataRow = [];
+			}
+			dataRow.push(col.download(rowdata[col.name], row, rowdata));
+		});
+		data.push(dataRow);
+	}
+	if(record[1]) {
+		for (var row = 0; row < record.length; row++) {
+			buildRow(row, record[row]);
+		}
+	} else {
+		buildRow(0, record);
+	}
+	return data;
+};
 
 /**
  * Extract a named option from opts, remove it, and return it (or defaultValue if not present)
@@ -2677,15 +2724,17 @@ function _setColObject(col, tableName, index) {
 		if(tableName && title.indexOf(tableName) == 0 && title != tableName)
 			title = title.substr(tableName.length);
 		// Split "CamelCase" name into "Camel Case", and remove Id from end
-		title = title.replace(/Id$/, '').replace(/([A-Z])(?=[a-z0-9])/g, " $1");
+		title = title.replace(/Id$/, '').replace(/([A-Z])(?=[a-z0-9])/g, " $1").trim();
 		col.heading = title;
 	}
 	if(col.inputValue === undefined)
 		col.inputValue = getValueFromField;
-	if(col.render === undefined && col.draw)
-		col.render = colRender;		// Render function for dataTable
+	if(col.download === undefined)
+		col.download = colDraw;
 	if(col.draw === undefined)
-		col.draw = colDraw;
+		col.draw = col.download;
+	if(col.render === undefined)
+		col.render = colRender;		// Render function for dataTable
 	if(!col.update)
 		col.update = function(cell, data, rowno, row) {
 			cell.html(this.draw(data, rowno, row));
@@ -2863,14 +2912,14 @@ function matchingStatement() {
 	return window.location.pathname == '/banking/statementmatch.html';
 }
 
-function tableData(selector) {
-	var data = $(selector).html();
-	data = data.replace("\r", "").replace("\n", ' ');
-	data = data.replace(/<\/t[dh]>/ig, "\t");
-	data = data.replace(/<\/tr>/ig, "\r\n");
-	data = data.replace(/<[^>]*>/g, '');
-	data = data.replace(/&nbsp;/ig, ' ');
-	return data;
+function textQuote(text) {
+	return text.replace(/[\r]/g, '\r').replace(/[\n]/g, '\n').replace(/[\t]/g, '\t');
+}
+
+function csvQuote(text) {
+	return text.match(/[",\r\n]/) ?
+		'"' + text.replace(/"/g, '""') + '"' :
+		text;
 }
 
 function download(button, data) {
@@ -2885,13 +2934,24 @@ function download(button, data) {
 	menu.appendTo(body);
 	var mnu = menu.menu({
 		select: function (e, ui) {
+			var text = '';
+			var tab = ui.item[0].id == 'csv' ? ',' : "\t";
+			var quote = ui.item[0].id == 'csv' ? csvQuote : textQuote;
+			_.each(data, function(row) {
+				var rowText = '';
+				_.each(row, function(datum) {
+					if(rowText.length)
+						rowText += tab;
+					rowText += datum === null || datum === undefined ? '' : quote(datum + '');
+				});
+				text += rowText + "\r\n";
+			});
 			switch (ui.item[0].id) {
 				case 'txt':
-					downloadFile(document.title + '.txt', data);
+					downloadFile(document.title + '.txt', text);
 					break;
 				case 'csv':
-					downloadFile(document.title + '.csv',
-						data.replace(/\t/g, ','));
+					downloadFile(document.title + '.csv', text);
 					break;
 				case 'clip':
 					/*
@@ -2901,7 +2961,7 @@ function download(button, data) {
 					}));
 					*/
 					var txt = $('<textarea></textarea>');
-					txt.text(data);
+					txt.text(text);
 					txt.appendTo('body');
 					txt.select();
 					document.execCommand('copy');
