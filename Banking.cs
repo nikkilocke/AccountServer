@@ -567,7 +567,7 @@ ORDER BY DocumentDate, idDocument"));
 						account.AccountTypeId == (int)AcctType.Bank ? 
 							DocType.Cheque : DocType.CreditCardCharge :
 						account.AccountTypeId == (int)AcctType.Bank ? 
-							DocType.Credit : DocType.CreditCardCredit : 
+							DocType.Deposit : DocType.CreditCardCredit : 
 				(DocType)transaction.DocumentTypeId;
 			GetParameters["acct"] = match.id.ToString();	// This bank account
 			// Call appropriate method to get Record, and therefore transaction
