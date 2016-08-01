@@ -917,10 +917,10 @@ var Type = {
 	doubleInput: {
 		// Up to 4 dec places
 		defaultContent: function(index, col) {
-			return '<input type="number" data-col="' + col.name + '"value="0" ' + col.attributes + '/>';
+			return '<input type="text" data-col="' + col.name + '"value="0" ' + col.attributes + '/>';
 		},
 		draw: function(data, rowno, row) {
-			return '<input type="number" id="r' + rowno + 'c' + this.name + '" data-col="' + this.name + '" value="' + toUnit(data, row.Unit) + '" ' + this.attributes + '/>';
+			return '<input type="text" id="r' + rowno + 'c' + this.name + '" data-col="' + this.name + '" value="' + toUnit(data, row.Unit) + '" ' + this.attributes + '/>';
 		},
 		update: function(cell, data, rowno, row) {
 			var i = cell.find('input');
