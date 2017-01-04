@@ -984,17 +984,14 @@ namespace AccountServer {
 			Field idField = table.PrimaryKey;
 			string idName = idField.Name;
 			JToken idValue = null;
-			// Find the first unique index we have data for. Will be Primary (Id) index if that is included.
-			Index index = table.IndexFor(data);
-			JObject result = null;
-			if (index != null) {
-				// Retrieve any existing record that matches the index.
-				// If auditing, get all the foreign key fields too.
-				result = QueryOne(withAudit ? "+" : idName, "WHERE " + index.Where(data), table.Name);
-				if (result != null) {
-					// Set the id field
-					data[idName] = idValue = result[idName];
-				}
+			// Primary index.
+			Index index = table.Indexes[0];
+			// Retrieve any existing record with the same primary key.
+			// If auditing, get all the foreign key fields too.
+			JObject result = QueryOne(withAudit ? "+" : idName, "WHERE " + index.Where(data), table.Name);
+			if (result != null) {
+				// Set the id field
+				data[idName] = idValue = result[idName];
 			}
 			List<Field> fields = table.Fields.Where(f => data[f.Name] != null).ToList();
 			checkForMissingFields(table, data, idValue == null);

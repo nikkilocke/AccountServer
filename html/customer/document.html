@@ -38,6 +38,8 @@ $(function() {
 	_.each(record.detail, function(line) {
 		record.header.Net += line.LineAmount;
 		record.header.Vat += line.VatAmount;
+		if(line.Qty && line.LineAmount)
+			line.UnitPrice = round(line.LineAmount / line.Qty);
 	});
 	record.header.Net = round(record.header.Net);
 	record.header.Vat = round(record.header.Vat);

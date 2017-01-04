@@ -37,6 +37,49 @@ namespace AccountServer {
 				Default.Filename = Path.GetFileNameWithoutExtension(filename);
 			}
 		}
+
+		public static DateTime YearEnd(DateTime date) {
+			date = date.Date;
+			DateTime result = yearStart(date);
+			if (result <= date)
+				result = yearStart(result.AddMonths(13));
+			return result.AddDays(-1);
+		}
+
+		public static DateTime YearStart(DateTime date) {
+			date = date.Date;
+			DateTime result = yearStart(date);
+			if (result > date)
+				result = yearStart(date.AddMonths(-12));
+			return result;
+		}
+
+		public static DateTime QuarterStart(DateTime date) {
+			DateTime result = YearStart(date);
+			result = result.AddDays(1 - (int)result.Day);
+			for (DateTime end = result.AddMonths(3); end < date; end = result.AddMonths(3))
+				result = end;
+			return result;
+		}
+
+		static DateTime yearStart(DateTime date) {
+			int month = 1;
+			if (month == 0) month = 1;
+			int day = 0;
+			// First day of the month
+			DateTime dayOfMonth = new DateTime(date.Year, month, 1);
+			if (day > 0) {
+				DayOfWeek dayOfWeek = (DayOfWeek)(day % 7);
+
+				// Find first dayOfWeek of this month
+				if (dayOfMonth.DayOfWeek > dayOfWeek) {
+					dayOfMonth = dayOfMonth.AddDays(7 - (int)dayOfMonth.DayOfWeek + (int)dayOfWeek);
+				} else {
+					dayOfMonth = dayOfMonth.AddDays((int)dayOfWeek - (int)dayOfMonth.DayOfWeek);
+				}
+			}
+			return dayOfMonth;
+		}
 	}
 
 	public class Admin : AppModule {
@@ -74,12 +117,11 @@ namespace AccountServer {
 
 		public AjaxReturn BatchStatus(int id) {
 			AjaxReturn result = new AjaxReturn();
-			AppModule module = AppModule.GetBatchJob(id);
-			if (module == null) {
+			BatchJob batch = AppModule.GetBatchJob(id);
+			if (batch == null) {
 				Log("Invalid batch id");
 				result.error = "Invalid batch id";
 			} else {
-				BatchJob batch = module.Batch;
 				if (batch == null) {
 					Log("Invalid batch id");
 					result.error = "Invalid batch id";

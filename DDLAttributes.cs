@@ -141,7 +141,7 @@ namespace AccountServer {
 				Table tbl = TableFor(fk.Table);
 				fld.ForeignKey = new ForeignKey(tbl, tbl.Fields[0]);
 			}
-			foreach (Type tbl in assembly.GetTypes().Where(t => t.BaseType == baseType)) {
+			foreach (Type tbl in assembly.GetTypes().Where(t => t.IsSubclassOf(baseType))) {
 				ViewAttribute view = tbl.GetCustomAttribute<ViewAttribute>();
 				if (view == null)
 					continue;
@@ -175,7 +175,34 @@ namespace AccountServer {
 			// Primary key fields by sequence
 			List<Tuple<int, Field>> primary = new List<Tuple<int, Field>>();
 			string primaryName = null;
-			foreach (FieldInfo field in tbl.GetFields(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public)) {
+			processFields(tbl, ref fields, ref indexes, ref primary, ref primaryName);
+			if (primary.Count == 0) {
+				primary.Add(new Tuple<int, Field>(0, fields[0]));
+				primaryName = "PRIMARY";
+			}
+			List<Index> inds = new List<Index>(indexes.Keys
+				.OrderBy(k => k)
+				.Select(k => new Index(k, indexes[k]
+					.OrderBy(i => i.Item1)
+					.Select(i => i.Item2)
+					.ToArray())));
+			inds.Insert(0, new Index(primaryName, primary
+					.OrderBy(i => i.Item1)
+					.Select(i => i.Item2)
+					.ToArray()));
+			if (view != null) {
+				Table updateTable = null;
+				_tables.TryGetValue(Regex.Replace(tbl.Name, "^.*_", ""), out updateTable);
+				_tables[tbl.Name] = new View(tbl.Name, fields.ToArray(), inds.ToArray(), view.Sql, updateTable);
+			} else {
+				_tables[tbl.Name] = new Table(tbl.Name, fields.ToArray(), inds.ToArray());
+			}
+		}
+
+		void processFields(Type tbl, ref List<Field> fields, ref Dictionary<string, List<Tuple<int, Field>>> indexes, ref List<Tuple<int, Field>> primary, ref string primaryName) {
+			if (tbl.BaseType != typeof(JsonObject))	// Process base types first
+				processFields(tbl.BaseType, ref fields, ref indexes, ref primary, ref primaryName);
+			foreach (FieldInfo field in tbl.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly)) {
 				if (field.IsDefined(typeof(DoNotStoreAttribute)))
 					continue;
 				bool nullable = field.IsDefined(typeof(NullableAttribute));
@@ -249,31 +276,6 @@ namespace AccountServer {
 				if (fk != null)
 					_foreignKeys[fld] = fk;
 				fields.Add(fld);
-			}
-			if (primary.Count == 0) {
-				// No primary key - use the first field
-				primary.Add(new Tuple<int, Field>(0, fields[0]));
-				primaryName = "PRIMARY";
-			}
-			// Build the index list
-			List<Index> inds = new List<Index>(indexes.Keys
-				.OrderBy(k => k)	// In name order
-				.Select(k => new Index(k, indexes[k]
-					.OrderBy(i => i.Item1)		// Sequence
-					.Select(i => i.Item2)		// Field name
-					.ToArray())));
-			// Primary key is always first index.
-			inds.Insert(0, new Index(primaryName, primary
-					.OrderBy(i => i.Item1)
-					.Select(i => i.Item2)
-					.ToArray()));
-			if (view != null) {
-				Table updateTable = null;
-				// Update table is all text after last "_"
-				_tables.TryGetValue(Regex.Replace(tbl.Name, "^.*_", ""), out updateTable);
-				_tables[tbl.Name] = new View(tbl.Name, fields.ToArray(), inds.ToArray(), view.Sql, updateTable);
-			} else {
-				_tables[tbl.Name] = new Table(tbl.Name, fields.ToArray(), inds.ToArray());
 			}
 		}
 

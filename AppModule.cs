@@ -32,7 +32,7 @@ namespace AccountServer {
 	public class AppModule : IDisposable {
 		static Dictionary<string, Type> _appModules;	// List of all AppModule types by name ("Module" stripped off end)
 		static int _lastJob;							// Last batch job
-		static Dictionary<int, AppModule> _jobs = new Dictionary<int, AppModule>();
+		static Dictionary<int, BatchJob> _jobs = new Dictionary<int, BatchJob>();
 		protected static Settings _settings;			// Common settings, read from database
 
 		static AppModule() {
@@ -169,7 +169,7 @@ namespace AccountServer {
 		/// <summary>
 		/// All Modules running batch jobs
 		/// </summary>
-		static public IEnumerable<AppModule> Jobs {
+		static public IEnumerable<BatchJob> Jobs {
 			get { return _jobs.Values; }
 		}
 
@@ -237,7 +237,7 @@ namespace AccountServer {
 				// Get the next job number
 				lock (_jobs) {
 					Id = ++_lastJob;
-					_jobs[Id] = module;
+					_jobs[Id] = this;
 				}
 				module.Log("Started batch job {0}", Id);
 				new Task(delegate() {
@@ -245,7 +245,6 @@ namespace AccountServer {
 					runBatch(action);
 					_module.CloseDatabase();
 					Thread.Sleep(60000);	// 1 minute
-					_module.Batch = null;
 					lock (_jobs) {
 						_jobs.Remove(Id);
 					}
@@ -268,6 +267,7 @@ namespace AccountServer {
 				WebServer.Log(_module.LogString.ToString());
 				_module.LogString = null;
 				_module.Record = null;
+				_module.Batch = null;
 				Finished = true;
 			}
 
@@ -333,8 +333,8 @@ namespace AccountServer {
 		/// <summary>
 		/// Get batch job from id (for status/progress display)
 		/// </summary>
-		public static AppModule GetBatchJob(int id) {
-			AppModule job;
+		public static BatchJob GetBatchJob(int id) {
+			BatchJob job;
 			return _jobs.TryGetValue(id, out job) ? job : null;
 		}
 

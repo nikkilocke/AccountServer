@@ -142,21 +142,25 @@ namespace AccountServer {
 					// No AppModule found - treat url as a file request
 					moduleName = "FileSender";
 					module = new FileSender(filename);
-					session = new Session(null);
-				} else {
-					// AppModule found - retrieve or create a session for it
-					Cookie cookie = context.Request.Cookies["session"];
-					if (cookie != null) {
-						_sessions.TryGetValue(cookie.Value, out session);
-						if (AppSettings.Default.SessionLogging)
-							log.AppendFormat("[{0}{1}]", cookie.Value, session == null ? " not found" : "");
-					}
-					if (session == null) {
+				}
+				// AppModule found - retrieve or create a session for it
+				Cookie cookie = context.Request.Cookies["session"];
+				if (cookie != null) {
+					_sessions.TryGetValue(cookie.Value, out session);
+					if (AppSettings.Default.SessionLogging)
+						log.AppendFormat("[{0}{1}]", cookie.Value, session == null ? " not found" : "");
+				}
+				if (session == null) {
+					if (moduleName == "FileSender") {
+						session = new Session(null);
+					} else {
 						session = new Session(this);
 						cookie = new Cookie("session", session.Cookie, "/");
 						if (AppSettings.Default.SessionLogging)
 							log.AppendFormat("[{0} new session]", cookie.Value);
 					}
+				}
+				if (cookie != null) {
 					context.Response.Cookies.Add(cookie);
 					cookie.Expires = session.Expires = Utils.Now.AddHours(1);
 				}
