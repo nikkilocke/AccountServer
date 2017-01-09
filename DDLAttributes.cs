@@ -192,7 +192,8 @@ namespace AccountServer {
 					.ToArray()));
 			if (view != null) {
 				Table updateTable = null;
-				_tables.TryGetValue(Regex.Replace(tbl.Name, "^.*_", ""), out updateTable);
+				for(Type t = tbl; updateTable == null && t != typeof(JsonObject); t = t.BaseType)
+					_tables.TryGetValue(Regex.Replace(t.Name, "^.*_", ""), out updateTable);
 				_tables[tbl.Name] = new View(tbl.Name, fields.ToArray(), inds.ToArray(), view.Sql, updateTable);
 			} else {
 				_tables[tbl.Name] = new Table(tbl.Name, fields.ToArray(), inds.ToArray());
