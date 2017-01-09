@@ -78,7 +78,7 @@ GROUP BY idAccount ORDER BY AccountName");
 				+ SecurityValues(Utils.Today) + @") AS SV
 JOIN Account ON idAccount = SV.AccountId
 JOIN Security ON idSecurity = SecurityId
-WHERE ParentAccountid = " + id)
+WHERE ParentAccountid = " + id).ToList()
 						  let cb = SecurityCost(p.AsInt("AccountId"))
 						  select new JObject(p).AddRange(
 							  "CostBasis", cb,
