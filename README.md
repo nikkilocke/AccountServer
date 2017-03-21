@@ -6,10 +6,10 @@
 
 * Extract all the files from the zip file into a folder of your choice.
 * Open a command prompt as administrator (in your start menu, search for "CMD", right click it, and choose "Run as Administrator").
-* In the command prompt, register the port AccountsServer uses - type <sup id="a1">[*](#f1)</sup> **netsh http add urlacl url=http://+:8080/ user=Everyone**
+* In the command prompt, register the port AccountServer uses - type <sup id="a1">[*](#f1)</sup> **netsh http add urlacl url=http://+:8080/ user=Everyone**
 * Close the command prompt.
 * Open Windows Explorer and navigate to your chosen folder.
-* If you wish to set up a shortcut in the start menu, right click on Accounts.exe and choose "Pin to Start".
+* If you wish to set up a shortcut in the start menu, right click on AccountServer.exe and choose "Pin to Start".
 * Start the program by double-clicking on it (or on your shortcut).
 * The program will create an SQLite database, start up, and open your web browser at the Company page.
 
@@ -106,10 +106,10 @@ You can add your own skins - to create a skin called **name**, just create 2 fil
 
 #Using more than 1 database
 
-If you want to use more than 1 database (e.g. 1 for personal finances and one for company, or 1 for each person in your household), you can run multiple copies of AccountsServer, using different configuration files for each one.
+If you want to use more than 1 database (e.g. 1 for personal finances and one for company, or 1 for each person in your household), you can run multiple copies of AccountServer, using different configuration files for each one.
 
 * Copy AccountServer.config in Windows Explorer:
-  * Right click on AccountsServer.config and choose "Copy" from the menu.
+  * Right click on AccountServer.config and choose "Copy" from the menu.
   * Right click on a blank space in the Windows Explorer menu, and choose "Paste" from the menu.
   * Right click on the new file (called something like "AccountServer - Copy.config"), and choose "Rename".
   * Type in a new name (e.g. **Personal.config**). The name **must** end with **.config**.
