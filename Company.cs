@@ -69,7 +69,7 @@ ORDER BY Name
 		}
 
 		public object DefaultScheduleListing() {
-			return Database.Query("SELECT idSchedule, ActionDate, RepeatType, Task, Post, CASE WHEN ActionDate <= " + Database.Quote(Utils.Today) + " THEN 'due' ELSE NULL END AS \"@class\" FROM Schedule WHERE ActionDate <= "
+			return Database.Query("SELECT idSchedule, ActionDate, RepeatType, RepeatFrequency, Task, Post, CASE WHEN ActionDate <= " + Database.Quote(Utils.Today) + " THEN 'due' ELSE NULL END AS \"@class\" FROM Schedule WHERE ActionDate <= "
 					+ Database.Quote(Utils.Today.AddDays(7)) + " ORDER BY ActionDate");
 		}
 
@@ -79,7 +79,7 @@ ORDER BY Name
 		}
 
 		public object ScheduleListing() {
-			return Database.Query("SELECT idSchedule, ActionDate, RepeatType, Task, Post FROM Schedule ORDER BY ActionDate");
+			return Database.Query("SELECT idSchedule, ActionDate, RepeatType, RepeatFrequency, Task, Post FROM Schedule ORDER BY ActionDate");
 		}
 
 		/// <summary>
@@ -156,21 +156,21 @@ ORDER BY Name
 						ret.message = "Job deleted";
 						return ret;
 					case RepeatType.Daily:
-						job.ActionDate = job.ActionDate.AddDays(1);
+						job.ActionDate = job.ActionDate.AddDays(job.RepeatFrequency);
 						while (job.ActionDate.DayOfWeek == DayOfWeek.Saturday || job.ActionDate.DayOfWeek == DayOfWeek.Sunday)
 							job.ActionDate = job.ActionDate.AddDays(1);
 						break;
 					case RepeatType.Weekly:
-						job.ActionDate = job.ActionDate.AddDays(7);
+						job.ActionDate = job.ActionDate.AddDays(7 * job.RepeatFrequency);
 						break;
 					case RepeatType.Monthly:
-						job.ActionDate = job.ActionDate.AddMonths(1);
+						job.ActionDate = job.ActionDate.AddMonths(job.RepeatFrequency);
 						break;
 					case RepeatType.Quarterly:
-						job.ActionDate = job.ActionDate.AddMonths(3);
+						job.ActionDate = job.ActionDate.AddMonths(3 * job.RepeatFrequency);
 						break;
 					case RepeatType.Yearly:
-						job.ActionDate = job.ActionDate.AddYears(1);
+						job.ActionDate = job.ActionDate.AddYears(job.RepeatFrequency);
 						break;
 					default:
 						throw new CheckException("Invalid repeat type {0}", job.RepeatType);

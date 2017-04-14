@@ -18,40 +18,56 @@ $(function() {
 				selectOptions: repeatSelectOptions
 			},
 			{
+				data: 'RepeatFrequency',
+				type: 'intInput'
+			},
+			{
 				data: 'Task',
 				type: 'textInput'
 			}
 		]
 	});
+	function calcDate(repeatType, repeatFrequency) {
+		var d = new Date(parseDate(originalDate))
+		switch(repeatType) {
+			case '0':
+				break;
+			case '1':	// Daily
+				d.addDays(repeatFrequency);
+				break;
+			case '2':	// Weekly
+				d.addDays(7 * repeatFrequency);
+				break;
+			case '3':	// Monthly
+				d.addMonths(repeatFrequency);
+				break;
+			case '4':	// Quarterly
+				d.addMonths(3 * repeatFrequency);
+				break;
+			case '5':	// Yearly
+				d.addYears(repeatFrequency);
+				break;
+			default:
+				return;
+		}
+		return d.toYMD();
+	}
 	if(!record.idSchedule) {
 		var originalDate = record.ActionDate;
 		var dateChanged;
 		form.bind('changed.field', function(e, newValue, rowData, col, input) {
 			if(col.name == 'RepeatType' && !dateChanged) {
-				var d = new Date(parseDate(originalDate))
-				switch(newValue) {
-					case '0':
-						break;
-					case '1':	// Daily
-						d.addDays(1);
-						break;
-					case '2':	// Weekly
-						d.addDays(7);
-						break;
-					case '3':	// Monthly
-						d.addMonths(1);
-						break;
-					case '4':	// Quarterly
-						d.addMonths(3);
-						break;
-					case '5':	// Yearly
-						d.addYears(1);
-						break;
-					default:
-						return;
-				}
-				rowData.ActionDate = d.toYMD();
+				rowData.ActionDate = calcDate(newValue, rowData.RepeatFrequency);
 				rowData.RepeatType = newValue;
+				form.draw();
+				return false;
+			} else if(col.name == 'RepeatFrequency' && !dateChanged) {
+				if(newValue < 1) {
+					message('Repeat Frequency must be > 0');
+					return false;
+				}
+				rowData.ActionDate = calcDate(rowData.RepeatType, newValue);
+				rowData.RepeatFrequency = newValue;
 				form.draw();
 				return false;
 			} else if(col.name == 'ActionDate' && newValue != rowData.ActionDate) {
@@ -79,5 +95,6 @@ $(function() {
 </head>
 <body>
 <table id="record"></table>
-<div id="scheduleinfo"></div>
+<div id="scheduleinfo">For example, to repeat every 4 weeks, select a Repeat Type of Weekly, and
+a Repeat Frequency of 4.</div>
 </body>

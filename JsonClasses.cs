@@ -372,6 +372,8 @@ namespace AccountServer {
 		/// <see cref="RepeatType"/>
 		/// </summary>
 		public int RepeatType;
+		[DefaultValue(1)]
+		public int RepeatFrequency;
 		[Length(75)]
 		public string Task;
 		/// <summary>
