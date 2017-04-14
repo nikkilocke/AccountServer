@@ -94,6 +94,7 @@ ORDER BY Name
 		}
 
 		public AjaxReturn JobPost(Schedule json) {
+			Utils.Check(json.RepeatFrequency > 0, "Repeat frequency must be > 0");
 			return PostRecord(json, false);
 		}
 
