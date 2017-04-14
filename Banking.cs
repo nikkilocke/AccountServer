@@ -631,11 +631,15 @@ ORDER BY DocumentDate, idDocument"));
 				currentName = currentName.Split('\n', '\t')[0];
 				if (string.IsNullOrWhiteSpace(name) || (!payment && name.SimilarTo(currentName) < 0.5)) {
 					doc.DocumentName = currentName;
-					NameAddress n = new NameAddress() {
-						Type = "O",
-						Name = currentName
-					};
-					doc.DocumentNameAddressId = Database.Get(n).idNameAddress ?? 0;
+					doc.DocumentNameAddressId = 0;
+					foreach (NameAddress n in Database.Query<NameAddress>("SELECT * FROM NameAddress WHERE Type = 'O' AND Name <= "
+						+ Database.Quote(currentName) + " AND Name LIKE " + Database.Quote(currentName.Substring(0, 5) + "%"))) {
+							if (n.Name.SimilarTo(currentName) >= 0.5) {
+								doc.DocumentName = n.Name;
+								doc.DocumentNameAddressId = n.idNameAddress;
+								break;
+							}
+					}
 				}
 			}
 			doc.DocumentDate = current.Date;
