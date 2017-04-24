@@ -239,7 +239,7 @@ namespace AccountServer {
 
 		public object AuditTransactionsPost(JObject json) {
 			initialiseAuditReport(json);
-			addTable("Extended_Document", "idDocument", "DocumentDate", "DocumentIdentifier", "DocumentName", "DocumentAddress", "DocumentAmount", "DocumentOutstanding", "DocType", "DocumentTypeId");
+			addTable("Extended_Document", "idDocument", "DocumentDate", "DocumentIdentifier", "DocumentName", "DocumentAddress", "DocumentAmount", "DocumentOutstanding", "DocType", "DocumentTypeId", "DocumentMemo");
 			fieldFor("idDocument")["heading"] = "Trans no";
 			fieldFor("DocumentIdentifier")["heading"] = "Doc Id";
 			fieldFor("DocumentTypeId").MakeEssential().Hide();
@@ -416,7 +416,7 @@ ORDER BY " + string.Join(",", sort.Select(s => s + (_sortDescending ? " DESC" : 
 			addTable("Account", "idAccount", "AccountCode", "AccountName", "AccountDescription");
 			addTable("!Journal");
 			addTable("!NameAddress");
-			addTable("Document", "idDocument", "DocumentDate", "DocumentIdentifier", "DocumentTypeId");
+			addTable("Document", "idDocument", "DocumentDate", "DocumentIdentifier", "DocumentTypeId", "DocumentMemo");
 			fieldFor("idDocument").MakeEssential()["heading"] = "Trans no";
 			addTable("DocumentType", "DocType");
 			fieldFor("DocumentIdentifier")["heading"] = "Doc Id";
