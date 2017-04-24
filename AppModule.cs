@@ -14,484 +14,24 @@ using System.Threading;
 using Mustache;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using CodeFirstWebFramework;
 
 namespace AccountServer {
-	/// <summary>
-	/// Holds current session information
-	/// </summary>
-	public class Session : WebServer.BaseSession {
-		public Session(WebServer server)
-			: base(server) {
-		}
-	}
-
 	/// <summary>
 	/// Base class for all app modules
 	/// </summary>
 	
-	public class AppModule : IDisposable {
-		static Dictionary<string, Type> _appModules;	// List of all AppModule types by name ("Module" stripped off end)
-		static int _lastJob;							// Last batch job
-		static Dictionary<int, BatchJob> _jobs = new Dictionary<int, BatchJob>();
+	public class AppModule : CodeFirstWebFramework.AppModule {
 		protected static Settings _settings;			// Common settings, read from database
 
-		static AppModule() {
-			// Build the _appModules dictionary
-			var baseType = typeof(AppModule);
-			var assembly = baseType.Assembly;
-			_appModules = new Dictionary<string, Type>();
-			foreach (Type t in assembly.GetTypes().Where(t => t != baseType && t.IsSubclassOf(baseType))) {
-				string name = t.Name;
-				if (name.EndsWith("Module"))
-					name = name.Substring(0, name.Length - 6);
-				_appModules[name.ToLower()] = t;
-			}
-			using (Database db = new Database()) {
-				_settings = db.QueryOne<Settings>("SELECT * FROM Settings");
-			}
-		}
-
-		public static Encoding Encoding = Encoding.GetEncoding(1252);
-		public static string Charset = "ANSI";
-
-		Database _db;
-
-		public void CloseDatabase() {
-			if (_db != null) {
-				_db.Dispose();
-				_db = null;
-			}
-		}
-
-		public Database Database {
+		public new Database Database {
 			get {
-				if (_db == null) 
-					_db = new Database();
-				return _db;
+				return (Database)base.Database;
 			}
 		}
 
-		/// <summary>
-		/// Get the AppModule for a module name from the url
-		/// </summary>
-		static public Type GetModule(string name) {
-			name = name.ToLower();
-			return _appModules.ContainsKey(name) ? _appModules[name] : null;
-		}
-
-		/// <summary>
-		/// So templates can access Session
-		/// </summary>
-		[JsonIgnore]
-		public Session Session;
-
-		/// <summary>
-		/// Session data in dynamic form
-		/// </summary>
-		[JsonIgnore]
-		public dynamic SessionData {
-			get { return Session.Object; }
-		}
-
-		public StringBuilder LogString;
-
-		/// <summary>
-		/// Log to LogString (for showing in console with response data)
-		/// </summary>
-		public void Log(string s) {
-			if (LogString != null) LogString.AppendLine(s);
-		}
-
-		/// <summary>
-		/// Log to LogString (for showing in console with response data)
-		/// </summary>
-		public void Log(string format, params object[] args) {
-			if (LogString != null) LogString.AppendFormat(format + "\r\n", args);
-		}
-
-		public void Dispose() {
-			if (_db != null && Batch == null) {
-				// Don't close database if a batch job is using it
-				CloseDatabase();
-			}
-		}
-
-		public HttpListenerContext Context;
-
-		public Exception Exception;
-
-		/// <summary>
-		/// Module menu - line 2 of page top menu
-		/// </summary>
-		public MenuOption[] Menu;
-		
-		/// <summary>
-		/// Alert message to show user
-		/// </summary>
-		public string Message;
-
-		public string Method;
-
-		public string Module;
-
-		public string OriginalMethod;
-
-		public string OriginalModule;
-
-		/// <summary>
-		/// Parameters from Url
-		/// </summary>
-		public NameValueCollection GetParameters;
-
-		/// <summary>
-		/// Get & Post parameters combined
-		/// </summary>
-		public JObject Parameters = new JObject();
-
-		/// <summary>
-		/// Parameters from POST
-		/// </summary>
-		public JObject PostParameters;
-
-		public HttpListenerRequest Request {
-			get { return Context.Request; }
-		}
-
-		public HttpListenerResponse Response {
-			get { return Context.Response; }
-		}
-
-		/// <summary>
-		/// Used for the web page title
-		/// </summary>
-		public string Title;
-
-		/// <summary>
-		/// All Modules running batch jobs
-		/// </summary>
-		static public IEnumerable<BatchJob> Jobs {
-			get { return _jobs.Values; }
-		}
-
-		public Settings Settings {
-			get { return _settings; }
-		}
-
-		public AppSettings Config {
-			get { return AccountServer.AppSettings.Default; }
-		}
-
-		static public Settings AppSettings {
-			get { return _settings; }
-		}
-
-		/// <summary>
-		/// Goes into the web page header
-		/// </summary>
-		public string Head;
-
-		/// <summary>
-		/// Goes into the web page body
-		/// </summary>
-		public string Body;
-
-		public bool ResponseSent { get; private set; }
-
-		public string Today {
-			get { return Utils.Today.ToString("yyyy-MM-dd"); }
-		}
-
-		/// <summary>
-		/// Generic object for templates to use - usually contains data from the database
-		/// </summary>
-		public object Record;
-
-		/// <summary>
-		/// Background batch job (e.g. import, restore)
-		/// </summary>
-		public class BatchJob {
-			AppModule _module;
-			string _redirect;
-			int _record;
-
-			/// <summary>
-			/// Create a batch job that redirects back to the module's original method on completion
-			/// </summary>
-			/// <param name="module">Module containing Database, Session, etc.</param>
-			/// <param name="action">Action to run the job</param>
-			public BatchJob(AppModule module, Action action)
-				: this(module, null, action) {
-			}
-
-			/// <summary>
-			/// Create a batch job that redirects somewhere specific
-			/// </summary>
-			/// <param name="module">Module containing Database, Session, etc.</param>
-			/// <param name="action">Action to run the job</param>
-			public BatchJob(AppModule module, string redirect, Action action) {
-				_module = module;
-				_redirect = redirect ?? "/" + module.Module.ToLower() + "/" + module.Method.ToLower() + ".html";
-				Status = "";
-				Records = 100;
-				module.Batch = this;
-				// Get the next job number
-				lock (_jobs) {
-					Id = ++_lastJob;
-					_jobs[Id] = this;
-				}
-				module.Log("Started batch job {0}", Id);
-				new Task(delegate() {
-					Thread.Sleep(500);	// 1/2 second to allow module page to return
-					runBatch(action);
-					_module.CloseDatabase();
-					Thread.Sleep(60000);	// 1 minute
-					lock (_jobs) {
-						_jobs.Remove(Id);
-					}
-				}).Start();
-				module.Module = "admin";
-				module.Method = "batch";
-			}
-
-			void runBatch(Action action) {
-				try {
-				_module.LogString = new StringBuilder();
-				_module.Log("Running batch job {0}", Id);
-					action();
-				} catch (Exception ex) {
-					_module.Log("Batch job {0} Exception: {1}", Id, ex);
-					Status = "An error occurred";
-					Error = ex.Message;
-				}
-				_module.Log("Finished batch job {0}", Id);
-				WebServer.Log(_module.LogString.ToString());
-				_module.LogString = null;
-				_module.Record = null;
-				_module.Batch = null;
-				Finished = true;
-			}
-
-			/// <summary>
-			/// Job id
-			/// </summary>
-			public int Id { get; private set; }
-
-			/// <summary>
-			/// Error message (e.g. on exception)
-			/// </summary>
-			public string Error;
-
-			public bool Finished;
-
-			/// <summary>
-			/// For progress display
-			/// </summary>
-			public int PercentComplete {
-				get {
-					return Records == 0 ? 100 : 100 * Record / Records;
-				}
-			}
-
-			/// <summary>
-			/// To indicate progress (0...Records)
-			/// </summary>
-			public virtual int Record {
-				get {
-					return _record;
-				}
-				set {
-					_record = value;
-				}
-			}
-
-			/// <summary>
-			/// Total number of records (for progress bar)
-			/// </summary>
-			public int Records;
-
-			/// <summary>
-			/// Where redirecting to on completion
-			/// </summary>
-			public string Redirect {
-				get {
-					return _redirect == null ? null : _redirect + (_redirect.Contains('?') ? '&' : '?') + "message=" 
-						+ (string.IsNullOrEmpty(_module.Message) ? "Job completed" : HttpUtility.UrlEncode(_module.Message));
-				}
-			}
-
-			/// <summary>
-			/// For status/progress display
-			/// </summary>
-			public string Status;
-		}
-
-		/// <summary>
-		/// BatchJob started by this module
-		/// </summary>
-		public BatchJob Batch;
-
-		/// <summary>
-		/// Get batch job from id (for status/progress display)
-		/// </summary>
-		public static BatchJob GetBatchJob(int id) {
-			BatchJob job;
-			return _jobs.TryGetValue(id, out job) ? job : null;
-		}
-
-		/// <summary>
-		/// Responds to a Url request. Set up the AppModule variables and call the given method
-		/// </summary>
-		public void Call(HttpListenerContext context, string moduleName, string methodName) {
-			Context = context;
-			OriginalModule = Module = moduleName.ToLower();
-			OriginalMethod = Method = (methodName ?? "default").ToLower();
-			LogString.Append(GetType().Name + ":" + Title + ":");
-			// Collect get parameters
-			GetParameters = new NameValueCollection();
-			for (int i = 0; i < Request.QueryString.Count; i++) {
-				string key = Request.QueryString.GetKey(i);
-				string value = Request.QueryString[i];
-				if (key == null) {
-					GetParameters[value] = "";
-				} else {
-					GetParameters[key] = value;
-					if (key == "message")
-						Message = value;
-				}
-			}
-			// Add into parameters array
-			Parameters.AddRange(GetParameters);
-			// Collect POST parameters
-			if (context.Request.HttpMethod == "POST") {
-				PostParameters = new JObject();
-				if (context.Request.ContentType != null) {
-					string data;
-					// Encoding 1252 will give exactly 1 character per input character, without translation
-					using (StreamReader s = new StreamReader(context.Request.InputStream, Encoding.GetEncoding(1252))) {
-						data = s.ReadToEnd();
-					}
-					if (context.Request.ContentType.StartsWith("multipart/form-data")) {
-						string boundary = "--" + (Regex.Split(context.Request.ContentType, "boundary=")[1]);
-						foreach (string part in Regex.Split("\r\n" + data, ".." + boundary, RegexOptions.Singleline)) {
-							if (part.Trim() == "" || part.Trim() == "--") continue;
-							int pos = part.IndexOf("\r\n\r\n");
-							string headers = part.Substring(0, pos);
-							string value = part.Substring(pos + 4);
-							Match match = new Regex(@"form-data; name=""(\w+)""").Match(headers);
-							if (match.Success) {
-								// This is a file upload
-								string field = match.Groups[1].Value;
-								match = new Regex(@"; filename=""(.*)""").Match(headers);
-								if (match.Success) {
-									PostParameters.Add(field, new UploadedFile(Path.GetFileName(match.Groups[1].Value), value).ToJToken());
-								} else {
-									PostParameters.Add(field, value);
-								}
-							}
-						}
-					} else {
-						PostParameters.AddRange(HttpUtility.ParseQueryString(data));
-					}
-					Parameters.AddRange(PostParameters);
-					if (Config.PostLogging) {
-						foreach (KeyValuePair<string, JToken> p in PostParameters) {
-							Log("\t{0}={1}", p.Key,
-								p.Key == "json" ? JObject.Parse(p.Value.ToString()).ToString(Formatting.Indented).Replace("\n", "\n\t") :
-								p.Value.Type == JTokenType.Object ? "file " + ((JObject)p.Value)["Name"] :
-								p.Value.ToString());
-						}
-					}
-				}
-			}
-			MethodInfo method = null;
-			try {
-				object o = CallMethod(out method);
-				if (method == null) {
-					WriteResponse("Page /" + Module + "/" + Method + ".html not found", "text/html", HttpStatusCode.NotFound);
-					return;
-				}
-				if (!ResponseSent) {
-					// Method has not sent a response - do the default response
-					Response.AddHeader("Expires", DateTime.UtcNow.ToString("R"));
-					if (method.ReturnType == typeof(void))
-						Respond();									// Builds response from template
-					else
-						WriteResponse(o, null, HttpStatusCode.OK);	// Builds response from return value
-				}
-			} catch (Exception ex) {
-				Log("Exception: {0}", ex);
-				while (ex is TargetInvocationException) {
-					// Strip off TargetInvokationExceptions so message is meaningful
-					ex = ex.InnerException;
-				}
-				if (ex is DatabaseException)
-					Log(((DatabaseException)ex).Sql);	// Log Sql of all database exceptions
-				if (method == null || method.ReturnType == typeof(void)) throw;	// Will produce exception page
-				// Send an AjaxReturn object indicating the error
-				WriteResponse(new AjaxReturn() { error = ex.Message }, null, HttpStatusCode.OK);
-			}
-		}
-
-		/// <summary>
-		/// Call the method named by Method, and return its result
-		/// </summary>
-		/// <param name="method">Also return the MethodInfo so caller knows what return type it has.
-		/// Will be set to null if there is no such named method.</param>
-
-		public object CallMethod(out MethodInfo method) {
-			List<object> parms = new List<object>();
-			method = this.GetType().GetMethod(Method, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
-			if (method == null) {
-				return null;
-			}
-			string moduleName = GetType().Name;
-			if (moduleName.EndsWith("Module"))
-				moduleName = moduleName.Substring(0, moduleName.Length - 6);
-			Title = moduleName.UnCamel();
-			if (method.Name != "Default") Title += " - " + method.Name.UnCamel();
-			// Collect any parameters required by the method from the GET/POST parameters
-			foreach (ParameterInfo p in method.GetParameters()) {
-				JToken val = Parameters[p.Name];
-				object o;
-				Utils.Check(val != null, "Missing parameter {0}", p.Name);
-				try {
-					if (p.ParameterType == typeof(int)
-						|| p.ParameterType == typeof(decimal)
-						|| p.ParameterType == typeof(string)
-						|| p.ParameterType == typeof(DateTime)) {
-						// Plain parameter - convert directly
-						o = val.ToObject(p.ParameterType);
-					} else if (p.ParameterType == typeof(UploadedFile)) {
-						// Uploaded file - "null" means null
-						if (val.ToString() == "null")
-							o = null;
-						else
-							o = val.ToObject(typeof(UploadedFile));
-					} else if (val.Type == JTokenType.String && val.ToString() == "null") {
-						o = null;		// "null" means null for any other type too
-					} else if (p.ParameterType == typeof(int?)
-						|| p.ParameterType == typeof(decimal?)) {
-						// Have dealt with "null" - convert in? or decimal?
-						o = val.ToObject(p.ParameterType);
-					} else {
-						// Everything else is assumed to arrive as a json string
-						o = val.ToObject<string>().JsonTo(p.ParameterType);
-					}
-					parms.Add(o);
-				} catch(Exception ex) {
-					Match m = Regex.Match(ex.Message, "Error converting value (.*) to type '(.*)'. Path '(.*)', line");
-					if(m.Success)
-						throw new CheckException(ex, "{0} is an invalid value for {1}", m.Groups[1], m.Groups[3]);
-					throw new CheckException(ex, "Could not convert {0} to {1}", val, p.ParameterType.Name);
-				}
-			}
-			return method.Invoke(this, parms.Count == 0 ? null : parms.ToArray());
-		}
-
-		/// <summary>
-		/// Method to call if no method supplied in url
-		/// </summary>
-		public virtual void Default() {
+		public new Settings Settings {
+			get { return base.Settings.To<Settings>(); }
 		}
 
 		/// <summary>
@@ -751,118 +291,6 @@ WHERE Journal.DocumentId = " + document.idDocument));
 		}
 
 		/// <summary>
-		/// Add an extra option to the menu, before any "New xxxx" options
-		/// </summary>
-		protected void insertMenuOption(MenuOption o) {
-			int i;
-			for (i = 0; i < Menu.Length; i++) {
-				if (Menu[i].Text.StartsWith("New "))
-					break;
-			}
-			List<MenuOption> list = Menu.ToList();
-			list.Insert(i, o);
-			Menu = list.ToArray();
-		}
-
-		/// <summary>
-		/// Load the text of a template from a file, first processing any includes, 
-		/// and making any required substitutions
-		/// </summary>
-		string loadFile(string filename) {
-			using (StreamReader s = Utils.FileInfoForUrl(filename.ToLower()).OpenText()) {
-				string text = s.ReadToEnd();
-				// Process includes with a recursive call
-				text = Regex.Replace(text, @"\{\{ *include +(.*) *\}\}", delegate(Match m) {
-					return loadFile(m.Groups[1].Value);
-				});
-				// In javascript, you can comment Mustache parameters to avoid syntax errors. The comment "//" is removed
-				text = Regex.Replace(text, @"//[\s]*{{([^{}]+)}}[\s]*$", "{{$1}}");
-				// In javascript, you can place a Mustache parameter in a string with a pling ('!{{name}}') to avoid syntax errors.
-				// The quotes and the pling are removed
-				text = Regex.Replace(text, @"'!{{([^{}]+)}}'", "{{$1}}");
-				// {{{name}}} is replaced by html quoted version of the parameter value - the quoting is done later
-				// we just mark it with \001 and \002 characters for now.
-				text = Regex.Replace(text, @"{{{([^{}]+)}}}", "\001{{$1}}\002");
-				return text;
-			}
-		}
-
-		/// <summary>
-		/// Load the named template, render using Mustache to substite the parameters from the supplied object.
-		/// E.g. {{Body} in the template will be replaced with the obj.Body.ToString()
-		/// </summary>
-		public string LoadTemplate(string filename, object obj) {
-			try {
-				FormatCompiler compiler = new FormatCompiler();
-				compiler.RemoveNewLines = false;
-				if (Path.GetExtension(filename) == "")
-					filename += ".html";
-				Generator generator = compiler.Compile(loadFile(filename));
-				string result = generator.Render(obj);
-				result = Regex.Replace(result, "\001(.*?)\002", delegate(Match m) {
-					return HttpUtility.HtmlEncode(m.Groups[1].Value).Replace("\n", "\n<br />");
-				}, RegexOptions.Singleline);
-				return result;
-			} catch (DatabaseException) {
-				throw;
-			} catch (Exception ex) {
-				throw new CheckException(ex, "{0}.html:{1}", filename, ex.Message);
-			}
-		}
-
-		/// <summary>
-		/// Load the named template, and render using Mustache from the supplied object.
-		/// E.g. {{Body} in the template will be replaced with the obj.Body.ToString()
-		/// Then split into <head> (goes to this.Head) and <body> (goes to this.Body)
-		/// If no head/body sections, the whole template goes into this.Body.
-		/// Then render the default template from this.
-		/// </summary>
-		public string Template(string filename, object obj) {
-			string body = LoadTemplate(filename, obj);
-			this.Head = extractSection("head", ref body);
-			this.Body = extractSection("body", ref body);
-			if (this.Body == "")
-				this.Body = body;
-			return LoadTemplate("default", this);
-		}
-
-		string extractSection(string name, ref string template) {
-			Match m = Regex.Match(template, "<" + name + ">(.*)</" + name + ">", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-			if (m.Success) {
-				template = template.Replace(m.Value, "");
-				return m.Groups[1].Value;
-			} else {
-				return "";
-			}
-		}
-
-		public void Redirect(string url) {
-			if (Context == null)
-				return;
-			Response.Redirect(url);
-			WriteResponse("", "text/plain", HttpStatusCode.Redirect);
-		}
-
-		/// <summary>
-		/// Render the template Module/Method.html from this.
-		/// </summary>
-		public void Respond() {
-			try {
-				string filename = Path.Combine(Module, Method).ToLower();
-				string page = Template(filename, this);
-				WriteResponse(page, "text/html", HttpStatusCode.OK);
-			} catch (System.IO.FileNotFoundException ex) {
-				Log(ex.ToString());
-				Exception = ex;
-				WriteResponse(Template("exception", this), "text/html", HttpStatusCode.NotFound);
-			} catch (Exception ex) {
-				Log(ex.ToString());
-				Exception = ex;
-				WriteResponse(Template("exception", this), "text/html", HttpStatusCode.InternalServerError);
-			}
-		}
-
-		/// <summary>
 		/// Return the sign to use for documents of the supplied type.
 		/// </summary>
 		/// <returns>-1 or 1</returns>
@@ -898,237 +326,142 @@ WHERE Journal.DocumentId = " + document.idDocument));
 			return retval;
 		}
 
-		/// <summary>
-		/// Write the response to an Http request.
-		/// </summary>
-		/// <param name="o">The object to write ("Operation complete" if null)</param>
-		/// <param name="contentType">The content type (suitable default is used if null)</param>
-		/// <param name="status">The Http return code</param>
-		public void WriteResponse(object o, string contentType, HttpStatusCode status) {
-			if (ResponseSent) throw new CheckException("Response already sent");
-			ResponseSent = true;
-			Response.StatusCode = (int)status;
-			Response.ContentEncoding = Encoding;
-			switch (contentType) {
-				case "text/plain":
-				case "text/html":
-					contentType += ";charset=" + Charset;
-					break;
-			}
-			string logStatus = status.ToString();
-			byte[] msg;
-			if (o != null) {
-				if (o is Stream) {
-					// Stream is sent unchanged
-					Response.ContentType = contentType ?? "application/binary";
-					Response.ContentLength64 = ((Stream)o).Length;
-					Log("{0}:{1} bytes ", status, Response.ContentLength64);
-					using (Stream r = Response.OutputStream) {
-						((Stream)o).CopyTo(r);
-					}
-					return;
-				} else if (o is string) {
-					// String is sent unchanged
-					msg = Encoding.GetBytes((string)o);
-					Response.ContentType = contentType ?? "text/plain;charset=" + Charset;
-				} else {
-					// Anything else is sent as json
-					Response.ContentType = contentType ?? "application/json;charset=" + Charset;
-					msg = Encoding.GetBytes(o.ToJson());
-					if (o is AjaxReturn)
-						logStatus = o.ToString();
-				}
-			} else {
-				msg = Encoding.GetBytes("Operation complete");
-				Response.ContentType = contentType ?? "text/plain;charset=" + Charset;
-			}
-			Response.ContentLength64 = msg.Length;
-			Log("{0}:{1} bytes ", logStatus, Response.ContentLength64);
-			using (Stream r = Response.OutputStream) {
-				r.Write(msg, 0, msg.Length);
+		// Select values
+		public JObjectEnumerable SelectAccounts() {
+			return Database.Query(@"idAccount AS id, AccountName AS value, AcctType AS category, Protected + HideAccount as hide",
+				"WHERE HideAccount = 0 or HideAccount is null ORDER BY idAccountType, AccountName",
+				"Account");
+		}
+
+		public JObjectEnumerable SelectAllAccounts() {
+			return Database.Query(@"idAccount AS id, AccountName AS value, AcctType AS category, HideAccount as hide",
+				" ORDER BY idAccountType, AccountName",
+				"Account");
+		}
+
+		public JObjectEnumerable SelectAccountTypes() {
+			return Database.Query(@"idAccountType AS id, AcctType AS value",
+				" ORDER BY idAccountType",
+				"AccountType");
+		}
+
+		public IEnumerable<JObject> SelectAuditTypes() {
+			for (AuditType t = AuditType.Insert; t <= AuditType.Delete; t++) {
+				yield return new JObject().AddRange("id", (int)t, "value", t.UnCamel());
 			}
 		}
 
-	}
-
-	/// <summary>
-	/// Class to serve files
-	/// </summary>
-	public class FileSender : AppModule {
-		string _filename;
-
-		public FileSender(string filename) {
-			_filename = filename;
+		public JObjectEnumerable SelectBankAccounts() {
+			return Database.Query(@"idAccount AS id, AccountName AS value, AcctType AS category, HideAccount AS hide",
+				"WHERE AccountTypeId in (" + (int)AcctType.Bank + "," + (int)AcctType.CreditCard + ")"
+				+ " ORDER BY idAccountType, AccountName",
+					 "Account");
 		}
 
-		public override void Default() {
-			Title = "";
-			FileInfo file = Utils.FileInfoForUrl(_filename);
-			if (!file.Exists) {
-				WriteResponse("", "text/plain", HttpStatusCode.NotFound);
-				return;
-			}
-			string ifModifiedSince = Request.Headers["If-Modified-Since"];
-			if (!string.IsNullOrEmpty(ifModifiedSince)) {
-				try {
-					DateTime modifiedSince = DateTime.Parse(ifModifiedSince.Split(';')[0]);
-					if (modifiedSince >= file.LastWriteTimeUtc) {
-						WriteResponse("", "text/plain", HttpStatusCode.NotModified);
-						return;
-					}
-				} catch {
-				}
-			}
-			using (Stream i = file.OpenRead()) {
-				string contentType;
-				switch (Path.GetExtension(_filename).ToLower()) {
-					case ".htm":
-					case ".html":
-						contentType = "text/html";
-						break;
-					case ".css":
-						contentType = "text/css";
-						break;
-					case ".js":
-						contentType = "text/javascript";
-						break;
-					case ".xml":
-						contentType = "text/xml";
-						break;
-					case ".bmp":
-						contentType = "image/bmp";
-						break;
-					case ".gif":
-						contentType = "image/gif";
-						break;
-					case ".jpg":
-						contentType = "image/jpeg";
-						break;
-					case ".jpeg":
-						contentType = "image/jpeg";
-						break;
-					case ".png":
-						contentType = "image/x-png";
-						break;
-					case ".txt":
-						contentType = "text/plain";
-						break;
-					case ".doc":
-						contentType = "application/msword";
-						break;
-					case ".pdf":
-						contentType = "application/pdf";
-						break;
-					case ".xls":
-						contentType = "application/x-msexcel";
-						break;
-					case ".wav":
-						contentType = "audio/x-wav";
-						break;
-					default:
-						contentType = "application/binary";
-						break;
-				}
-				Response.AddHeader("Last-Modified", file.LastWriteTimeUtc.ToString("r"));
-				WriteResponse(i, contentType, HttpStatusCode.OK);
-			}
-		}
-	}
-
-	/// <summary>
-	/// Class to hold details of an uploaded file (from an <input type="file" />)
-	/// </summary>
-	public class UploadedFile {
-
-		public UploadedFile(string name, string content) {
-			Name = name;
-			Content = content;
+		public JObjectEnumerable SelectBankOrStockAccounts() {
+			return Database.Query(@"idAccount AS id, AccountName AS value, AcctType AS category, HideAccount AS hide",
+				"WHERE AccountTypeId in (" + (int)AcctType.Bank + "," + (int)AcctType.CreditCard + "," + (int)AcctType.Investment + ")"
+				+ " ORDER BY idAccountType, AccountName",
+					 "Account");
 		}
 
-		/// <summary>
-		/// File contents - Windows1252 was used to read it in, so saving it as Windows1252 will be an exact binary copy
-		/// </summary>
-		public string Content { get; private set; }
-
-		public string Name { get; private set; }
-
-		/// <summary>
-		/// The file contents as a stream
-		/// </summary>
-		public Stream Stream() {
-			return new MemoryStream(Encoding.GetEncoding(1252).GetBytes(Content));
-		}
-	}
-
-	/// <summary>
-	/// Menu option for the second level menu
-	/// </summary>
-	public class MenuOption {
-		public MenuOption(string text, string url) : this(text, url, true) {
+		public JObjectEnumerable SelectCustomers() {
+			return SelectNames("C");
 		}
 
-		public MenuOption(string text, string url, bool enabled) {
-			Text = text;
-			Url = url;
-			Enabled = enabled;
+		public JObjectEnumerable SelectDocumentTypes() {
+			return Database.Query(@"idDocumentType AS id, DocType AS value",
+				" ORDER BY idDocumentType",
+				"DocumentType");
 		}
 
-		public bool Disabled { 
-			get { return !Enabled; } 
+		public JObjectEnumerable SelectExpenseAccounts() {
+			return Database.Query(@"idAccount AS id, AccountName AS value, AcctType AS category, Protected + HideAccount as hide",
+				"WHERE AccountTypeId " + Database.In(AcctType.Expense, AcctType.OtherExpense) + " ORDER BY idAccountType, AccountName",
+				"Account");
 		}
 
-		public bool Enabled;
-
-		/// <summary>
-		/// Html element id - text with no spaces
-		/// </summary>
-		public string Id {
-			get { return Text.Replace(" ", ""); }
+		public JObjectEnumerable SelectIncomeAccounts() {
+			return Database.Query(@"idAccount AS id, AccountName AS value, AcctType AS category, Protected + HideAccount as hide",
+				"WHERE AccountTypeId = " + (int)AcctType.Income + " ORDER BY idAccountType, AccountName",
+				"Account");
 		}
 
-		public string Text;
-
-		public string Url;
-	}
-
-	/// <summary>
-	/// Generic return type used for Ajax requests
-	/// </summary>
-	public class AjaxReturn {
-		/// <summary>
-		/// Exception message - if not null or empty, request has failed
-		/// </summary>
-		public string error;
-		/// <summary>
-		/// Message for user
-		/// </summary>
-		public string message;
-		/// <summary>
-		/// Where to redirect to on completion
-		/// </summary>
-		public string redirect;
-		/// <summary>
-		/// Ask the user to confirm something, and resubmit with confirm parameter if the user says yes
-		/// </summary>
-		public string confirm;
-		/// <summary>
-		/// If a record has been saved, this is the id of the record.
-		/// Usually used to re-read the page, especially when the request was to create a new record.
-		/// </summary>
-		public int? id;
-		/// <summary>
-		/// Arbitrary data which the caller needs
-		/// </summary>
-		public object data;
-
-		public override string ToString() {
-			StringBuilder b = new StringBuilder("AjaxReturn");
-			if (!string.IsNullOrEmpty(error)) b.AppendFormat(",error:{0}", error);
-			if (!string.IsNullOrEmpty(message)) b.AppendFormat(",message:{0}", message);
-			if (!string.IsNullOrEmpty(confirm)) b.AppendFormat(",confirm:{0}", confirm);
-			if (!string.IsNullOrEmpty(redirect)) b.AppendFormat(",redirect:{0}", redirect);
-			return b.ToString();
+		public JObjectEnumerable SelectNames() {
+			return Database.Query(@"idNameAddress AS id, Name AS value, CASE Type WHEN 'C' THEN 'Customers' WHEN 'S' THEN 'Suppliers' ELSE 'Others' END AS category, Hidden as hide",
+				" ORDER BY Type, Name",
+				"NameAddress");
 		}
+
+		public JObjectEnumerable SelectNames(string nameType) {
+			return Database.Query(@"idNameAddress AS id, Name AS value, Hidden as hide, Address, Telephone",
+				"WHERE Type = " + Database.Quote(nameType) + " ORDER BY Name",
+				"NameAddress");
+		}
+
+		public IEnumerable<JObject> SelectNameTypes() {
+			return new JObject[] {
+				new JObject().AddRange("id", "C", "value", "Customer"),
+				new JObject().AddRange("id", "S", "value", "Supplier"),
+				new JObject().AddRange("id", "O", "value", "Other")
+			};
+		}
+
+		public JObjectEnumerable SelectOthers() {
+			return SelectNames("O");
+		}
+
+		public JObjectEnumerable SelectProducts() {
+			return Database.Query(@"idProduct AS id, ProductName AS value, ProductDescription, UnitPrice, VatCodeId, Code, VatDescription, Rate, AccountId, Unit",
+				" ORDER BY ProductName",
+				"Product");
+		}
+
+		public JObjectEnumerable SelectReportGroups() {
+			return Database.Query(@"ReportGroup AS id, ReportGroup AS value",
+				" GROUP BY ReportGroup ORDER BY ReportGroup",
+				"Report");
+		}
+
+		public JObjectEnumerable SelectSecurities() {
+			return Database.Query(@"idSecurity AS id, SecurityName AS value",
+				" ORDER BY SecurityName",
+				"Security");
+		}
+
+		public JObjectEnumerable SelectSuppliers() {
+			return SelectNames("S");
+		}
+
+		public IEnumerable<JObject> SelectVatCodes() {
+			List<JObject> result = Database.Query(@"idVatCode AS id, Code, VatDescription, Rate",
+				" ORDER BY Code",
+				"VatCode").ToList();
+			foreach (JObject o in result)
+				o["value"] = o.AsString("Code") + " (" + o.AsDecimal("Rate") + "%)";
+			result.Insert(0, new JObject().AddRange("id", null,
+				"value", "",
+				"Rate", 0));
+			return result;
+		}
+
+		public IEnumerable<JObject> SelectVatTypes() {
+			return new JObject[] {
+				new JObject().AddRange("id", -1, "value", "Sales"),
+				new JObject().AddRange("id", 1, "value", "Purchases")
+			};
+		}
+
+		public JObjectEnumerable SelectVatPayments() {
+			return Database.Query(@"SELECT idDocument as id, DocumentDate as value
+FROM Document
+JOIN Journal ON DocumentId = idDocument
+WHERE AccountId = 8
+AND JournalNum = 2
+AND DocumentTypeId IN (7, 8, 9, 10)
+ORDER BY idDocument");
+		}
+
 	}
 
 }

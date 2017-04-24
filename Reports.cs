@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Reflection;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using CodeFirstWebFramework;
 
 namespace AccountServer {
 	public class Reports : AppModule {
@@ -63,10 +64,6 @@ namespace AccountServer {
 		/// Whether change type required in Audit reports
 		/// </summary>
 		bool _changeTypeNotRequired;
-		/// <summary>
-		/// To use for filter selections
-		/// </summary>
-		Select _sel;
 		/// <summary>
 		/// All reports have a date filter
 		/// </summary>
@@ -134,7 +131,7 @@ namespace AccountServer {
 			fieldFor("idAccountType").MakeEssential().Hide();
 			_filters.Add(new StringFilter("AccountName", "Account.AccountName"));
 			_filters.Add(new StringFilter("AccountDescription", "Account.AccountDescription"));
-			_filters.Add(new RecordFilter("AccountType", "Account.AccountTypeId", _sel.AccountTypes("")));
+			_filters.Add(new RecordFilter("AccountType", "Account.AccountTypeId", SelectAccountTypes()));
 		}
 
 		public void AuditAccounts(int id) {
@@ -227,7 +224,7 @@ namespace AccountServer {
 			fieldFor("DocumentTypeId").MakeEssential().Hide();
 			addTable("Journal", "Amount", "Cleared");
 			fieldFor("Cleared")["type"] = "checkbox";
-			_filters.Add(new RecordFilter("Account", "idAccount", _sel.BankAccount("")));
+			_filters.Add(new RecordFilter("Account", "idAccount", SelectBankAccounts()));
 			_split = true;
 			return auditReportData(json, "Reconciliation", "AccountName", "OpeningBalance", "EndingBalance", "ClearedBalance", "DocumentDate", "DocType", "DocumentIdentifier", "DocumentName", "Cleared", "Amount");
 		}
@@ -239,7 +236,7 @@ namespace AccountServer {
 
 		public object AuditTransactionsPost(JObject json) {
 			initialiseAuditReport(json);
-			addTable("Extended_Document", "idDocument", "DocumentDate", "DocumentIdentifier", "DocumentName", "DocumentAddress", "DocumentAmount", "DocumentOutstanding", "DocType", "DocumentTypeId");
+			addTable("Extended_Document", "idDocument", "DocumentDate", "DocumentIdentifier", "DocumentName", "DocumentAddress", "DocumentAmount", "DocumentOutstanding", "DocType", "DocumentTypeId", "DocumentMemo");
 			fieldFor("idDocument")["heading"] = "Trans no";
 			fieldFor("DocumentIdentifier")["heading"] = "Doc Id";
 			fieldFor("DocumentTypeId").MakeEssential().Hide();
@@ -249,15 +246,15 @@ namespace AccountServer {
 			addTable("VatCode", "Code");
 			addTable("Line");
 			addTable("Product", "ProductName");
-			_filters.Add(new DateFilter("DocumentDate", DateRange.All));
+			_filters.Add(new DateFilter(Settings, "DocumentDate", DateRange.All));
 			_filters.Add(new StringFilter("Id", "DocumentIdentifier"));
 			_filters.Add(new DecimalFilter("DocumentAmount", "Extended_Document.DocumentAmount"));
 			_filters.Add(new DecimalFilter("DocumentOutstanding", "Extended_Document.DocumentOutstanding"));
-			_filters.Add(new RecordFilter("DocumentType", "DocumentTypeId", _sel.DocumentType("")));
-			_filters.Add(new RecordFilter("Account", "Journal.AccountId", _sel.Account("")));
-			_filters.Add(new RecordFilter("NameAddress", "Journal.NameAddressId", _sel.Name("")));
-			_filters.Add(new RecordFilter("VatCode", "Line.VatCodeId", _sel.VatCode("")));
-			_filters.Add(new RecordFilter("Product", "Line.ProductId", _sel.Product("")));
+			_filters.Add(new RecordFilter("DocumentType", "DocumentTypeId", SelectDocumentTypes()));
+			_filters.Add(new RecordFilter("Account", "Journal.AccountId", SelectAccounts()));
+			_filters.Add(new RecordFilter("NameAddress", "Journal.NameAddressId", SelectNames()));
+			_filters.Add(new RecordFilter("VatCode", "Line.VatCodeId", SelectVatCodes()));
+			_filters.Add(new RecordFilter("Product", "Line.ProductId", SelectProducts()));
 			_filters.Add(new DecimalFilter("JournalAmount", "Journal.Amount"));
 			_filters.Add(new StringFilter("Memo", "Journal.Memo"));
 			_split = true;
@@ -308,7 +305,7 @@ namespace AccountServer {
 			_total = true;
 			setDefaultFields(json, "AccountId", "Name", "Current", "b1", "b31", "b61", "old", "Total");
 			setFilters(json);	// we account filter value setting now
-			string where = account.Active ? account.Where() : "AccountId IN (1, 2)";
+			string where = account.Active ? account.Where(Database) : "AccountId IN (1, 2)";
 			return finishReport(json, @"(SELECT AccountId, NameAddressId, Name, Outstanding, 
     DATEDIFF(" + Database.Quote(Utils.Today) + @", DocumentDate) AS age
 FROM Journal
@@ -334,7 +331,7 @@ AND Outstanding <> 0
 			fieldFor("Heading").MakeEssential();
 			fieldFor("Negate").MakeEssential().Hide();
 			fieldFor("BalanceSheet").MakeEssential().Hide();
-			DateFilter date = new DateFilter("DocumentDate", DateRange.LastYear);
+			DateFilter date = new DateFilter(Settings, "DocumentDate", DateRange.LastYear);
 			ReportField cp = new ReportField("CurrentPeriod", "decimal", "Current Period");
 			_fields.Add(cp);
 			ReportField lp = new ReportField("PreviousPeriod", "decimal", "Previous Period");
@@ -390,14 +387,14 @@ ORDER BY " + string.Join(",", sort.Select(s => s + (_sortDescending ? " DESC" : 
 			fieldFor("VatPaid")["type"] = "checkbox";
 			addTable("NameAddress", "Type", "Telephone", "Email", "Contact");
 			fieldFor("Type")["type"] = "select";
-			fieldFor("Type")["selectOptions"] = new JArray(_sel.NameTypes());
+			fieldFor("Type")["selectOptions"] = new JArray(SelectNameTypes());
 			fieldFor("Email")["type"] = "email";
-			_filters.Add(new DateFilter("DocumentDate", DateRange.ThisMonth));
+			_filters.Add(new DateFilter(Settings, "DocumentDate", DateRange.ThisMonth));
 			_filters.Add(new StringFilter("Id", "DocumentIdentifier"));
 			_filters.Add(new DecimalFilter("DocumentAmount", "Extended_Document.DocumentAmount"));
 			_filters.Add(new DecimalFilter("DocumentOutstanding", "Extended_Document.DocumentOutstanding"));
-			_filters.Add(new RecordFilter("DocumentType", "DocumentTypeId", _sel.DocumentType("")));
-			_filters.Add(new RecordFilter("NameAddress", "DocumentNameAddressId", _sel.Name("")));
+			_filters.Add(new RecordFilter("DocumentType", "DocumentTypeId", SelectDocumentTypes()));
+			_filters.Add(new RecordFilter("NameAddress", "DocumentNameAddressId", SelectNames()));
 			_filters.Add(new StringFilter("DocumentMemo", "DocumentMemo"));
 			makeSortable("idDocument=Trans no", "DocumentDate", "DocumentIdentifier=Doc Id", "Type,DocumentName=Document Name", "DocumentAmount", "DocType");
 			setDefaultFields(json, "idDocument", "DocType", "DocumentDate", "DocumentName", "DocumentIdentifier", "DocumentAmount", "DocumentOutstanding");
@@ -416,7 +413,7 @@ ORDER BY " + string.Join(",", sort.Select(s => s + (_sortDescending ? " DESC" : 
 			addTable("Account", "idAccount", "AccountCode", "AccountName", "AccountDescription");
 			addTable("!Journal");
 			addTable("!NameAddress");
-			addTable("Document", "idDocument", "DocumentDate", "DocumentIdentifier", "DocumentTypeId");
+			addTable("Document", "idDocument", "DocumentDate", "DocumentIdentifier", "DocumentTypeId", "DocumentMemo");
 			fieldFor("idDocument").MakeEssential()["heading"] = "Trans no";
 			addTable("DocumentType", "DocType");
 			fieldFor("DocumentIdentifier")["heading"] = "Doc Id";
@@ -426,22 +423,22 @@ ORDER BY " + string.Join(",", sort.Select(s => s + (_sortDescending ? " DESC" : 
 			fieldFor("Credit").FullFieldName = "Result.Amount";
 			fieldFor("Debit").FullFieldName = "Result.Amount";
 			fieldFor("idAccount").Hide().Essential = true;
-			DateFilter date = new DateFilter("DocumentDate", DateRange.ThisMonth);
-			RecordFilter account = new RecordFilter("Account", "Journal.AccountId", _sel.Account(""));
+			DateFilter date = new DateFilter(Settings, "DocumentDate", DateRange.ThisMonth);
+			RecordFilter account = new RecordFilter("Account", "Journal.AccountId", SelectAccounts());
 			date.Apply = false;
 			account.Apply = false;
 			_filters.Add(date);
 			_filters.Add(account);
 			_filters.Add(new StringFilter("Id", "DocumentIdentifier"));
-			_filters.Add(new RecordFilter("DocumentType", "DocumentTypeId", _sel.DocumentType("")));
-			_filters.Add(new RecordFilter("NameAddress", "Journal.NameAddressId", _sel.Name("")));
+			_filters.Add(new RecordFilter("DocumentType", "DocumentTypeId", SelectDocumentTypes()));
+			_filters.Add(new RecordFilter("NameAddress", "Journal.NameAddressId", SelectNames()));
 			_filters.Add(new DecimalFilter("JournalAmount", "Result.Amount"));
 			_filters.Add(new StringFilter("Memo", "Journal.Memo"));
 			_sortOrder = "idAccountType,AcctType,AccountName";
 			makeSortable("idAccountType,AcctType,AccountCode,AccountName=Account Type", "AccountName", "AccountCode,AccountName=AccountCode", "Name", "DocumentDate", "DocumentIdentifier=Doc Id", "DocType");
 			setDefaultFields(json, "AcctType", "AccountName", "Amount", "Memo", "Name", "DocType", "DocumentDate", "DocumentIdentifier");
 			setFilters(json);	// we need account filter now!
-			string where = account.Active ? "\r\nAND " + account.Where() : "";
+			string where = account.Active ? "\r\nAND " + account.Where(Database) : "";
 			// Need opening balance before start of period
 			// Journals in period
 			// Security gains/losses
@@ -464,7 +461,7 @@ FROM Account
 LEFT JOIN AccountType ON AccountType.idAccountType = Account.AccountTypeId
 LEFT JOIN Journal ON Journal.AccountId = Account.idAccount
 LEFT JOIN Document ON Document.idDocument = Journal.DocumentId
-WHERE " + date.Where() + where + @"
+WHERE " + date.Where(Database) + where + @"
 UNION
 SELECT Account.idAccount AS rAccount, Account.AccountTypeId as rAcctType, 0 AS Amount, " + (int)DocType.Gain + " AS rDocType, 0 as rJournal, 0 as rDocument, 0 AS rJournalNum, "
 			+ Database.Cast(Database.Quote(date.CurrentPeriod()[1].AddDays(-1)), "DATETIME") + @" AS rDocDate
@@ -497,9 +494,9 @@ LEFT JOIN DocumentType ON DocumentType.idDocumentType = rDocType
 			addTable("NameAddress");
 			fieldFor("Type").MakeEssential();
 			fieldFor("Type")["type"] = "select";
-			fieldFor("Type")["selectOptions"] = new JArray(_sel.NameTypes());
+			fieldFor("Type")["selectOptions"] = new JArray(SelectNameTypes());
 			fieldFor("Email")["type"] = "email";
-			_filters.Add(new SelectFilter("Type", "NameAddress.Type", _sel.NameTypes()));
+			_filters.Add(new SelectFilter("Type", "NameAddress.Type", SelectNameTypes()));
 			_filters.Add(new StringFilter("NameAddressDescription", "NameAddress.NameAddressDescription"));
 			_filters.Add(new StringFilter("PostCode", "NameAddress.PostCode"));
 		}
@@ -540,7 +537,7 @@ LEFT JOIN VatCode ON idVatCode = VatCodeId
 			fieldFor("Heading").MakeEssential().Hide();
 			fieldFor("Negate").MakeEssential().Hide();
 			fieldFor("BalanceSheet").MakeEssential().Hide();
-			DateFilter date = new DateFilter("DocumentDate", DateRange.LastYear);
+			DateFilter date = new DateFilter(Settings, "DocumentDate", DateRange.LastYear);
 			ReportField cp = new ReportField("SUM(Amount) AS CurrentPeriod", "decimal", "Current Period");
 			_fields.Add(cp);
 			ReportField lp = new ReportField("SUM(Amount) AS PreviousPeriod", "decimal", "Previous Period");
@@ -607,23 +604,23 @@ LEFT JOIN Document ON Document.idDocument = Journal.DocumentId
 			addTable("AccountType");
 			addTable("NameAddress");
 			fieldFor("Type")["type"] = "select";
-			fieldFor("Type")["selectOptions"] = new JArray(_sel.NameTypes());
+			fieldFor("Type")["selectOptions"] = new JArray(SelectNameTypes());
 			fieldFor("Email")["type"] = "email";
 			addTable("Line");
 			addTable("Product", "ProductName", "ProductDescription", "UnitPrice");
 			fieldFor("UnitPrice")["heading"] = "List Price";
 			addTable("VatCode");
-			_filters.Add(new DateFilter("DocumentDate", DateRange.ThisMonth));
+			_filters.Add(new DateFilter(Settings, "DocumentDate", DateRange.ThisMonth));
 			_filters.Add(new StringFilter("Id", "DocumentIdentifier"));
 			_filters.Add(new DecimalFilter("DocumentAmount", "Extended_Document.DocumentAmount"));
 			_filters.Add(new DecimalFilter("DocumentOutstanding", "Extended_Document.DocumentOutstanding"));
-			_filters.Add(new RecordFilter("DocumentType", "DocumentTypeId", _sel.DocumentType("")));
-			_filters.Add(new RecordFilter("Account", "Journal.AccountId", _sel.Account("")));
-			_filters.Add(new RecordFilter("NameAddress", "Journal.NameAddressId", _sel.Name("")));
+			_filters.Add(new RecordFilter("DocumentType", "DocumentTypeId", SelectDocumentTypes()));
+			_filters.Add(new RecordFilter("Account", "Journal.AccountId", SelectAccounts()));
+			_filters.Add(new RecordFilter("NameAddress", "Journal.NameAddressId", SelectNames()));
 			_filters.Add(new DecimalFilter("JournalAmount", "Journal.Amount"));
 			_filters.Add(new StringFilter("Memo", "Journal.Memo"));
-			_filters.Add(new RecordFilter("VatCode", "Line.VatCodeId", _sel.VatCode("")));
-			_filters.Add(new RecordFilter("Product", "Line.ProductId", _sel.Product("")));
+			_filters.Add(new RecordFilter("VatCode", "Line.VatCodeId", SelectVatCodes()));
+			_filters.Add(new RecordFilter("Product", "Line.ProductId", SelectProducts()));
 			makeSortable("idDocument=Trans no", "DocumentDate", "DocumentIdentifier=Doc Id", "Type,DocumentName=Document Name", "DocumentAmount", "DocType");
 			setDefaultFields(json, "idDocument", "DocType", "DocumentDate", "DocumentName", "DocumentIdentifier", "DocumentAmount", "DocumentOutstanding", "AccountName", "Debit", "Credit", "Qty", "Memo", "Code", "VatRate", "VatAmount");
 			return finishReport(json, "Journal", "idDocument,JournalNum", @"
@@ -651,7 +648,7 @@ LEFT JOIN Product ON Product.idProduct = Line.ProductId
 			fieldFor("Amount").FullFieldName = "Amount";
 			fieldFor("Credit").FullFieldName = "Amount";
 			fieldFor("Debit").FullFieldName = "Amount";
-			DateFilter date = new DateFilter("DocumentDate", DateRange.LastYear);
+			DateFilter date = new DateFilter(Settings, "DocumentDate", DateRange.LastYear);
 			_filters.Add(date);
 			setDefaultFields(json, "AccountName", "Credit", "Debit");
 			_sortOrder = "AcctType";
@@ -713,17 +710,17 @@ ORDER BY " + string.Join(",", sort.Select(s => s + (_sortDescending ? " DESC" : 
 			fieldFor("DocumentAmount").FullFieldName = "DocumentAmount * Sign * VatType AS DocumentAmount";
 			fieldFor("DocumentOutstanding").FullFieldName = "DocumentOutstanding * Sign * VatType AS DocumentOutstanding";
 			fieldFor("VatType")["type"] = "select";
-			fieldFor("VatType")["selectOptions"] = _sel.VatTypes().ToJToken();
+			fieldFor("VatType")["selectOptions"] = SelectVatTypes().ToJToken();
 			fieldFor("LineAmount").FullFieldName = "LineAmount * Sign * VatType AS LineAmount";
 			fieldFor("VatAmount").FullFieldName = "VatAmount * Sign * VatType AS VatAmount";
 			addTable("VatCode");
 			_fields.Add(new ReportField("Payment.VatPaidDate", "date", "Vat Paid Date"));
 			positionField("VatType", 0);
 			positionField("Code", _fields.IndexOf(fieldFor("VatRate")));
-			_filters.Add(new DateFilter("DocumentDate", DateRange.All));
-			_filters.Add(new VatPaidFilter("VatPaid", "Vat_Journal.VatPaid", _sel.VatPayments()));
-			_filters.Add(new RecordFilter("DocumentType", "DocumentTypeId", _sel.DocumentType("")));
-			_filters.Add(new SelectFilter("VatType", "VatType", _sel.VatTypes()));
+			_filters.Add(new DateFilter(Settings, "DocumentDate", DateRange.All));
+			_filters.Add(new VatPaidFilter("VatPaid", "Vat_Journal.VatPaid", SelectVatPayments()));
+			_filters.Add(new RecordFilter("DocumentType", "DocumentTypeId", SelectDocumentTypes()));
+			_filters.Add(new SelectFilter("VatType", "VatType", SelectVatTypes()));
 			makeSortable("idDocument=Trans no", "DocumentDate", "DocumentIdentifier=Doc Id", "Type,DocumentName=DocumentName", "DocumentAmount", "DocType", "Code");
 			setDefaultFields(json, "VatType", "DocType", "DocumentDate", "DocumentIdentifier", "DocumentName", "Memo", "Code", "VatRate", "VatAmount", "LineAmount");
 			return finishReport(json, "Vat_Journal", "VatType, DocumentDate", @"JOIN VatCode ON idVatCode = VatCodeId
@@ -843,7 +840,7 @@ LEFT JOIN (SELECT idDocument AS idVatPaid, DocumentDate AS VatPaidDate FROM Docu
 			defaultFields = (_changeTypeNotRequired ? new string[] { "DateChanged" } : new string[] { "DateChanged", "ChangeType" }).Concat(defaultFields).ToArray();
 			setDefaultFields(json, defaultFields);
 			setFilters(json);
-			string where = _dates.Active ? " AND " + _dates.Where() : "";
+			string where = _dates.Active ? " AND " + _dates.Where(Database) : "";
 			if (json.AsInt("recordId") > 0)
 				where += " AND RecordId = " + json.AsInt("recordId");
 			JObjectEnumerable report = Database.Query("SELECT ChangeType, DateChanged, Record FROM AuditTrail WHERE TableName = "
@@ -918,7 +915,7 @@ LEFT JOIN (SELECT idDocument AS idVatPaid, DocumentDate AS VatPaidDate FROM Docu
 		/// Get the WHERE clause needed to action the filters
 		/// </summary>
 		string getFilterWhere(params string [] extraWheres) {
-			string[] where = _filters.Where(f => f.Active && f.Apply).Select(f => f.Where()).Concat(extraWheres).ToArray();
+			string[] where = _filters.Where(f => f.Active && f.Apply).Select(f => f.Where(Database)).Concat(extraWheres).ToArray();
 			if (where.Length == 0)
 				return "";
 			return "\r\nWHERE " + string.Join("\r\nAND ", where);
@@ -946,11 +943,11 @@ LEFT JOIN (SELECT idDocument AS idVatPaid, DocumentDate AS VatPaidDate FROM Docu
 			} else {
 				addTable("!AuditTrail", "idAuditTrail", "DateChanged", "ChangeType");
 				fieldFor("ChangeType")["type"] = "select";
-				fieldFor("ChangeType")["selectOptions"] = new JArray(_sel.AuditTypes());
+				fieldFor("ChangeType")["selectOptions"] = new JArray(SelectAuditTypes());
 			}
 			fieldFor("DateChanged")["type"] = "dateTime";
 			fieldFor("idAuditTrail").Hide();
-			_dates = new DateFilter("DateChanged", DateRange.ThisMonth);
+			_dates = new DateFilter(Settings, "DateChanged", DateRange.ThisMonth);
 			_filters.Add(_dates);
 		}
 
@@ -967,7 +964,6 @@ LEFT JOIN (SELECT idDocument AS idVatPaid, DocumentDate AS VatPaidDate FROM Docu
 			r.reportType = json;
 			_fields = new List<ReportField>();
 			_filters = new List<Filter>();
-			_sel = new Select();
 		}
 
 		/// <summary>
@@ -1061,7 +1057,7 @@ LEFT JOIN (SELECT idDocument AS idVatPaid, DocumentDate AS VatPaidDate FROM Docu
 			// Current values of stock for each account id
 			Dictionary<int, decimal> stockValues = new Dictionary<int, decimal>();
 			// Get values for each stock at start of period
-			foreach (Investments.SecurityValue securityValue in Database.Query<Investments.SecurityValue>(Investments.SecurityValues(period[0].AddDays(-1)))) {
+			foreach (Investments.SecurityValue securityValue in Database.Query<Investments.SecurityValue>(Investments.SecurityValues(Database, period[0].AddDays(-1)))) {
 				JObject jnl = data.FirstOrDefault(a => a.AsInt("idAccount") == securityValue.ParentAccountId && a.AsInt("DocumentTypeId") == (int)DocType.OpeningBalance);
 				if (jnl == null)
 					continue;		// No opening balance, so not wanted
@@ -1071,7 +1067,7 @@ LEFT JOIN (SELECT idDocument AS idVatPaid, DocumentDate AS VatPaidDate FROM Docu
 			}
 			// Now get values at end of period
 			foreach (Investments.SecurityValueWithName securityValue in Database.Query<Investments.SecurityValueWithName>(
-				"SELECT * FROM (" + Investments.SecurityValues(period[1].AddDays(-1)) + @") AS SV
+				"SELECT * FROM (" + Investments.SecurityValues(Database, period[1].AddDays(-1)) + @") AS SV
 JOIN Security ON idSecurity = SecurityId")) {
 				decimal gain = 0;
 				int ind;
@@ -1115,7 +1111,7 @@ JOIN Security ON idSecurity = SecurityId")) {
 				string field = (string)p[i];		// First item is name of field to accumulate gains into
 				DateTime date = (DateTime)p[i + 1];	// Second item is date at which to calculate value
 				// Get the value of all securities on the date (actually, the day before)
-				foreach (Investments.SecurityValue securityValue in Database.Query<Investments.SecurityValue>(Investments.SecurityValues(date.AddDays(-1)))) {
+				foreach (Investments.SecurityValue securityValue in Database.Query<Investments.SecurityValue>(Investments.SecurityValues(Database, date.AddDays(-1)))) {
 					// Is the account in our data
 					JObject securityAcct = data.FirstOrDefault(a => a.AsInt("idAccount") == securityValue.AccountId);
 					if (securityAcct == null)
@@ -1812,7 +1808,7 @@ JOIN Security ON idSecurity = SecurityId")) {
 			/// <summary>
 			/// WHERE clause to match field to current value
 			/// </summary>
-			public abstract string Where();
+			public abstract string Where(Database db);
 
 			/// <summary>
 			/// Test a JObject data to see if it satisfied the filter
@@ -1859,7 +1855,7 @@ JOIN Security ON idSecurity = SecurityId")) {
 				Active = _value >= 0;
 			}
 
-			public override string Where() {
+			public override string Where(Database db) {
 				return FieldName + " = " + _value;
 			}
 
@@ -1870,12 +1866,14 @@ JOIN Security ON idSecurity = SecurityId")) {
 		}
 
 		public class DateFilter : Filter {
+			Settings _settings;
 			DateRange _range;
 			DateTime _start;	// inclusive
 			DateTime _end;		// exclusive
 
-			public DateFilter(string name, DateRange range)
+			public DateFilter(Settings settings, string name, DateRange range)
 				: base(name) {
+					_settings = settings;
 				Utils.Check(range < DateRange.Custom, "Invalid default date range");
 				_range = range;
 				Active = _range != DateRange.All;
@@ -1987,7 +1985,7 @@ JOIN Security ON idSecurity = SecurityId")) {
 						break;
 					case DateRange.ThisYear:
 					case DateRange.LastYear:
-						result[0] = AppModule.AppSettings.YearStart(_start.AddDays(-1));
+						result[0] = _settings.YearStart(_start.AddDays(-1));
 						break;
 					case DateRange.NDays:
 						result[0] = result[1].AddDays((_end - _start).TotalDays);
@@ -2026,12 +2024,12 @@ JOIN Security ON idSecurity = SecurityId")) {
 						_end = _start.AddMonths(1);
 						break;
 					case DateRange.ThisQuarter:
-						_start = AppSettings.QuarterStart(Utils.Today);
+						_start = _settings.QuarterStart(Utils.Today);
 						_end = _start.AddMonths(3);
 						break;
 					case DateRange.ThisYear:
-						_start = AppSettings.YearStart(Utils.Today);
-						_end = AppSettings.YearEnd(_start).AddDays(1);
+						_start = _settings.YearStart(Utils.Today);
+						_end = _settings.YearEnd(_start).AddDays(1);
 						break;
 					case DateRange.Yesterday:
 						_end = Utils.Today;
@@ -2048,12 +2046,12 @@ JOIN Security ON idSecurity = SecurityId")) {
 						_start = _end.AddMonths(-1);
 						break;
 					case DateRange.LastQuarter:
-						_start = AppSettings.QuarterStart(Utils.Today.AddMonths(-3));
+						_start = _settings.QuarterStart(Utils.Today.AddMonths(-3));
 						_end = _start.AddMonths(3);
 						break;
 					case DateRange.LastYear:
-						_end = AppSettings.YearStart(Utils.Today);
-						_start = AppSettings.YearStart(_end.AddDays(-1));
+						_end = _settings.YearStart(Utils.Today);
+						_start = _settings.YearStart(_end.AddDays(-1));
 						break;
 					case DateRange.NDays:
 						_end = Utils.Today;
@@ -2066,8 +2064,8 @@ JOIN Security ON idSecurity = SecurityId")) {
 				}
 			}
 
-			public override string Where() {
-				return FieldName + " >= " + Database.Quote(_start) + " AND " + Name + " < " + Database.Quote(_end);
+			public override string Where(Database db) {
+				return FieldName + " >= " + db.Quote(_start) + " AND " + Name + " < " + db.Quote(_end);
 			}
 
 			public override bool Test(JObject data) {
@@ -2117,8 +2115,8 @@ JOIN Security ON idSecurity = SecurityId")) {
 				}
 			}
 
-			public override string Where() {
-				return FieldName + " " + Database.In(_ids);
+			public override string Where(Database db) {
+				return FieldName + " " + db.In(_ids);
 			}
 
 			public override bool Test(JObject data) {
@@ -2161,8 +2159,8 @@ JOIN Security ON idSecurity = SecurityId")) {
 				}
 			}
 
-			public override string Where() {
-				return FieldName + " " + Database.In(_ids);
+			public override string Where(Database db) {
+				return FieldName + " " + db.In(_ids);
 			}
 
 			public override bool Test(JObject data) {
@@ -2219,7 +2217,7 @@ JOIN Security ON idSecurity = SecurityId")) {
 			}
 
 
-			public override string Where() {
+			public override string Where(Database db) {
 				switch (_comparison) {
 					case Comparison.Zero:
 						return FieldName + " = 0";
@@ -2305,20 +2303,20 @@ JOIN Security ON idSecurity = SecurityId")) {
 			}
 
 
-			public override string Where() {
+			public override string Where(Database db) {
 				switch (_comparison) {
 					case Comparison.Empty:
 						return "(" + FieldName + " IS NULL OR " + FieldName + " = '')";
 					case Comparison.NonEmpty:
 						return FieldName + " <> ''";
 					case Comparison.Equal:
-						return FieldName + " = " + Database.Quote(_value);
+						return FieldName + " = " + db.Quote(_value);
 					case Comparison.Contains:
-						return FieldName + " LIKE " + Database.Quote("%" + _value + "%");
+						return FieldName + " LIKE " + db.Quote("%" + _value + "%");
 					case Comparison.StartsWith:
-						return FieldName + " LIKE " + Database.Quote("%" + _value);
+						return FieldName + " LIKE " + db.Quote("%" + _value);
 					case Comparison.EndsWith:
-						return FieldName + " LIKE " + Database.Quote("%" + _value);
+						return FieldName + " LIKE " + db.Quote("%" + _value);
 					default:
 						return "";
 				}
@@ -2364,11 +2362,11 @@ JOIN Security ON idSecurity = SecurityId")) {
 				_null = _ids.IndexOf(0) >= 0;
 			}
 
-			public override string Where() {
+			public override string Where(Database db) {
 				List<string> clauses = new List<string>();
 				List<int> list = _ids.Where(i => i != 0).ToList();
 				if (list.Count > 0)
-					clauses.Add(FieldName + " " + Database.In(list));
+					clauses.Add(FieldName + " " + db.In(list));
 				if (_null)
 					clauses.Add(FieldName + " IS NULL");
 				return "(" + string.Join(" OR ", clauses.ToArray()) + ")";

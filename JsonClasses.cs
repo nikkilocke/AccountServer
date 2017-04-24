@@ -11,6 +11,7 @@ using System.Web;
 using System.IO;
 using System.Reflection;
 using Mustache;
+using CodeFirstWebFramework;
 
 #pragma warning disable 0649
 
@@ -462,7 +463,7 @@ namespace AccountServer {
 			}
 		}
 
-		public void RegisterNumber(AppModule module, int? docType, int current) {
+		public void RegisterNumber(CodeFirstWebFramework.AppModule module, int? docType, int current) {
 			switch (docType) {
 				case (int)DocType.Invoice:
 				case (int)DocType.CreditMemo:
@@ -478,7 +479,7 @@ namespace AccountServer {
 			}
 		}
 
-		void registerNumber(AppModule module, ref int next, int current) {
+		void registerNumber(CodeFirstWebFramework.AppModule module, ref int next, int current) {
 			if (current >= next) {
 				next = current + 1;
 				write(module);
@@ -509,7 +510,7 @@ namespace AccountServer {
 			return result;
 		}
 
-		void write(AppModule module) {
+		void write(CodeFirstWebFramework.AppModule module) {
 			module.Database.Update(this);
 		}
 

@@ -6,7 +6,7 @@ $(function() {
 		table: 'Schedule',
 		data: record,
 		canDelete: record.idSchedule > 0,
-		select: '/company/job.html',
+		select: '/home/job.html',
 		columns: [
 			{
 				data: 'ActionDate',
@@ -81,7 +81,7 @@ $(function() {
 				message('You must save your changes first');
 				return;
 			}
-			postJson(getGoto('/company/jobaction.html?id=' + record.idSchedule), function (d) {
+			postJson(getGoto('/home/jobaction.html?id=' + record.idSchedule), function (d) {
 				if (d.id)
 					window.location.reload();
 				else

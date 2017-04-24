@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using CodeFirstWebFramework;
 
 namespace AccountServer {
 	/// <summary>
@@ -97,10 +98,9 @@ namespace AccountServer {
 			dynamic header = ((dynamic)record).header;
 			Database.NextPreviousDocument(record, "JOIN Journal ON DocumentId = idDocument WHERE DocumentTypeId = " + (int)type
 				+ (header.DocumentAccountId > 0 ? " AND AccountId = " + header.DocumentAccountId : ""));
-			Select s = new Select();
-			record.AddRange("Accounts", s.Account(""),
-				"VatCodes", s.VatCode(""),
-				"Names", s.Other(""));
+			record.AddRange("Accounts", SelectAccounts(),
+				"VatCodes", SelectVatCodes(),
+				"Names", SelectOthers());
 			Record = record;
 		}
 
@@ -270,7 +270,7 @@ ORDER BY DocumentDate, idDocument"));
 			job.Parameters = record.ToString();
 			job.RepeatFrequency = 1;
 			job.Post = true;
-			Module = "company";
+			Module = "home";
 			Method = "job";
 			Record = job;
 		}
@@ -311,7 +311,7 @@ ORDER BY DocumentDate, idDocument"));
 			job.Parameters = header.ToString();
 			job.RepeatFrequency = 1;
 			job.Post = true;
-			Module = "company";
+			Module = "home";
 			Method = "job";
 			Record = job;
 		}

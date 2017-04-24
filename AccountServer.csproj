@@ -17,7 +17,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>Debug\</OutputPath>
+    <OutputPath>.\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -35,17 +35,16 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Data.Sqlite">
-      <HintPath>libs\Mono.Data.Sqlite.dll</HintPath>
+      <HintPath>..\Mono.Data.Sqlite.dll</HintPath>
     </Reference>
-    <Reference Include="mustache-sharp, Version=0.2.8.1, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\mustache-sharp.0.2.8.1\lib\net40\mustache-sharp.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="mustache-sharp">
+      <HintPath>..\mustache-sharp.dll</HintPath>
     </Reference>
     <Reference Include="MySql.Data">
-      <HintPath>packages\MySql.Data.6.9.5\lib\net45\MySql.Data.dll</HintPath>
+      <HintPath>..\MySql.Data.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>packages\Newtonsoft.Json.6.0.7\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -63,36 +62,33 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Accounting.cs" />
+    <Compile Include="Admin.cs" />
     <Compile Include="AppModule.cs" />
     <Compile Include="Banking.cs" />
     <Compile Include="BankingAccounting.cs" />
-    <Compile Include="Company.cs" />
+    <Compile Include="Home.cs" />
     <Compile Include="CsvParser.cs" />
     <Compile Include="Customer.cs" />
     <Compile Include="CustomerSupplier.cs" />
     <Compile Include="Database.cs" />
-    <Compile Include="DbInterface.cs" />
-    <Compile Include="DDLAttributes.cs" />
     <Compile Include="Importer.cs" />
     <Compile Include="JsonClasses.cs" />
-    <Compile Include="MySqlDatabase.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QifImporter.cs" />
     <Compile Include="Query.cs" />
     <Compile Include="Reports.cs" />
     <Compile Include="Investments.cs" />
-    <Compile Include="Select.cs" />
-    <Compile Include="Settings.cs" />
-    <Compile Include="SQLiteDatabase.cs" />
     <Compile Include="Supplier.cs" />
-    <Compile Include="Utils.cs" />
-    <Compile Include="WebServer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CodeFirstWebFramework.csproj">
+      <Project>{aec5c370-7ab7-4a92-ab6f-d0164090b026}</Project>
+      <Name>CodeFirstWebFramework</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

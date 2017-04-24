@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using CodeFirstWebFramework;
 
 namespace AccountServer {
 	public class Supplier : CustomerSupplier {
@@ -24,7 +25,7 @@ namespace AccountServer {
 			record["detail"] = Database.Query("idJournal, DocumentId, Line.VatCodeId, VatRate, JournalNum, Journal.AccountId, Memo, Qty, LineAmount, VatAmount",
 					"WHERE Journal.DocumentId = " + id + " AND idLine IS NOT NULL ORDER BY JournalNum",
 					"Document", "Journal", "Line");
-			record.Add("Accounts", new Select().Account(""));
+			record.Add("Accounts", SelectAccounts());
 			Record = record;
 		}
 

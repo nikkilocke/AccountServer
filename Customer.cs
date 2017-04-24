@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Mail;
 using System.IO;
 using Newtonsoft.Json.Linq;
+using CodeFirstWebFramework;
 
 namespace AccountServer {
 	/// <summary>
@@ -37,7 +38,7 @@ namespace AccountServer {
 			record["detail"] = Database.Query("idJournal, DocumentId, ProductId, Line.VatCodeId, VatRate, JournalNum, Journal.AccountId, Memo, UnitPrice, Qty, LineAmount, VatAmount, Unit",
 					"WHERE Journal.DocumentId = " + id + " AND idLine IS NOT NULL ORDER BY JournalNum",
 					"Document", "Journal", "Line");
-			record.Add("Products", new Select().Product(""));
+			record.Add("Products", SelectProducts());
 			Record = record;
 		}
 
@@ -133,12 +134,11 @@ namespace AccountServer {
 		}
 
 		public void Product(int id) {
-			Select sel = new Select();
 			JObject inUse = Database.QueryOne("SELECT idLine FROM Line WHERE ProductId = " + id);
 			Record = new JObject().AddRange("header", Database.Get<FullProduct>(id),
 				"canDelete", inUse == null || inUse.IsAllNull(),
-				"VatCodes", sel.VatCode(""),
-				"Accounts", sel.IncomeAccount(""));
+				"VatCodes", SelectVatCodes(),
+				"Accounts", SelectIncomeAccounts());
 		}
 
 		public AjaxReturn ProductDelete(int id) {

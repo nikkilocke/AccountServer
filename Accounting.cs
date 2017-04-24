@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using CodeFirstWebFramework;
 
 namespace AccountServer {
 	/// <summary>
@@ -40,7 +41,7 @@ namespace AccountServer {
 				Title += " - " + account.AccountName;
 			Record = new JObject().AddRange(
 				"header", account, 
-				"AccountTypes", new Select().AccountTypes(""),
+				"AccountTypes", SelectAccountTypes(),
 				"Transactions", Database.QueryOne("SELECT idJournal FROM Journal WHERE AccountId = " + id) != null
 				);
 		}
@@ -136,10 +137,9 @@ ORDER BY DocumentDate DESC, idDocument DESC")) {
 					"Document", "Journal"));
 			Database.NextPreviousDocument(record, "JOIN Journal ON DocumentId = idDocument WHERE DocumentTypeId = " + (int)DocType.GeneralJournal
 				+ (header.DocumentAccountId > 0 ? " AND AccountId = " + header.DocumentAccountId : ""));
-			Select s = new Select();
-			record.AddRange("Accounts", s.AllAccounts(""),
-				"VatCodes", s.VatCode(""),
-				"Names", s.Name(""));
+			record.AddRange("Accounts", SelectAllAccounts(),
+				"VatCodes", SelectVatCodes(),
+				"Names", SelectNames());
 			Record = record;
 		}
 
@@ -280,12 +280,11 @@ ORDER BY idDocument DESC");
 				header.DocumentMemo = "VAT - FROM " + record.Start.ToString("d") + " To " + record.End.ToString("d");
 				header.DocumentDate = record.Due;
 			}
-			Select sel = new Select();
 			Record = new JObject().AddRange("return", record, 
 				"payment", header,
-				"names", sel.Other(""),
-				"accounts", sel.BankAccount(""),
-				"otherReturns", sel.VatPayments().Reverse()
+				"names", SelectOthers(),
+				"accounts", SelectBankAccounts(),
+				"otherReturns", SelectVatPayments().Reverse()
 				);
 		}
 

@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using CodeFirstWebFramework;
 
 namespace AccountServer {
 	/// <summary>
@@ -15,7 +16,7 @@ namespace AccountServer {
 		public BankingAccounting() {
 		}
 
-		public void Names() {
+		public void Name() {
 			// When maintaining names, use the template in banking
 			Module = "banking";
 		}
@@ -75,7 +76,7 @@ namespace AccountServer {
 			int? acct = GetParameters["acct"].IsInteger() ? Parameters.AsInt("acct") : (int?)null;
 			JObject record = new JObject().AddRange("header", header,
 				"Account", acct,
-				"BankAccounts", new Select().BankOrStockAccount(""));
+				"BankAccounts", SelectBankOrStockAccounts());
 			if (acct != null)
 				Database.NextPreviousDocument(record, "JOIN Journal ON DocumentId = idDocument WHERE AccountId = "
 					+ acct + " AND DocumentTypeId = " + (int)DocType.Transfer);

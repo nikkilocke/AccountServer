@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using CodeFirstWebFramework;
 
 namespace AccountServer {
 	/// <summary>
@@ -114,9 +115,8 @@ WHERE idNameAddress = " + id
 			}
 			JObject record = new JObject().AddRange("header", header);
 			Database.NextPreviousDocument(record, "WHERE DocumentTypeId = " + (int)type);
-			Select s = new Select();
-			record.AddRange("VatCodes", s.VatCode(""),
-				"Names", s.Name(NameType, ""));
+			record.AddRange("VatCodes", SelectVatCodes(),
+				"Names", SelectNames(NameType));
 			return record;
 		}
 
@@ -220,9 +220,8 @@ WHERE idNameAddress = " + id
 			PaymentDocument document = getPayment(id);
 			JObject record = document.ToJObject();
 			Database.NextPreviousDocument(record, "WHERE DocumentTypeId = " + (int)PaymentDoc);
-			Select s = new Select();
-			record.Add("BankAccounts", s.BankAccount(""));
-			record.Add("Names", s.Name(NameType, ""));
+			record.Add("BankAccounts", SelectBankAccounts());
+			record.Add("Names", SelectNames(NameType));
 			Record = record;
 		}
 

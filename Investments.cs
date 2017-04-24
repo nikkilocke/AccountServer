@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using CodeFirstWebFramework;
 
 namespace AccountServer {
 	public class Investments : BankingAccounting {
@@ -24,7 +25,7 @@ namespace AccountServer {
 FROM Account
 LEFT JOIN (SELECT AccountId, SUM(Amount) AS Amount FROM Journal GROUP BY AccountId) AS Balances ON Balances.AccountId = idAccount
 JOIN AccountType ON idAccountType = AccountTypeId
-LEFT JOIN (" + AccountValue(Utils.Today) + @") AS AccountValues ON AccountValues.ParentAccountId = Balances.AccountId
+LEFT JOIN (" + AccountValue(Database, Utils.Today) + @") AS AccountValues ON AccountValues.ParentAccountId = Balances.AccountId
 WHERE AccountTypeId = " + (int)AcctType.Investment + @"
 GROUP BY idAccount ORDER BY AccountName");
 		}
@@ -38,7 +39,7 @@ GROUP BY idAccount ORDER BY AccountName");
 				"Account", "Journal");
 			record.CurrentBalance = record.CashBalance - Database.QueryOne("SELECT SUM(Amount) AS Future FROM Journal JOIN Document ON idDocument = DocumentId WHERE AccountId = "
 				+ id + " AND DocumentDate > " + Database.Quote(Utils.Today)).AsDecimal("Future");
-			record.Value = Database.QueryOne("SELECT Value FROM (" + AccountValue(Utils.Today) + ") AS V WHERE ParentAccountid = " + id).AsDecimal("Value");
+			record.Value = Database.QueryOne("SELECT Value FROM (" + AccountValue(Database, Utils.Today) + ") AS V WHERE ParentAccountid = " + id).AsDecimal("Value");
 			if (record.Id == null) {
 				record.AccountTypeId = (int)AcctType.Investment;
 			} else {
@@ -75,7 +76,7 @@ GROUP BY idAccount ORDER BY AccountName");
 		/// </summary>
 		public IEnumerable<JObject> PortfolioListing(int id) {
 			return (from p in Database.Query("SELECT SecurityName, AccountName, SV.* FROM ("
-				+ SecurityValues(Utils.Today) + @") AS SV
+				+ SecurityValues(Database, Utils.Today) + @") AS SV
 JOIN Account ON idAccount = SV.AccountId
 JOIN Security ON idSecurity = SecurityId
 WHERE ParentAccountid = " + id).ToList()
@@ -129,10 +130,9 @@ AND DocumentId = " + id).ToList();
 			Database.NextPreviousDocument(record, "JOIN Journal ON DocumentId = idDocument WHERE DocumentTypeId " 
 				+ Database.In(DocType.Buy, DocType.Sell)
 				+ (header.DocumentAccountId > 0 ? " AND AccountId = " + header.DocumentAccountId : ""));
-			Select s = new Select();
-			record.AddRange("Accounts", s.ExpenseAccount(""),
-				"Names", s.Other(""),
-				"Securities", s.Security(""));
+			record.AddRange("Accounts", SelectExpenseAccounts(),
+				"Names", SelectOthers(),
+				"Securities", SelectSecurities());
 			Record = record;
 		}
 
@@ -158,7 +158,7 @@ AND DocumentId = " + id).ToList();
 			if (string.IsNullOrEmpty(json.DocumentMemo))
 				json.DocumentMemo = json.SecurityName;
 			if (json.idDocument == null) {
-				StockPrice p = Database.QueryOne<StockPrice>("SELECT * FROM " + LatestPrice(json.DocumentDate) + " WHERE SecurityId = " + json.SecurityId);
+				StockPrice p = Database.QueryOne<StockPrice>("SELECT * FROM " + LatestPrice(Database, json.DocumentDate) + " WHERE SecurityId = " + json.SecurityId);
 				if (p.Price != json.Price) {
 					// Stock price is different from file price, and its a new buy/sell - update file price for security date
 					p.SecurityId = (int)json.SecurityId;
@@ -287,11 +287,10 @@ AND Journal.AccountId = " + acct);
 				doc.AccountName = Database.QueryOne("SELECT AccountName FROM Account WHERE idAccount = " + doc.AccountId).AsString("AccountName");
 				doc.ExistingBalance -= doc.Amount;
 			}
-			Select s = new Select();
 			Record = new JObject().AddRange(
 				"header", doc,
-				"Accounts", s.Account(""),
-				"Names", s.Other(""));
+				"Accounts", SelectAccounts(),
+				"Names", SelectOthers());
 		}
 
 		/// <summary>
@@ -385,12 +384,12 @@ AND Journal.AccountId = " + acct);
 		/// <summary>
 		/// Sql to return the price of each stock as at date
 		/// </summary>
-		public static string LatestPrice(DateTime date) {
+		public static string LatestPrice(Database db, DateTime date) {
 			return string.Format(@"(select StockPrice.* FROM StockPrice JOIN 
 (select SecurityId AS Id, MAX(Date) AS MaxDate 
 FROM StockPrice 
 WHERE Date <= {0}
-GROUP BY SecurityId) AS LatestPriceDate ON Id = SecurityId AND MaxDate = Date) AS LatestPrice", Database.Quote(date));
+GROUP BY SecurityId) AS LatestPriceDate ON Id = SecurityId AND MaxDate = Date) AS LatestPrice", db.Quote(date));
 		}
 
 		/// <summary>
@@ -432,15 +431,15 @@ ORDER BY DocumentDate, idDocument").ToList();
 		/// <summary>
 		/// Sql to return the current value of each StockTransaction as at Date
 		/// </summary>
-		public static string SecurityValues(DateTime date) {
+		public static string SecurityValues(Database db, DateTime date) {
 			return @"SELECT ParentAccountId, AccountId, SecuritiesByAccount.SecurityId AS SecurityId, Quantity, Price, SUM(ROUND(Quantity * Price, 2)) AS Value
 FROM (SELECT DocumentDate, ParentAccountId, AccountId, SecurityId, SUM(Quantity) AS Quantity
 FROM StockTransaction
 JOIN Journal ON idJournal = idStockTransaction
 JOIN Document ON idDocument = DocumentId
-WHERE DocumentDate <= " + Database.Quote(date) + @"
+WHERE DocumentDate <= " + db.Quote(date) + @"
 GROUP BY ParentAccountId, AccountId, SecurityId) AS SecuritiesByAccount
-JOIN " + LatestPrice(date) + @"
+JOIN " + LatestPrice(db, date) + @"
 ON LatestPrice.SecurityId = SecuritiesByAccount.SecurityId
 GROUP BY AccountId, SecuritiesByAccount.SecurityId";
 		}
@@ -448,9 +447,9 @@ GROUP BY AccountId, SecuritiesByAccount.SecurityId";
 		/// <summary>
 		/// Sql to return the current value of each security account as at fate
 		/// </summary>
-		public static string AccountValue(DateTime date) {
+		public static string AccountValue(Database db, DateTime date) {
 			return @"SELECT ParentAccountId, SUM(Value) AS Value
-FROM (" + SecurityValues(date) + @") AS SecurityValues
+FROM (" + SecurityValues(db, date) + @") AS SecurityValues
 GROUP BY ParentAccountId";
 		}
 

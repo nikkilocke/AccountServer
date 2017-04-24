@@ -6,13 +6,14 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.IO;
 using Newtonsoft.Json.Linq;
+using CodeFirstWebFramework;
 
 namespace AccountServer {
 	/// <summary>
 	/// File import
 	/// </summary>
 	public class Importer {
-		protected AppModule _module;
+		protected CodeFirstWebFramework.AppModule _module;
 		protected Table _table;
 		/// <summary>
 		/// For detecting duplicate keys
@@ -26,7 +27,7 @@ namespace AccountServer {
 			foreach (ImportField f in fields)
 				f.Importer = this;
 			if (!string.IsNullOrEmpty(tableName))
-				_table = Database.TableFor(tableName);
+				_table = _module.Database.TableFor(tableName);
 		}
 
 		/// <summary>
@@ -39,7 +40,7 @@ namespace AccountServer {
 		/// <summary>
 		/// Set up import, import the data, commit to the database if no errors
 		/// </summary>
-		public void Import(CsvParser csv, AppModule module) {
+		public void Import(CsvParser csv, CodeFirstWebFramework.AppModule module) {
 			lock (this) {
 				_module = module;
 				_keys = new HashSet<string>();
@@ -291,9 +292,10 @@ namespace AccountServer {
 			// Do the import
 			base.ImportData(csv);
 			// Now update the last cheque numbers, etc.
-			AppModule.AppSettings.RegisterNumber(_module, (int)DocType.Invoice, _lastInvoiceNumber);
-			AppModule.AppSettings.RegisterNumber(_module, (int)DocType.Bill, _lastBillNumber);
-			AppModule.AppSettings.RegisterNumber(_module, (int)DocType.GeneralJournal, _lastJournalNumber);
+			Settings settings = _module.Settings.To<Settings>();
+			settings.RegisterNumber(_module, (int)DocType.Invoice, _lastInvoiceNumber);
+			settings.RegisterNumber(_module, (int)DocType.Bill, _lastBillNumber);
+			settings.RegisterNumber(_module, (int)DocType.GeneralJournal, _lastJournalNumber);
 			foreach (int k in _lastChequeNumber.Keys.Union(_lastDepositNumber.Keys)) {
 				FullAccount acct = _module.Database.Get<FullAccount>(k);
 				int n;
@@ -306,9 +308,9 @@ namespace AccountServer {
 					_module.Database.Update(acct);
 			}
 			// Try to guess what VAT payments apply to each document
-			foreach(JObject vatPayment in new Select().VatPayments()) {
+			foreach(JObject vatPayment in ((AppModule)_module).SelectVatPayments()) {
 				int id = vatPayment.AsInt("id");
-				DateTime q = AppModule.AppSettings.QuarterStart(vatPayment.AsDate("value"));
+				DateTime q = settings.QuarterStart(vatPayment.AsDate("value"));
 				_module.Database.Execute(@"UPDATE Document 
 JOIN Journal ON IdDocument = DocumentId
 JOIN Line ON idLine = idJournal
@@ -316,7 +318,7 @@ SET VatPaid = " + id + @"
 WHERE (DocumentTypeId IN (1, 3, 4, 6) OR Line.VatCodeId IS NOT NULL)
 AND VatPaid = 0
 AND idDocument < " + id + @"
-AND DocumentDate < " + Database.Quote(q));
+AND DocumentDate < " + _module.Database.Quote(q));
 				_module.Database.Execute("UPDATE Document SET VatPaid = " + id + " WHERE idDocument = " + id);
 			}
 			// Set the remainder to null (importer doesn't do nulls)
@@ -457,7 +459,7 @@ AND DocumentDate < " + Database.Quote(q));
 			return base.ToString() + " " + TheirName + "=>" + OurName;
 		}
 
-		public virtual JToken Value(Database db, JObject data) {
+		public virtual JToken Value(CodeFirstWebFramework.Database db, JObject data) {
 			return data[TheirName];
 		}
 	}
@@ -470,7 +472,7 @@ AND DocumentDate < " + Database.Quote(q));
 			: base(ourName, theirName) {
 		}
 
-		public override JToken Value(Database db, JObject data) {
+		public override JToken Value(CodeFirstWebFramework.Database db, JObject data) {
 			string d = data.AsString(TheirName);
 			return string.IsNullOrWhiteSpace(d) ? (JToken)null : string.IsNullOrWhiteSpace(Importer.DateFormat) ? DateTime.Parse(d) : DateTime.ParseExact(d, Importer.DateFormat, System.Globalization.CultureInfo.InvariantCulture);
 		}
@@ -486,7 +488,7 @@ AND DocumentDate < " + Database.Quote(q));
 			_regex = new Regex(regex, RegexOptions.Compiled);
 		}
 
-		public override JToken Value(Database db, JObject data) {
+		public override JToken Value(CodeFirstWebFramework.Database db, JObject data) {
 			return _regex.Match(data[TheirName].ToString()).Groups[1].Value;
 		}
 	}
@@ -506,7 +508,7 @@ AND DocumentDate < " + Database.Quote(q));
 
 		public string Table { get; private set; }
 
-		public override JToken Value(Database db, JObject data) {
+		public override JToken Value(CodeFirstWebFramework.Database db, JObject data) {
 			JObject keyData = new JObject().AddRange(ForeignKey, base.Value(db, data));
 			return db.ForeignKey(Table, keyData);
 		}
@@ -520,7 +522,7 @@ AND DocumentDate < " + Database.Quote(q));
 			: base("AccountTypeId", "ACCNTTYPE") {
 		}
 
-		public override JToken Value(Database db, JObject data) {
+		public override JToken Value(CodeFirstWebFramework.Database db, JObject data) {
 			string value = base.Value(db, data).ToString();
 			switch (value) {
 				case "INC": value = "Income"; break;
@@ -555,7 +557,7 @@ AND DocumentDate < " + Database.Quote(q));
 			: base(ourName, theirName) {
 		}
 
-		public override JToken Value(Database db, JObject data) {
+		public override JToken Value(CodeFirstWebFramework.Database db, JObject data) {
 			string value = base.Value(db, data).ToString();
 			if (value.IndexOf("Bill Pmt") == 0)
 				value = "Bill Payment";
@@ -572,7 +574,7 @@ AND DocumentDate < " + Database.Quote(q));
 			: base(ourName, theirName) {
 		}
 
-		public override JToken Value(Database db, JObject data) {
+		public override JToken Value(CodeFirstWebFramework.Database db, JObject data) {
 			string nameType;
 			switch (data.AsString("Account")) {
 				case "Purchase Ledger":
@@ -615,13 +617,13 @@ AND DocumentDate < " + Database.Quote(q));
 			: base(ourName, theirName) {
 		}
 
-		public override JToken Value(Database db, JObject data) {
+		public override JToken Value(CodeFirstWebFramework.Database db, JObject data) {
 			Match m = _r.Match(base.Value(db, data).ToString());
 			string ac = m.Groups[1].Value;
 			if (ac == "") return null;
-			JObject id = db.QueryOne("SELECT idAccount FROM Account WHERE AccountName = " + Database.Quote(ac));
+			JObject id = db.QueryOne("SELECT idAccount FROM Account WHERE AccountName = " + db.Quote(ac));
 			if (id != null) return id["idAccount"];
-			id = db.QueryOne("SELECT idAccount FROM Account WHERE AccountName LIKE " + Database.Quote("%:" + ac));
+			id = db.QueryOne("SELECT idAccount FROM Account WHERE AccountName LIKE " + db.Quote("%:" + ac));
 			if (id != null) return id["idAccount"];
 			throw new CheckException("Account '{0}' not found", ac);
 		}
@@ -638,7 +640,7 @@ AND DocumentDate < " + Database.Quote(q));
 			_value = value.ToJToken();
 		}
 
-		public override JToken Value(Database db, JObject data) {
+		public override JToken Value(CodeFirstWebFramework.Database db, JObject data) {
 			return _value;
 		}
 	}
@@ -654,7 +656,7 @@ AND DocumentDate < " + Database.Quote(q));
 				_theirNames = theirNames;
 		}
 
-		public override JToken Value(Database db, JObject data) {
+		public override JToken Value(CodeFirstWebFramework.Database db, JObject data) {
 			return string.Join("\r\n", _theirNames.Select(n => data.AsString(n)).Where(d => !string.IsNullOrEmpty(d)).ToArray());
 		}
 	}

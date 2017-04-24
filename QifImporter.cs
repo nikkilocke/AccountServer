@@ -6,13 +6,14 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.IO;
 using Newtonsoft.Json.Linq;
+using CodeFirstWebFramework;
 
 namespace AccountServer {
 	/// <summary>
 	/// Import Quicken Import Format files
 	/// </summary>
 	public class QifImporter : FileProcessor {
-		AppModule _module;
+		CodeFirstWebFramework.AppModule _module;
 		TextReader _reader;
 		string _line;
 		bool _eof;
@@ -56,7 +57,7 @@ namespace AccountServer {
 		/// <summary>
 		/// Import a whole Qif file to the database as new accounts, transactions, etc.
 		/// </summary>
-		public void Import(TextReader r, AppModule module) {
+		public void Import(TextReader r, CodeFirstWebFramework.AppModule module) {
 			lock (this) {
 				_transactionsOnly = false;
 				_reader = r;
