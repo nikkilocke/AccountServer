@@ -5,3 +5,16 @@
 /packages
 /libs
 /*.suo
+/AccountServer.config
+/AccountServer.exe
+/AccountServer.pdb
+/CodeFirstWebFramework.dll
+/CodeFirstWebFramework.pdb
+/Logs.8080/2017-04-24.log
+/Mono.Data.Sqlite.dll
+/MySql.Data.dll
+/Newtonsoft.Json.dll
+/Newtonsoft.Json.xml
+/mustache-sharp.dll
+/sqlite3.def
+/sqlite3.dll
