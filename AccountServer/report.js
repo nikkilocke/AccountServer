@@ -165,10 +165,12 @@ function initialiseReport(select, update) {
 		}
 		if(update)
 			update(record, report);
-		actionButton('Download').click(function () {
-			var data = downloadData(report.fields, report.data);
-			download(this, data);
-		});
+		if($('#Download').length == 0) {
+			actionButton('Download').click(function () {
+				var data = downloadData(report.fields, report.data);
+				download(this, data);
+			});
+		}
 	}
 
 	/**
