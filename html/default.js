@@ -90,7 +90,7 @@ var DocType = {
 $(function() {
 //	testHarness = bowser.firefox && hasParameter('test');
 	touchScreen = bowser.mobile || bowser.tablet;
-	decPoint = (1.23).toLocaleString()[1];
+	decPoint = (1.23).toLocaleString(window.navigator.userLanguage || window.navigator.language)[1];
 	resize();
 	$('#menuicon').click(function() {
 		// Small screen user has clicked menu icon - show/hide menu
@@ -396,7 +396,7 @@ function formatDate(date) {
 		var d = Date.parse(date);
 		if(isNaN(d))
 			return date || '';
-		return new Date(d).toLocaleDateString();
+		return new Date(d).toLocaleDateString(window.navigator.userLanguage || window.navigator.language);
 	} catch(e) {
 		return date || '';
 	}
@@ -428,7 +428,7 @@ function formatNumber(number) {
 function formatNumberWithCommas(number) {
 	if( number == null || number === '')
 		return '';
-	number = parseFloat(number).toLocaleString();
+	number = parseFloat(number).toLocaleString(window.navigator.userLanguage || window.navigator.language);
 	var p = number.indexOf(decPoint);
 	if(p == -1)
 		return number + '.00';
@@ -638,7 +638,13 @@ var Type = {
 	},
 	date: {
 		render: function(data, type, row, meta) {
-			return colRender(data ? data.substr(0, 10) : data, type, row, meta);
+			switch(type) {
+				case 'display':
+				case 'filter':
+					return formatDate(data);
+				default:
+					return data ? data.substr(0, 10) : data;
+			}
 		},
 		download: function(data, rowno, row) {
 			return formatDate(data);
