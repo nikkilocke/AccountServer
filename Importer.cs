@@ -26,8 +26,6 @@ namespace AccountServer {
 			Fields = fields;
 			foreach (ImportField f in fields)
 				f.Importer = this;
-			if (!string.IsNullOrEmpty(tableName))
-				_table = _module.Database.TableFor(tableName);
 		}
 
 		/// <summary>
@@ -43,6 +41,8 @@ namespace AccountServer {
 		public void Import(CsvParser csv, CodeFirstWebFramework.AppModule module) {
 			lock (this) {
 				_module = module;
+				if (!string.IsNullOrEmpty(TableName))
+					_table = _module.Database.TableFor(TableName);
 				_keys = new HashSet<string>();
 				ImportData(csv);
 				_module.Database.Commit();
