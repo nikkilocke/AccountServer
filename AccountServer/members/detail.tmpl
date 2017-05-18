@@ -1,0 +1,26 @@
+<head>
+	<script>
+		$(function() {
+			var table = makeForm('#docs',
+					{{Form.Options}}
+			);
+			table.bind('changed.field', function(e, newValue, rowData, col, input) {
+				if(col.name == 'MemberTypeId') {
+					var type = _.find(table.fields.MemberTypeId.selectOptions, function(v) { return v.id == newValue});
+					if(type && type.id) {
+						if(type.NumberOfPayments)
+							rowData.PaymentAmount = round(type.AnnualSubscription / type.NumberOfPayments);
+						rowData.AnnualSubscription = type.AnnualSubscription;
+						rowData.AmountDue = type.AnnualSubscription;
+						table.draw();
+					} else {
+						rowData.MemberTypeId = 0;
+					}
+				}
+			});
+		});
+	</script>
+</head>
+<body>
+<table id="docs" cellspacing="0" width="100%"></table>
+</body>

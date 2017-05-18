@@ -1,0 +1,73 @@
+<head>
+	<script>
+		$(function() {
+			var formOptions = {{Form.Options}};
+			var record = loadRecord();
+			formOptions.data = record;
+			formOptions.detail.deleteRows = function(data) {
+				if($(this).index() == form.detail.data.length - 1)
+					return false;
+				if((data.Amount != 0)
+						&& !confirm('Amount is not zero - are you sure?'))
+					return false;
+				form.header.data.DocumentAmount -= data.Amount;
+				form.header.draw();
+			};
+			var emptyRow = {
+				'@class': 'noDeleteButton',
+				NameAddressId: 0,
+				Member: '',
+				Amount: 0.00
+			};
+			record.detail.push(_.clone(emptyRow));
+			var form = makeHeaderDetailForm('#docs', '#detail',
+					formOptions
+			);
+			function checkForNewRow() {
+				if(form.data.detail[form.data.detail.length - 1].NameAddressId) {
+					form.detail.find('tbody tr.noDeleteButton').removeClass('noDeleteButton');
+					form.detail.addRow(_.clone(emptyRow));
+					return true;
+				}
+			}
+			checkForNewRow();
+			form.detail.bind('changed.field', function(e, newValue, rowData, col, input) {
+				//noinspection FallThroughInSwitchStatementJS
+				switch(col.name) {
+					case 'Member':
+						if(newValue == rowData.Name)
+							return;
+						var member = _.find(form.detail.fields.Member.selectOptions, function(v) { return v.value == newValue});
+						if(member && member.id) {
+							rowData.NameAddressId = member.id;
+							rowData.Amount = member.PaymentAmount;
+						} else {
+							rowData.NameAddressId = 0;
+						}
+						break;
+					case 'Amount':
+						if(newValue == rowData.Amount)
+							return;
+						form.header.DocumentAmount += newValue - rowData.Amount;
+						form.header.draw();
+						rowData.Amount = newValue;
+						break;
+					default:
+						setTimeout(checkForNewRow, 10);	// Wait for data to be updated after we return
+						return;
+				}
+				form.detail.drawRow(input);
+				var tot = _.reduce(form.detail.data, function(memo, d) { return memo + d.Amount; }, 0);
+				if(tot != form.header.data.DocumentAmount) {
+					form.header.data.DocumentAmount = tot;
+					form.header.draw();
+				}
+				checkForNewRow();
+			});
+		});
+	</script>
+</head>
+<body>
+<table id="docs" cellspacing="0" width="100%"></table>
+<table id="detail" cellspacing="0" width="100%"></table>
+</body>

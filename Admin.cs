@@ -162,6 +162,12 @@ OR JCount != MaxJournal"))
 				errors.Add(string.Format("{0} {1} {2} {3:d} Journals={4} Lines={5} Max journal num={6}", r.AsString("DocType"),
 					r.AsString("DocumentId"), r.AsString("DocumentIdentifier"), r.AsDate("DocumentDate"), r.AsInt("JCount"),
 					r.AsInt("LCount"), r.AsInt("MaxJournal")));
+			foreach (JObject r in Database.Query(@"SELECT NameAddress.* FROM NameAddress
+LEFT JOIN Member ON NameAddressId = idNameAddress
+WHERE Type = 'M'
+AND idMember IS NULL"))
+				errors.Add(string.Format("{0} {1} member address is not associated with a member", r.AsString("idNameAddress"),
+					r.AsString("Name")));
 			if (errors.Count == 0)
 				errors.Add("No errors");
 			Record = errors;

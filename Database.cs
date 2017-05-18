@@ -54,7 +54,19 @@ namespace AccountServer {
 		ShareCapital,
 		UndepositedFunds,
 		UninvoicedSales,
-		VATControl
+		VATControl,
+		Spare9,
+		Spare10,
+		Spare11,
+		Spare12,
+		Spare13,
+		Spare14,
+		Spare15,
+		Spare16,
+		SPare17,
+		Spare18,
+		Spare19,
+		SubscriptionsIncome
 	}
 	/// <summary>
 	/// Document Types - these correspond to records in the DocumentType table
@@ -75,7 +87,8 @@ namespace AccountServer {
 		OpeningBalance,
 		Buy,
 		Sell,
-		Gain
+		Gain,
+		Subscriptions
 	}
 	/// <summary>
 	/// For database logging
@@ -89,7 +102,7 @@ namespace AccountServer {
 	/// Class for accessing the database
 	/// </summary>
 	public class Database : CodeFirstWebFramework.Database {
-		public override int CurrentDbVersion { get { return 2; } }
+		public override int CurrentDbVersion { get { return 3; } }
 
 		/// <summary>
 		/// Coded updates - make sure all required records exist, etc.
@@ -154,6 +167,7 @@ namespace AccountServer {
 			ensureDocTypeExists(DocType.Buy, "O", null);
 			ensureDocTypeExists(DocType.Sell, "O", null);
 			ensureDocTypeExists(DocType.Gain, "O", null);
+			ensureDocTypeExists(DocType.Subscriptions, "M", null);
 			switch (version) {
 				case -1:	// New database
 					break;
@@ -164,6 +178,14 @@ namespace AccountServer {
 					Execute("UPDATE Account SET AccountTypeId = AccountTypeId + 1 WHERE AccountTypeId >= 10");
 					goto case 2;	// We have just upgraded to version 2
 				case 2:
+					// Version 3 introduced some new standard account numbers
+					Execute("UPDATE Account SET idAccount = idAccount + 1000011 WHERE idAccount >= 9");
+					Execute("UPDATE Account SET idAccount = idAccount - 1000000 WHERE idAccount >= 1000000");
+					Execute("UPDATE Journal SET AccountId = AccountId + 11 WHERE AccountId >= 9");
+					Execute("UPDATE Product SET AccountId = AccountId + 11 WHERE AccountId >= 9");
+					Execute("UPDATE StockTransaction SET ParentAccountId = ParentAccountId + 11 WHERE ParentAccountId >= 9");
+					break;
+				case 3:
 					break;
 				default:
 					throw new CheckException("Database has more recent version {0} than program {1}",
@@ -188,6 +210,9 @@ namespace AccountServer {
 			ensureRecordExists(table, Acct.VATControl,
 				"AccountTypeId", AcctType.OtherCurrentLiability,
 				"AccountDescription", "VAT to pay/receive");
+			ensureRecordExists(table, Acct.SubscriptionsIncome,
+				"AccountTypeId", AcctType.Income,
+				"AccountDescription", "Subscriptions received");
 			table = TableFor("NameAddress");
 			if (!RecordExists(table, 1)) {
 				JObject d = new JObject().AddRange("idNameAddress", 1,
@@ -283,7 +308,7 @@ namespace AccountServer {
 		/// Optionally save an audit trail.
 		/// </summary>
 		public void Update(JsonObject data, bool withAudit) {
-			Table table = TableFor(data.GetType()).UpdateTable;
+			Table table = TableFor(data.GetType());
 			JObject d = data.ToJObject();
 			JObject result = null;
 			if (withAudit) {
@@ -293,7 +318,7 @@ namespace AccountServer {
 				// If auditing, get all the foreign key fields too.
 				result = QueryOne("+", "WHERE " + index.Where(d), table.Name);
 			}
-			base.update(table, d);
+			base.update(table.UpdateTable, d);
 			if (withAudit) {
 				Field idField = table.PrimaryKey;
 				string idName = idField.Name;
@@ -310,13 +335,13 @@ namespace AccountServer {
 		public void Delete(string tableName, int id, bool withAudit) {
 			Table t = TableFor(tableName);
 			if (withAudit) {
-				JObject old = withAudit ? QueryOne("+", "WHERE " + t.PrimaryKey.Name + '=' + id, tableName) : null;
+				JObject old = withAudit ? QueryOne("+", "WHERE " + t.PrimaryKey.Name + '=' + id, t.Name) : null;
 				if (old != null && !old.IsAllNull()) {
-					Execute("DELETE FROM " + tableName + " WHERE " + t.PrimaryKey.Name + '=' + id);
-					Audit(AuditType.Delete, tableName, id, old);
+					Execute("DELETE FROM " + t.UpdateTable.Name + " WHERE " + t.PrimaryKey.Name + '=' + id);
+					Audit(AuditType.Delete, t.Name, id, old);
 				}
 			} else {
-				Execute("DELETE FROM " + tableName + " WHERE " + t.PrimaryKey.Name + '=' + id);
+				Execute("DELETE FROM " + t.UpdateTable.Name + " WHERE " + t.PrimaryKey.Name + '=' + id);
 			}
 		}
 

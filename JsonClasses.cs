@@ -137,7 +137,6 @@ namespace AccountServer {
 		/// <summary>
 		/// Record of payment to HM which paid the vat in this document
 		/// </summary>
-		[DefaultValue("0")]
 		public int? VatPaid;
 		public override int? Id {
 			get { return idDocument; }
@@ -224,6 +223,68 @@ namespace AccountServer {
 		public override int? Id {
 			get { return idLine; }
 			set { idLine = value; }
+		}
+	}
+
+	[Table]
+	public class Member : JsonObject {
+		[Primary]
+		public int? idMember;
+		[Unique("MemberNo")]
+		public int MemberNo;
+		[ForeignKey("MemberType")]
+		public int MemberTypeId;
+		[ForeignKey("NameAddress")]
+		public int NameAddressId;
+		public decimal PaymentAmount;
+		public decimal AmountDue;
+		public override int? Id
+		{
+			get { return idMember; }
+			set { idMember = value; }
+		}
+	}
+
+	[Table]
+	public class MemberType : JsonObject {
+		[Primary]
+		public int? idMemberType;
+		[Unique("MemberTypeName")]
+		public string MemberTypeName;
+		public decimal AnnualSubscription;
+		public int NumberOfPayments = 1;
+		public override int? Id
+		{
+			get { return idMemberType; }
+			set { idMemberType = value; }
+		}
+	}
+
+	[View(@"SELECT * FROM Member
+JOIN MemberType ON idMemberType = MemberTypeId
+JOIN NameAddress ON idNameAddress = NameAddressId")]
+	public class Full_Member : Member {
+		[Field(Type = "string", Heading = "Member Type")]
+		public string MemberTypeName;
+		[Field(Type = "decimal")]
+		public decimal AnnualSubscription;
+		[Field(Type = "int", Visible = false)]
+		public int NumberOfPayments = 1;
+		public string Name;
+		[Length(0)]
+		public string Address;
+		[Length(15)]
+		public string PostCode;
+		public string Telephone;
+		[Length(50)]
+		public string Email;
+		public string Contact;
+		[Field(Heading = "Left")]
+		public bool Hidden;
+		public override int? Id
+		{
+			get { return idMember; }
+			set { idMember = value; }
 		}
 	}
 

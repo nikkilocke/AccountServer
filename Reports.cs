@@ -89,6 +89,7 @@ namespace AccountServer {
 			reports = new List<JObject>();
 			reports.Add(new JObject().AddRange("ReportName", "Accounts List", "ReportType", "Accounts", "idReport", 0));
 			reports.Add(new JObject().AddRange("ReportName", "Names List", "ReportType", "Names", "idReport", 0));
+			reports.Add(new JObject().AddRange("ReportName", "Members List", "ReportType", "Members", "idReport", 0));
 			reports.Add(new JObject().AddRange("ReportName", "Products List", "ReportType", "Products", "idReport", 0));
 			reports.Add(new JObject().AddRange("ReportName", "VAT Codes List", "ReportType", "VatCodes", "idReport", 0));
 			reports.Add(new JObject().AddRange("ReportName", "Securities List", "ReportType", "Securities", "idReport", 0));
@@ -97,6 +98,7 @@ namespace AccountServer {
 			reports.Add(new JObject().AddRange("ReportName", "Audit Transactions Report", "ReportType", "AuditTransactions", "idReport", 0));
 			reports.Add(new JObject().AddRange("ReportName", "Audit Accounts Report", "ReportType", "AuditAccounts", "idReport", 0));
 			reports.Add(new JObject().AddRange("ReportName", "Audit Names Report", "ReportType", "AuditNames", "idReport", 0));
+			reports.Add(new JObject().AddRange("ReportName", "Audit Members Report", "ReportType", "AuditMembers", "idReport", 0));
 			reports.Add(new JObject().AddRange("ReportName", "Audit Products Report", "ReportType", "AuditProducts", "idReport", 0));
 			reports.Add(new JObject().AddRange("ReportName", "Audit VAT Codes Report", "ReportType", "AuditVatCodes", "idReport", 0));
 			reports.Add(new JObject().AddRange("ReportName", "Audit Securities Report", "ReportType", "AuditSecurities", "idReport", 0));
@@ -175,6 +177,17 @@ namespace AccountServer {
 			initialiseAuditReport(json);
 			namesSetup();
 			return auditReportData(json, "NameAddress", "Type", "Name", "Address", "PostCode", "Telephone", "Email", "Contact");
+		}
+
+		public void AuditMembers(int id) {
+			Record = AuditMembersPost(getJson(id, "Members Audit Report"));
+			Method = "members";
+		}
+
+		public object AuditMembersPost(JObject json) {
+			initialiseAuditReport(json);
+			membersSetup();
+			return auditReportData(json, "Full_Member", "MemberTypeName", "MemberNo", "Name", "Address", "PostCode", "Telephone", "Email", "Contact", "AnnualSubscription", "PaymentAmount", "AmountDue");
 		}
 
 		public void AuditProducts(int id) {
@@ -497,8 +510,30 @@ LEFT JOIN DocumentType ON DocumentType.idDocumentType = rDocType
 			fieldFor("Type")["selectOptions"] = new JArray(SelectNameTypes());
 			fieldFor("Email")["type"] = "email";
 			_filters.Add(new SelectFilter("Type", "NameAddress.Type", SelectNameTypes()));
-			_filters.Add(new StringFilter("NameAddressDescription", "NameAddress.NameAddressDescription"));
+			_filters.Add(new StringFilter("Name", "NameAddress.Name"));
 			_filters.Add(new StringFilter("PostCode", "NameAddress.PostCode"));
+		}
+
+		public void Members(int id) {
+			Record = MembersPost(getJson(id, "Members List"));
+		}
+
+		public object MembersPost(JObject json) {
+			initialiseReport(json);
+			membersSetup();
+			makeSortable("Name", "MemberTypeName");
+			setDefaultFields(json, "MemberTypeName", "Name", "Address", "PostCode", "Telephone", "Email", "Contact", "AnnualSubscription", "PaymentAmount", "AmountDue");
+			return finishReport(json, "Full_Member", "Name", "");
+		}
+
+		void membersSetup() {
+			addTable("Full_Member");
+			fieldFor("MemberTypeName")["heading"] = "Type";
+			fieldFor("Email")["type"] = "email";
+			_filters.Add(new StringFilter("Name", "Full_Member.Name"));
+			_filters.Add(new StringFilter("PostCode", "Full_Member.PostCode"));
+			_filters.Add(new DecimalFilter("Amount Due", "AmountDue"));
+			_filters.Add(new SelectFilter("Type", "Member.MemberTypeId", SelectMemberTypes()));
 		}
 
 		public void Products(int id) {

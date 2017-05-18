@@ -73,6 +73,7 @@
     <Compile Include="Database.cs" />
     <Compile Include="Importer.cs" />
     <Compile Include="JsonClasses.cs" />
+    <Compile Include="Members.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QifImporter.cs" />

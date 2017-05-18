@@ -403,8 +403,15 @@ WHERE Journal.DocumentId = " + document.idDocument));
 			return new JObject[] {
 				new JObject().AddRange("id", "C", "value", "Customer"),
 				new JObject().AddRange("id", "S", "value", "Supplier"),
+				new JObject().AddRange("id", "M", "value", "Member"),
 				new JObject().AddRange("id", "O", "value", "Other")
 			};
+		}
+
+		public JObjectEnumerable SelectMemberTypes() {
+			return Database.Query(@"SELECT idMemberType AS id, MemberTypeName AS value, AnnualSubscription, NumberOfPayments
+FROM MemberType
+ORDER BY MemberTypeName");
 		}
 
 		public JObjectEnumerable SelectOthers() {
