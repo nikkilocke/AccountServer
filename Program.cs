@@ -13,7 +13,7 @@ using System.Threading;
 using CodeFirstWebFramework;
 
 namespace AccountServer {
-	class Program {
+	static class Program {
 		static void Main(string[] args) {
 			Config.Load(args);
 			bool windows = false;
@@ -42,6 +42,28 @@ namespace AccountServer {
 			}
 			new WebServer().Start();
 		}
+
+		/// <summary>
+		/// Translate NameType letter to human-readable form
+		/// </summary>
+		public static string NameType(this string type) {
+			switch (type) {
+				case "C":
+					return "Customer";
+				case "S":
+					return "Supplier";
+				case "O":
+					return "Other Name";
+				case "M":
+					return "Member";
+				case "":
+				case null:
+					return "Unknown";
+				default:
+					return "Type " + type;
+			}
+		}
+
 	}
 
 }
