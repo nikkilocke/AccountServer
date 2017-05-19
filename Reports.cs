@@ -2403,12 +2403,12 @@ JOIN Security ON idSecurity = SecurityId")) {
 				if (list.Count > 0)
 					clauses.Add(FieldName + " " + db.In(list));
 				if (_null)
-					clauses.Add(FieldName + " IS NULL");
+					clauses.Add("(" + FieldName + " IS NULL OR " + FieldName + " < 1)");
 				return "(" + string.Join(" OR ", clauses.ToArray()) + ")";
 			}
 
 			public override bool Test(JObject data) {
-				if (_null && (data[JObjectFieldName] == null || data[JObjectFieldName].Type == JTokenType.Null))
+				if (_null && (data[JObjectFieldName] == null || data[JObjectFieldName].Type == JTokenType.Null || data.AsInt(JObjectFieldName) == 0))
 					return true;
 				return base.Test(data);
 			}

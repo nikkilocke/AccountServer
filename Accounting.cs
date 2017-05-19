@@ -346,7 +346,7 @@ ORDER BY idDocument DESC");
 			Database.Execute(@"UPDATE Document
 JOIN Vat_Journal ON Vat_Journal.idDocument = Document.idDocument
 SET Document.VatPaid = " + header.idDocument + @"
-WHERE Document.VatPaid IS NULL
+WHERE (Document.VatPaid IS NULL OR Document.VatPaid < 1)
 AND Document.DocumentDate < " + Database.Quote(Settings.QuarterStart(Utils.Today)));
 			JObject newDoc = getCompleteDocument(header.idDocument);
 			Database.AuditUpdate("Document", header.idDocument, null, newDoc);
@@ -367,7 +367,7 @@ AND Document.DocumentDate < " + Database.Quote(Settings.QuarterStart(Utils.Today
 			foreach (JObject r in Database.Query(@"SELECT VatType, SUM(VatAmount) AS Vat, SUM(LineAmount) AS Net
 FROM Vat_Journal
 JOIN VatCode ON idVatCode = VatCodeId
-WHERE " + (id == null ? "VatPaid IS NULL AND DocumentDate < " + Database.Quote(qe) : "VatPaid = " + id) + @"
+WHERE " + (id == null ? "(VatPaid IS NULL OR VatPaid < 1) AND DocumentDate < " + Database.Quote(qe) : "VatPaid = " + id) + @"
 GROUP BY VatType")) {
 					 switch (r.AsInt("VatType")) {
 						 case -1:

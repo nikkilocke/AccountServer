@@ -179,7 +179,7 @@ namespace AccountServer {
 				result.error = type.UnCamel() + " has been " +
 					(type == DocType.Payment || type == DocType.BillPayment ? "used to pay or part pay invoices" : "paid or part paid")
 					+ " it cannot be deleted";
-			} else if(record.VatPaid != null) {
+			} else if(record.VatPaid > 0) {
 				result.error = "VAT has been declared on " + type.UnCamel() + " it cannot be deleted";
 			} else {
 				Database.Audit(AuditType.Delete, "Document", id, getCompleteDocument(record));

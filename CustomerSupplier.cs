@@ -192,7 +192,7 @@ WHERE idNameAddress = " + id
 			if (vat != 0 || vatJournal.idJournal != null) {
 				vat *= sign;
 				decimal changeInVatAmount = vat - vatJournal.Amount;
-				Utils.Check(document.VatPaid == null || changeInVatAmount == 0, "Cannot alter VAT on this document, it has already been declared");
+				Utils.Check(document.VatPaid == null || document.VatPaid < 1 || changeInVatAmount == 0, "Cannot alter VAT on this document, it has already been declared");
 				vatJournal.DocumentId = (int)document.idDocument;
 				vatJournal.AccountId = (int)Acct.VATControl;
 				vatJournal.NameAddressId = document.DocumentNameAddressId;

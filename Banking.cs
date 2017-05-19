@@ -188,7 +188,7 @@ namespace AccountServer {
 				// Add the VAT journal at the end
 				vat *= sign;
 				decimal changeInVatAmount = vat - vatJournal.Amount;
-				Utils.Check(document.VatPaid == null || changeInVatAmount == 0, "Cannot alter VAT on this document, it has already been declared");
+				Utils.Check(document.VatPaid == null || document.VatPaid < 1 || changeInVatAmount == 0, "Cannot alter VAT on this document, it has already been declared");
 				if (!lineVat) {
 					vatJournal.DocumentId = (int)document.idDocument;
 					vatJournal.AccountId = (int)Acct.VATControl;
