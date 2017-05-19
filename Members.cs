@@ -67,8 +67,9 @@ namespace AccountServer {
 			form["Email"].Type = "textInput";
 			form["Contact"].Type = "textInput";
 			form["Hidden"].Type = "checkboxInput";
-			SelectAttribute memberType = new SelectAttribute(SelectMemberTypes());
-			memberType.Data = "MemberTypeId";
+			SelectAttribute memberType = new SelectAttribute(SelectMemberTypes()) {
+				Data = "MemberTypeId"
+			};
 			form.Replace(form.IndexOf("MemberTypeId"), memberType);
 			Form = form;
 			form.Data = record.ToJToken();
@@ -136,15 +137,17 @@ ORDER BY JournalNum")
 				checkDocType(header.DocumentTypeId, DocType.Subscriptions);
 			JObject record = getSubscriptionJournal(header);
 			HeaderDetailForm form = new HeaderDetailForm(this, typeof(SubscriptionJournal), typeof(SubscriptionPayment));
-			SelectAttribute account = new SelectAttribute(SelectBankAccounts());
-			account.Data = "AccountId";
+			SelectAttribute account = new SelectAttribute(SelectBankAccounts()) {
+				Data = "AccountId"
+			};
 			form.Header.Options["table"] = "Document";
 			form.Header.Options["canDelete"] = string.IsNullOrEmpty(header.Clr);
 			form.Header.Replace(form.Header.IndexOf("AccountId"), account);
 			form.Header["DocumentMemo"].Type = "textAreaInput";
-			SelectAttribute member = new SelectAttribute(SelectMembers());
-			member.Data = "Member";
-			member.Type = "autoComplete";
+			SelectAttribute member = new SelectAttribute(SelectMembers()) {
+				Data = "Member",
+				Type = "autoComplete"
+			};
 			member.Options["mustExist"] = true;
 			form.Detail.Replace(form.Detail.IndexOf("Member"), member);
 			form.Detail["Memo"].Type = "textInput";
@@ -221,13 +224,14 @@ ORDER BY JournalNum")
 					Database.Update(journal);
 					if (lineNum > 1) {
 						// Create a dummy line record
-						Line line = new Line();
-						line.idLine = journal.idJournal;
-						line.Qty = 0;
-						line.LineAmount = detail.Amount;
-						line.VatCodeId = null;
-						line.VatRate = 0;
-						line.VatAmount = 0;
+						Line line = new Line() {
+							idLine = journal.idJournal,
+							Qty = 0,
+							LineAmount = detail.Amount,
+							VatCodeId = null,
+							VatRate = 0,
+							VatAmount = 0
+						};
 						Database.Update(line);
 					}
 					lineNum++;

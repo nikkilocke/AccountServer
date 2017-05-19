@@ -177,14 +177,15 @@ WHERE idNameAddress = " + id
 				journal.Outstanding += sign * detail.LineAmount - journal.Amount;
 				journal.Amount = sign * detail.LineAmount;
 				Database.Update(journal);
-				Line line = new Line();
-				line.idLine = journal.idJournal;
-				line.Qty = detail.Qty;
-				line.ProductId = detail.ProductId;
-				line.LineAmount = detail.LineAmount;
-				line.VatCodeId = detail.VatCodeId;
-				line.VatRate = detail.VatRate;
-				line.VatAmount = detail.VatAmount;
+				Line line = new Line() {
+					idLine = journal.idJournal,
+					Qty = detail.Qty,
+					ProductId = detail.ProductId,
+					LineAmount = detail.LineAmount,
+					VatCodeId = detail.VatCodeId,
+					VatRate = detail.VatRate,
+					VatAmount = detail.VatAmount
+				};
 				Database.Update(line);
 			}
 			Database.Execute("DELETE FROM Line WHERE idLine IN (SELECT idJournal FROM Journal WHERE DocumentId = " + document.idDocument + " AND JournalNum >= " + lineNum + ")");
@@ -250,9 +251,10 @@ WHERE idNameAddress = " + id
 				checkDocType(header.DocumentTypeId, PaymentDoc);
 				checkNameType(header.DocumentNameAddressId, NameType);
 			}
-			PaymentDocument previous = new PaymentDocument();
-			previous.header = header;
-			previous.detail = PaymentListing(header.idDocument, header.DocumentNameAddressId).ToList();
+			PaymentDocument previous = new PaymentDocument() {
+				header = header,
+				detail = PaymentListing(header.idDocument, header.DocumentNameAddressId).ToList()
+			};
 			return previous;
 		}
 

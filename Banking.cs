@@ -173,13 +173,14 @@ namespace AccountServer {
 				journal.Amount = sign * detail.LineAmount;
 				journal.Outstanding = sign * detail.LineAmount;
 				Database.Update(journal);
-				Line line = new Line();
-				line.idLine = journal.idJournal;
-				line.Qty = 0;
-				line.LineAmount = detail.LineAmount;
-				line.VatCodeId = detail.VatCodeId;
-				line.VatRate = detail.VatRate;
-				line.VatAmount = detail.VatAmount;
+				Line line = new Line() {
+					idLine = journal.idJournal,
+					Qty = 0,
+					LineAmount = detail.LineAmount,
+					VatCodeId = detail.VatCodeId,
+					VatRate = detail.VatRate,
+					VatAmount = detail.VatAmount
+				};
 				Database.Update(line);
 			}
 			Database.Execute("DELETE FROM Line WHERE idLine IN (SELECT idJournal FROM Journal WHERE DocumentId = " + document.idDocument + " AND JournalNum >= " + lineNum + ")");
@@ -263,13 +264,14 @@ ORDER BY DocumentDate, idDocument"));
 			dynamic record = GetDocument(id, DocType.Cheque);
 			Utils.Check(record.header.idDocument != null, "Document {0} not found", id);
 			DocType type = (DocType)record.header.DocumentTypeId;
-			Schedule job = new Schedule();
-			job.ActionDate = record.header.DocumentDate;
-			job.Task = type.UnCamel() + " " + record.header.DocumentAmount.ToString("0.00") + (type == DocType.Cheque || type == DocType.CreditCardCharge ? " to " : " from ") + record.header.DocumentName + " " + record.header.DocumentMemo;
-			job.Url = "banking/standingorderpost";
-			job.Parameters = record.ToString();
-			job.RepeatFrequency = 1;
-			job.Post = true;
+			Schedule job = new Schedule() {
+				ActionDate = record.header.DocumentDate,
+				Task = type.UnCamel() + " " + record.header.DocumentAmount.ToString("0.00") + (type == DocType.Cheque || type == DocType.CreditCardCharge ? " to " : " from ") + record.header.DocumentName + " " + record.header.DocumentMemo,
+				Url = "banking/standingorderpost",
+				Parameters = record.ToString(),
+				RepeatFrequency = 1,
+				Post = true
+			};
 			Module = "home";
 			Method = "job";
 			Record = job;
@@ -304,13 +306,14 @@ ORDER BY DocumentDate, idDocument"));
 			Utils.Check(header.idDocument != null, "Transfer {0} not found", id);
 			Account account = Database.Get<Account>((int)header.TransferAccountId);
 			checkDocType(header.DocumentTypeId, DocType.Transfer);
-			Schedule job = new Schedule();
-			job.ActionDate = header.DocumentDate;
-			job.Task = "Transfer " + header.DocumentAmount.ToString("0.00") + " from " + header.DocumentAccountName + " to " + account.AccountName + " " + header.DocumentMemo;
-			job.Url = "banking/repeattransferpost";
-			job.Parameters = header.ToString();
-			job.RepeatFrequency = 1;
-			job.Post = true;
+			Schedule job = new Schedule() {
+				ActionDate = header.DocumentDate,
+				Task = "Transfer " + header.DocumentAmount.ToString("0.00") + " from " + header.DocumentAccountName + " to " + account.AccountName + " " + header.DocumentMemo,
+				Url = "banking/repeattransferpost",
+				Parameters = header.ToString(),
+				RepeatFrequency = 1,
+				Post = true
+			};
 			Module = "home";
 			Method = "job";
 			Record = job;
@@ -370,8 +373,9 @@ ORDER BY DocumentDate, idDocument"));
 			DateTime minDate = DateTime.MaxValue;
 			if (!string.IsNullOrWhiteSpace(file.Content)) {
 				// They have uploaded a Qif file
-				QifImporter qif = new QifImporter();
-				qif.DateFormat = dateFormat;
+				QifImporter qif = new QifImporter() {
+					DateFormat = dateFormat
+				};
 				result = qif.ImportTransactions(new System.IO.StreamReader(file.Stream()), this);
 				Utils.Check(result.Count > 0, "No transactions found");
 				minDate = result.Min(i => (DateTime)i["Date"]);

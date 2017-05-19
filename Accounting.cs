@@ -198,13 +198,14 @@ ORDER BY DocumentDate DESC, idDocument DESC")) {
 				Database.Update(detail);
 				if (lineNum > 1) {
 					// Create a dummy line record
-					Line line = new Line();
-					line.idLine = detail.idJournal;
-					line.Qty = 0;
-					line.LineAmount = -detail.Amount;
-					line.VatCodeId = null;
-					line.VatRate = 0;
-					line.VatAmount = 0;
+					Line line = new Line() {
+						idLine = detail.idJournal,
+						Qty = 0,
+						LineAmount = -detail.Amount,
+						VatCodeId = null,
+						VatRate = 0,
+						VatAmount = 0
+					};
 					Database.Update(line);
 				}
 				lineNum++;
@@ -323,14 +324,15 @@ ORDER BY idDocument DESC");
 			// Flag this document as part of this VAT return
 			header.VatPaid = header.idDocument;
 			Database.Update(header);
-			Journal journal = new Journal();
-			journal.DocumentId = (int)header.idDocument;
-			journal.AccountId = header.DocumentAccountId;
-			journal.NameAddressId = header.DocumentNameAddressId;
-			journal.Memo = header.DocumentMemo;
-			journal.JournalNum = 1;
-			journal.Amount = -toPay;
-			journal.Outstanding = -toPay;
+			Journal journal = new Journal() {
+				DocumentId = (int)header.idDocument,
+				AccountId = header.DocumentAccountId,
+				NameAddressId = header.DocumentNameAddressId,
+				Memo = header.DocumentMemo,
+				JournalNum = 1,
+				Amount = -toPay,
+				Outstanding = -toPay
+			};
 			Database.Insert(journal);
 			journal.idJournal = null;
 			journal.AccountId = (int)Acct.VATControl;
@@ -338,9 +340,10 @@ ORDER BY idDocument DESC");
 			journal.Amount = toPay;
 			journal.Outstanding = toPay;
 			Database.Insert(journal);
-			Line line = new Line();
-			line.idLine = journal.idJournal;
-			line.LineAmount = toPay;
+			Line line = new Line() {
+				idLine = journal.idJournal,
+				LineAmount = toPay
+			};
 			Database.Insert(line);
 			// Flag all documents from last quarter as part of this VAT return
 			Database.Execute(@"UPDATE Document

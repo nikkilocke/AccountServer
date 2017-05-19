@@ -311,8 +311,9 @@ namespace AccountServer {
 				_fields.Add(new ReportField("SUM(CASE WHEN age BETWEEN " + (i + 29) + " AND " + (i + 58) + " THEN Outstanding ELSE 0 END) AS b" + i, "decimal", i + "-" + (i + 29)));
 			_fields.Add(new ReportField("SUM(CASE WHEN age > 120 THEN Outstanding ELSE 0 END) AS old", "decimal", ">90"));
 			_fields.Add(new ReportField("SUM(Outstanding) AS Total", "decimal", "Total"));
-			RecordFilter account = new RecordFilter("Account", "Journal.AccountId", accountSelect);
-			account.Apply = false;
+			RecordFilter account = new RecordFilter("Account", "Journal.AccountId", accountSelect) {
+				Apply = false
+			};
 			_filters.Add(account);
 			_sortOrder = "";
 			_total = true;
@@ -811,13 +812,15 @@ LEFT JOIN (SELECT idDocument AS idVatPaid, DocumentDate AS VatPaidDate FROM Docu
 				}
 				_fields.Add(r);
 				if (table == "Journal" && f.Name == "Amount") {
-					ReportField rf = new ReportField(t.Name, f, "Debit");
-					rf.Name = "Debit";
-					rf["type"] = "debit";
+					ReportField rf = new ReportField(t.Name, f, "Debit") {
+						Name = "Debit",
+						FieldType = "debit"
+					};
 					_fields.Add(rf);
-					rf = new ReportField(t.Name, f, "Credit");
-					rf.Name = "Credit";
-					rf["type"] = "credit";
+					rf = new ReportField(t.Name, f, "Credit") {
+						Name = "Credit",
+						FieldType = "credit"
+					};
 					_fields.Add(rf);
 				}
 			}
@@ -1767,6 +1770,11 @@ JOIN Security ON idSecurity = SecurityId")) {
 			public string Name {
 				get { return this.AsString("Name"); }
 				set { this["Name"] = value; }
+			}
+
+			public string FieldType {
+				get { return this.AsString("type"); }
+				set { this["type"] = value; }
 			}
 
 			public bool Sortable {
