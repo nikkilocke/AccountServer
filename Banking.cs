@@ -472,7 +472,16 @@ ORDER BY DocumentDate, idDocument"));
 			}
 			JObject record = new JObject().AddRange(
 					"import", result,
-					"transactions", potentialMatches(id, minDate)
+					"transactions", potentialMatches(id, minDate),
+					"plus", new JArray(
+						account.AccountTypeId == (int)AcctType.Bank ? "Deposit" : "Card Credit",
+						"Transfer",
+						"CustomerPayment",
+						"Subscriptions"),
+					"minus", new JArray(
+						account.AccountTypeId == (int)AcctType.Bank ? "Cheque" : "Card Charge",
+						"Transfer",
+						"Bill Payment")
 				);
 			// Save data to session
 			SessionData.StatementImport = record;
@@ -541,7 +550,8 @@ ORDER BY DocumentDate, idDocument"));
 					DocType.Deposit,
 					DocType.CreditCardCharge,
 					DocType.CreditCardCredit,
-					DocType.Transfer);
+					DocType.Transfer,
+					DocType.Subscriptions);
 			}
 			// Save json to session
 			SessionData.StatementMatch = json.ToJToken();
@@ -566,15 +576,41 @@ ORDER BY DocumentDate, idDocument"));
 			bool payment = false;
 			decimal cAmount = current.Amount;
 			int id = transaction.idDocument ?? 0;
-			DocType type = match.transaction < 0 ? 
-				match.type == "Transfer" ?
-					DocType.Transfer :		// They specified a new transfer
-					cAmount < 0 ?			// They specified a new transaction - type depends on sign and account type
-						account.AccountTypeId == (int)AcctType.Bank ? 
-							DocType.Cheque : DocType.CreditCardCharge :
-						account.AccountTypeId == (int)AcctType.Bank ? 
-							DocType.Deposit : DocType.CreditCardCredit : 
-				(DocType)transaction.DocumentTypeId;
+			DocType type;
+			if(match.transaction >= 0)
+				type = (DocType)transaction.DocumentTypeId;
+			else switch(match.type) {
+					case "Deposit":
+						Utils.Check(account.AccountTypeId == (int)AcctType.Bank, "Deposit not to bank account");
+						type = DocType.Deposit;
+						break;
+					case "CardCredit":
+						Utils.Check(account.AccountTypeId == (int)AcctType.CreditCard, "Credit not to credit card");
+						type = DocType.CreditCardCredit;
+						break;
+					case "Transfer":
+						type = DocType.Transfer;
+						break;
+					case "CustomerPayment":
+						type = DocType.Payment;
+						break;
+					case "Subscriptions":
+						type = DocType.Subscriptions;
+						break;
+					case "Cheque":
+						Utils.Check(account.AccountTypeId == (int)AcctType.Bank, "Cheque not to bank account");
+						type = DocType.Cheque;
+						break;
+					case "CardCharge":
+						Utils.Check(account.AccountTypeId == (int)AcctType.CreditCard, "Charge not to credit card");
+						type = DocType.CreditCardCharge;
+						break;
+					case "BillPayment":
+						type = DocType.BillPayment;
+						break;
+					default:
+						throw new CheckException("Unknown match type {0}", match.type);
+				}
 			GetParameters["acct"] = match.id.ToString();	// This bank account
 			// Call appropriate method to get Record, and therefore transaction
 			// Also set Module and Method, so appropriate template is used to display transaction before posting
@@ -582,17 +618,23 @@ ORDER BY DocumentDate, idDocument"));
 				case DocType.Payment:
 					Module = "customer";
 					Method = "payment";
-					Customer cust = new Customer();
+					Customer cust = new Customer() {
+						CopyFrom = this
+					};
 					cust.Payment(id);
 					this.Record = cust.Record;
+					this.Form = cust.Form;
 					payment = true;
 					break;
 				case DocType.BillPayment:
 					Module = "supplier";
 					Method = "payment";
-					Supplier supp = new Supplier();
+					Supplier supp = new Supplier() {
+						CopyFrom = this
+					};
 					supp.Payment(id);
 					this.Record = supp.Record;
+					this.Form = supp.Form;
 					payment = true;
 					break;
 				case DocType.Cheque:
@@ -606,6 +648,16 @@ ORDER BY DocumentDate, idDocument"));
 				case DocType.Transfer:
 					Method = "transfer";
 					Transfer(id);
+					break;
+				case DocType.Subscriptions:
+					Module = "Members";
+					Method = "document";
+					Members member = new Members() {
+						CopyFrom = this
+					};
+					member.Document(id);
+					this.Record = member.Record;
+					this.Form = member.Form;
 					break;
 				default:
 					throw new CheckException("Unexpected document type:{0}", type.UnCamel());
@@ -749,6 +801,14 @@ ORDER BY DocumentDate, idDocument"));
 					break;
 				case DocType.Transfer:
 					result = TransferPost(json.To<TransferDocument>());
+					break;
+				case DocType.Subscriptions:
+					result = new Members() {
+						Context = Context,
+						GetParameters = GetParameters,
+						PostParameters = PostParameters,
+						Parameters = Parameters,
+					}.DocumentPost(json.To<Members.SubscriptionDocument>());
 					break;
 				default:
 					throw new CheckException("Unexpected document type:{0}", type.UnCamel());

@@ -151,6 +151,11 @@ namespace AccountServer {
 				"Negate", true, "Heading", "Long Term and Other Liabilities", "BalanceSheet", true);
 			ensureRecordExists(table, AcctType.Equity,
 				"Negate", true, "Heading", "Equities", "BalanceSheet", true);
+			table = TableFor("Account");
+			ensureRecordExists(table, Acct.SalesLedger,
+				"AccountTypeId", AcctType.AccountsReceivable);
+			ensureRecordExists(table, Acct.PurchaseLedger,
+				"AccountTypeId", AcctType.AccountsPayable);
 			ensureDocTypeExists(DocType.Invoice, "C", (int)Acct.SalesLedger);
 			ensureDocTypeExists(DocType.Payment, "C", (int)Acct.SalesLedger);
 			ensureDocTypeExists(DocType.CreditMemo, "C", (int)Acct.SalesLedger);
@@ -192,10 +197,6 @@ namespace AccountServer {
 						version, CurrentDbVersion);
 			}
 			table = TableFor("Account");
-			ensureRecordExists(table, Acct.SalesLedger,
-				"AccountTypeId", AcctType.AccountsReceivable);
-			ensureRecordExists(table, Acct.PurchaseLedger,
-				"AccountTypeId", AcctType.AccountsPayable);
 			ensureRecordExists(table, Acct.OpeningBalEquity,
 				"AccountTypeId", AcctType.Equity);
 			ensureRecordExists(table, Acct.RetainedEarnings,

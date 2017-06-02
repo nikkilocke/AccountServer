@@ -270,16 +270,23 @@ JOIN NameAddress ON idNameAddress = NameAddressId")]
 		public decimal AnnualSubscription;
 		[Field(Type = "int", Visible = false)]
 		public int NumberOfPayments = 1;
+		[Writeable]
 		public string Name;
 		[Length(0)]
+		[Writeable]
 		public string Address;
 		[Length(15)]
+		[Writeable]
 		public string PostCode;
+		[Writeable]
 		public string Telephone;
 		[Length(50)]
+		[Writeable]
 		public string Email;
+		[Writeable]
 		public string Contact;
 		[Field(Heading = "Left")]
+		[Writeable]
 		public bool Hidden;
 		public override int? Id
 		{

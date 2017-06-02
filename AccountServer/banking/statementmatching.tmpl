@@ -64,11 +64,6 @@
 						data: 'New',
 						hint: 'Create a new transaction',
 						type: 'checkboxInput'
-					},
-					{
-						data: 'Transfer',
-						hint: 'Create a new transfer',
-						type: 'checkboxInput'
 					}
 				]
 			});
@@ -148,15 +143,31 @@
 			imp.bind('changed.field', function(e, newValue, rowData, col, input) {
 				switch(col.name) {
 					case 'New':
-					case 'Transfer':
-						current = rowData;
-						postJson('statementmatchingpost.html', {
-							id: id,
-							type: col.name,
-							current: _.indexOf(record.import, current),
-							transaction: -1
+						var menu = $('ul.menu');
+						if(menu.length)	{
+							menu.remove();
+							return;
+						}
+						var opts = rowData.Amount < 0 ? record.minus : record.plus;
+						menu = $('<ul class="menu">' + _.map(opts, function(opt) {
+									return '<li id="' + opt.replace(/ /g, '') + '">' + opt + '</li>';
+								}).join("\r\n") + '</ul>');
+						var p = $(input).offset();
+						menu.css('left', (p.left - 100) + 'px').css('top', (p.top + $(input).height()) + 'px');
+						menu.appendTo(body);
+						var mnu = menu.menu({
+							select: function (e, ui) {
+								current = rowData;
+								postJson('statementmatchingpost.html', {
+									id: id,
+									type: ui.item[0].id,
+									current: _.indexOf(record.import, current),
+									transaction: -1
+								});
+								menu.remove();
+							}
 						});
-						break;
+
 				}
 				return false;
 			});

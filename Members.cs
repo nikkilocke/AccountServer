@@ -59,14 +59,6 @@ namespace AccountServer {
 			Form form = new CodeFirstWebFramework.Form(this, typeof(Full_Member), true);
 			form.Remove("NameAddressId");
 			form.Remove("MemberTypeName");
-			// Following fields will be auto-generated as readonly - we want to edit them
-			form["Name"].Type = "textInput";
-			form["Address"].Type = "textAreaInput";
-			form["PostCode"].Type = "textInput";
-			form["Telephone"].Type = "textInput";
-			form["Email"].Type = "textInput";
-			form["Contact"].Type = "textInput";
-			form["Hidden"].Type = "checkboxInput";
 			SelectAttribute memberType = new SelectAttribute(SelectMemberTypes()) {
 				Data = "MemberTypeId"
 			};
@@ -106,7 +98,7 @@ namespace AccountServer {
 		}
 
 		public object SubscriptionsListing() {
-			return Database.Query("SELECT idDocument, DocumentAccountId AS AccountId, DocumentDate, -DocumentAmount AS DocumentAmount, DocumentMemo FROM Extended_Document WHERE DocumentTypeId = "
+			return Database.Query("SELECT idDocument, DocumentAccountId, DocumentIdentifier, DocumentDate, -DocumentAmount AS DocumentAmount, DocumentMemo FROM Extended_Document WHERE DocumentTypeId = "
 				+ (int)DocType.Subscriptions + " ORDER BY DocumentDate DESC");
 		}
 
@@ -115,11 +107,12 @@ namespace AccountServer {
 				"header", new SubscriptionJournal() {
 					idDocument = header.idDocument,
 					DocumentDate = header.DocumentDate,
-					AccountId = header.DocumentAccountId,
+					DocumentAccountId = header.DocumentAccountId,
+					DocumentIdentifier = header.DocumentIdentifier,
 					DocumentAmount = -header.DocumentAmount,
 					DocumentMemo = header.DocumentMemo
 				},
-				"detail", Database.Query(@"SELECT Journal.NameAddressId, CONCAT(Name, ' (', MemberNo, ')') AS Member, -Amount AS Amount, Memo
+				"detail", Database.Query(@"SELECT Journal.NameAddressId, CONCAT(Name, ' (', " + Database.Cast("MemberNo", "CHAR") + @", ')') AS Member, -Amount AS Amount, Memo
 FROM Journal
 LEFT JOIN NameAddress ON idNameAddress = Journal.NameAddressId
 LEFT JOIN Member ON Member.NameAddressId = Journal.NameAddressId
@@ -131,27 +124,36 @@ ORDER BY JournalNum")
 
 		public void Document(int id) {
 			Extended_Document header = Database.Get<Extended_Document>(id);
-			if (id == 0)
+			if (header.idDocument == null) {
+				header.DocumentTypeId = (int)DocType.Subscriptions;
+				header.DocType = "Subscriptions";
 				header.DocumentDate = Utils.Today;
-			else
+				header.DocumentName = "";
+				if (GetParameters["acct"].IsInteger()) {
+					FullAccount acct = Database.QueryOne<FullAccount>("*", "WHERE idAccount = " + GetParameters["acct"], "Account");
+					if (acct.idAccount != null) {
+						header.DocumentAccountId = (int)acct.idAccount;
+						header.DocumentAccountName = acct.AccountName;
+					}
+				}
+			} else {
 				checkDocType(header.DocumentTypeId, DocType.Subscriptions);
+			}
 			JObject record = getSubscriptionJournal(header);
 			HeaderDetailForm form = new HeaderDetailForm(this, typeof(SubscriptionJournal), typeof(SubscriptionPayment));
 			SelectAttribute account = new SelectAttribute(SelectBankAccounts()) {
-				Data = "AccountId"
+				Data = "DocumentAccountId"
 			};
 			form.Header.Options["table"] = "Document";
 			form.Header.Options["canDelete"] = string.IsNullOrEmpty(header.Clr);
-			form.Header.Replace(form.Header.IndexOf("AccountId"), account);
-			form.Header["DocumentMemo"].Type = "textAreaInput";
+			// Following fields will be auto-generated as readonly - we want to edit them
+			form.Header.Replace(form.Header.IndexOf("DocumentAccountId"), account);
 			SelectAttribute member = new SelectAttribute(SelectMembers()) {
 				Data = "Member",
 				Type = "autoComplete"
 			};
 			member.Options["mustExist"] = true;
 			form.Detail.Replace(form.Detail.IndexOf("Member"), member);
-			form.Detail["Memo"].Type = "textInput";
-			form.Detail["Amount"].Type = "decimalInput";
 			Form = form;
 			Record = record;
 		}
@@ -164,7 +166,7 @@ ORDER BY JournalNum")
 				oldDoc = getCompleteDocument(json.header.idDocument);
 				checkDocType(((JObject)oldDoc["header"]).AsInt("DocumentTypeId"), DocType.Subscriptions);
 			}
-			Utils.Check(json.header.AccountId > 0, "Account not supplied");
+			Utils.Check(json.header.DocumentAccountId > 0, "Account not supplied");
 			decimal total = 0;
 			foreach (SubscriptionPayment detail in json.detail) {
 				if (detail.NameAddressId > 0 && detail.Amount != 0)
@@ -176,6 +178,7 @@ ORDER BY JournalNum")
 				idDocument = json.header.idDocument,
 				DocumentTypeId = (int)DocType.Subscriptions,
 				DocumentDate = json.header.DocumentDate,
+				DocumentIdentifier = json.header.DocumentIdentifier,
 				DocumentMemo = json.header.DocumentMemo
 			};
 			Database.Update(document);
@@ -186,7 +189,7 @@ ORDER BY JournalNum")
 			});
 			journal.DocumentId = (int)document.idDocument;
 			journal.JournalNum = lineNum++;
-			journal.AccountId = json.header.AccountId;
+			journal.AccountId = json.header.DocumentAccountId;
 			journal.NameAddressId = 1;
 			journal.Memo = json.header.DocumentMemo;
 			journal.Amount = json.header.DocumentAmount;
@@ -286,17 +289,20 @@ ORDER BY JournalNum")
 		}
 
 		public AjaxReturn TypePost(MemberType json) {
+			if (json.NumberOfPayments < 1)
+				json.NumberOfPayments = 1;
 			return PostRecord(json);
 		}
 
 		public JObjectEnumerable SelectMembers() {
-			return Database.Query(@"SELECT NameAddressId AS id, CONCAT(Name, ' (', MemberNo, ')') AS value, MIN(PaymentAmount, AmountDue) AS PaymentAmount
+			return Database.Query(@"SELECT NameAddressId AS id, CONCAT(Name, ' (', " + Database.Cast("MemberNo", "CHAR") + @", ')') AS value, CASE WHEN PaymentAmount < AmountDue THEN PaymentAmount ELSE AmountDue END AS PaymentAmount
 FROM Member
 JOIN NameAddress ON idNameAddress = NameAddressId
 WHERE Hidden = 0
 ORDER BY Name");
 		}
 
+		[Writeable]
 		public class SubscriptionPayment : JsonObject {
 			[Field(Visible = false)]
 			public int NameAddressId;
@@ -306,12 +312,15 @@ ORDER BY Name");
 			public decimal Amount;
 		}
 
+		[Writeable]
 		public class SubscriptionJournal : JsonObject {
 			[Primary]
 			public int? idDocument;
 			public DateTime DocumentDate;
+			public string DocumentIdentifier;
 			[ForeignKey("Account")]
-			public int AccountId;
+			public int DocumentAccountId;
+			[ReadOnly]
 			public decimal DocumentAmount;
 			[Length(0)]
 			public string DocumentMemo;

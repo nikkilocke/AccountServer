@@ -3,6 +3,26 @@
 		$(function() {
 			var formOptions = {{Form.Options}};
 			var record = loadRecord();
+			var fixedAmount = matchingStatement();
+			if(fixedAmount) {
+				record.Allocated = 0;
+				record.Remaining = record.DocumentAmount;
+				formOptions.header.columns.splice(5, 0, {
+							data: 'Allocated',
+							type: 'decimalField',
+							sameRow: true
+						},
+						{
+							data: 'Remaining',
+							type: 'decimalField',
+							sameRow: true
+						});
+				formOptions.validate = function() {
+					if(fixedAmount && form.data.header.Remaining != 0) {
+						return 'Total does not equal the payment';
+					}
+				};
+			}
 			formOptions.data = record;
 			formOptions.detail.deleteRows = function(data) {
 				if($(this).index() == form.detail.data.length - 1)
@@ -10,7 +30,11 @@
 				if((data.Amount != 0)
 						&& !confirm('Amount is not zero - are you sure?'))
 					return false;
-				form.header.data.DocumentAmount -= data.Amount;
+				if(fixedAmount) {
+					form.data.header.Allocated -= data.Amount;
+					form.header.Remaining = form.header.DocumentAmount -  form.header.Allocated;
+				} else
+					form.header.data.DocumentAmount -= data.Amount;
 				form.header.draw();
 			};
 			var emptyRow = {
@@ -48,7 +72,11 @@
 					case 'Amount':
 						if(newValue == rowData.Amount)
 							return;
-						form.header.DocumentAmount += newValue - rowData.Amount;
+						if(fixedAmount) {
+							form.header.Allocated += newValue - rowData.Amount;
+							form.header.Remaining = form.header.DocumentAmount -  form.header.Allocated;
+						} else
+							form.header.DocumentAmount += newValue - rowData.Amount;
 						form.header.draw();
 						rowData.Amount = newValue;
 						break;
@@ -64,6 +92,9 @@
 				}
 				checkForNewRow();
 			});
+			if(fixedAmount) {
+				form.header.find('#r0cDocumentAccountId').prop('disabled', true);
+			}
 		});
 	</script>
 </head>
