@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json.Linq;
 using CodeFirstWebFramework;
 
@@ -17,6 +18,7 @@ namespace AccountServer {
 
 		public override void Default() {
 			insertMenuOption(new MenuOption("New Member", "/members/detail.html?id=0"));
+			insertMenuOption(new MenuOption("Year End", "/members/yearend.html"));
 			DataTableForm form = new DataTableForm(this, typeof(Full_Member));
 			Form = form;
 			form.Options["select"] = "/members/detail.html";
@@ -292,6 +294,20 @@ ORDER BY JournalNum")
 			if (json.NumberOfPayments < 1)
 				json.NumberOfPayments = 1;
 			return PostRecord(json);
+		}
+
+		public void YearEnd() {
+			if (Request.HttpMethod == "POST") {
+				bool clear = PostParameters.AsInt("clear") > 0;
+				Database.BeginTransaction();
+				foreach (Full_Member m in Database.Query<Full_Member>(@"SELECT * FROM Full_Member WHERE Hidden <> 1").ToList()) {
+					m.AmountDue = m.AnnualSubscription + (clear ? 0 : m.AmountDue);
+					m.PaymentAmount = Math.Round(m.AmountDue / (m.NumberOfPayments < 1 ? 1 : m.NumberOfPayments), 2);
+					Database.Update(m, true);
+				}
+				Database.Commit();
+				Redirect("/members");
+			}
 		}
 
 		public JObjectEnumerable SelectMembers() {
