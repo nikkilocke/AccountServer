@@ -13,7 +13,7 @@ namespace AccountServer {
 	/// File import
 	/// </summary>
 	public class Importer {
-		protected CodeFirstWebFramework.AppModule _module;
+		protected AppModule _module;
 		protected Table _table;
 		/// <summary>
 		/// For detecting duplicate keys
@@ -38,7 +38,7 @@ namespace AccountServer {
 		/// <summary>
 		/// Set up import, import the data, commit to the database if no errors
 		/// </summary>
-		public void Import(CsvParser csv, CodeFirstWebFramework.AppModule module) {
+		public void Import(CsvParser csv, AppModule module) {
 			lock (this) {
 				_module = module;
 				if (!string.IsNullOrEmpty(TableName))
@@ -292,7 +292,7 @@ namespace AccountServer {
 			// Do the import
 			base.ImportData(csv);
 			// Now update the last cheque numbers, etc.
-			Settings settings = _module.Settings.To<Settings>();
+			Settings settings = _module.Settings;
 			settings.RegisterNumber(_module, (int)DocType.Invoice, _lastInvoiceNumber);
 			settings.RegisterNumber(_module, (int)DocType.Bill, _lastBillNumber);
 			settings.RegisterNumber(_module, (int)DocType.GeneralJournal, _lastJournalNumber);

@@ -123,7 +123,7 @@ ORDER BY Name
 					// It posts a record
 					string methodName = job.Url;
 					string moduleName = Utils.NextToken(ref methodName, "/");
-					Type type = Server.NamespaceDef.GetModule(moduleName);
+					Type type = Server.NamespaceDef.GetModuleType(moduleName);
 					Utils.Check(type != null, "Invalid schedule job {0}", job.Url);
 					AppModule module = (AppModule)Activator.CreateInstance(type);
 					module.Context = Context;

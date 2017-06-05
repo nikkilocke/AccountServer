@@ -10,6 +10,7 @@ using System.IO;
 using System.Configuration;
 using System.Globalization;
 using System.Threading;
+using System.Net.Sockets;
 using CodeFirstWebFramework;
 
 namespace AccountServer {
@@ -37,8 +38,22 @@ namespace AccountServer {
 				string startPage = "";
 				if (Config.CommandLineFlags["url"] != null)
 					startPage = Config.CommandLineFlags["url"];
-				if (Config.CommandLineFlags["nolaunch"] == null)
+				if (Config.CommandLineFlags["nolaunch"] == null) {
+					// Is server already running?
+					bool serverRunning = false;
+					try {
+						using (var client = new TcpClient()) {
+							var result = client.BeginConnect(Config.Default.DefaultServer.ServerName, Config.Default.Port, null, null);
+
+							result.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(1));
+							serverRunning = client.Connected;
+						}
+					} catch {
+					}
 					System.Diagnostics.Process.Start("http://" + Config.Default.DefaultServer.ServerName + ":" + Config.Default.Port + "/" + startPage);
+					if (serverRunning)
+						return;
+				}
 			}
 			new WebServer().Start();
 		}

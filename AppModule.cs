@@ -22,8 +22,6 @@ namespace AccountServer {
 	/// </summary>
 	
 	public class AppModule : CodeFirstWebFramework.AppModule {
-		protected static Settings _settings;			// Common settings, read from database
-
 		public new Database Database {
 			get {
 				return (Database)base.Database;
@@ -31,7 +29,7 @@ namespace AccountServer {
 		}
 
 		public new Settings Settings {
-			get { return base.Settings.To<Settings>(); }
+			get { return (Settings)base.Settings; }
 		}
 
 		/// <summary>

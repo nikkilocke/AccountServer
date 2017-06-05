@@ -4,6 +4,12 @@
 
 ### Windows
 
+Either:
+
+* Run the provided AccountServerSetup.msi program. This will install AccountServer into the folder of your choice (default C:\Program Files), and create shortcuts to it on your Desktop and Start menu.
+
+Or:
+
 * Extract all the files from the zip file into a folder of your choice.
 * Open a command prompt as administrator (in your start menu, search for "CMD", right click it, and choose "Run as Administrator").
 * In the command prompt, register the port AccountServer uses - type <sup id="a1">[*](#f1)</sup> **netsh http add urlacl url=http://+:8080/ user=Everyone**
@@ -11,7 +17,7 @@
 * Open Windows Explorer and navigate to your chosen folder.
 * If you wish to set up a shortcut in the start menu, right click on AccountServer.exe and choose "Pin to Start".
 * Start the program by double-clicking on it (or on your shortcut).
-* The program will create an SQLite database, start up, and open your web browser at the Company page.
+* The program will create a SQLite database in C:\ProgramData\AccountServer, start up, and open your web browser at the Company page.
 
 <b id="f1">*</b> The **8080** here is the port on which the web server will listen. You can change this if you like, but you must also include a **Port=** line in the config file <sup id="a1">[*](#f3)</sup>.
 
@@ -19,7 +25,7 @@
 
 * Extract all the files from the zip file into a folder of your choice.
 * Start the program by double-clicking on it.
-* The program will create an SQLite database and start up.
+* The program will create an SQLite database un /usr/share/AccountServer and start up.
 * Open your web browser, and navigate to <sup id="a2">[*](#f1)</sup> **http://localhost:8080/**
 
 <b id="f2">*</b> The 8080 here is the port on which the web server is listening.
@@ -37,7 +43,7 @@ If you wish to use a MySql database instead of SQLite, stop the program and:
 
 (Fill in the bold fields in the connection string above according to how you set up the database, replacing **localhost** with the machine running MySql if it is running elsewhere on your network.)
 
-<b id="f3">*</b> The config file is plain text in json format, so you can edit it with any text editor, e.g. Notepad (which comes with Windows).
+<b id="f3">*</b> The config file is plain text in json format, so you can edit it with any text editor, e.g. Notepad (which comes with Windows). In Windows it is stored in c:\ProgramData\AccountServer. In Linux it is in /usr/share/AccountServer.
 
 ## Importing Quick Books data
 
@@ -90,7 +96,7 @@ The accounts package runs as a web server. While it is running, you can connect 
 
 If you do leave the package running all the time, it would be a good idea to create a bookmark to it in your web browser for ease of access.
 
-Note that the Google Chrome browser gives the best user experience with this package. It can run in any browser, but most other browsers do support HTML5 as well (e.g. by offering drop-down calendars for dates).
+Note that the Google Chrome browser gives the best user experience with this package. It can run in any browser, but most other browsers do not support HTML5 as well (e.g. by offering drop-down calendars for dates).
 
 ## Backup and Restore
 
@@ -102,25 +108,54 @@ You can now select "skins" to change the user interface style. Select the skin i
 
 ### Adding your own skins
 
-You can add your own skins - to create a skin called **name**, just create 2 files, **name.css** and **name.js**,in the **html/skin** folder. You can enter any css you like in the css file to override the css in the regular **html/default.css** file. You can also add javascript in the js file (not recommended).
+You can add your own skins - to create a skin called **name**, just create 2 files, **name.css** and **name.js**,in the **CodeFirstWebFramework/skin** folder. You can enter any css you like in the css file to override the css in the regular **AccountServer/default.css** file. You can also add javascript in the js file (not recommended).
 
 # Using more than 1 database
 
-If you want to use more than 1 database (e.g. 1 for personal finances and one for company, or 1 for each person in your household), you can run multiple copies of AccountServer, using different configuration files for each one.
+If you want to use more than 1 database (e.g. 1 for personal finances and one for company, or 1 for each person in your household), AccountServer can use a different database depending on the url you use to access it. For example, your local computer can be accessed using `http://localhost:8080/` or `http://127.0.0.1:8080/`
 
-* Copy AccountServer.config in Windows Explorer:
-  * Right click on AccountServer.config and choose "Copy" from the menu.
-  * Right click on a blank space in the Windows Explorer menu, and choose "Paste" from the menu.
-  * Right click on the new file (called something like "AccountServer - Copy.config"), and choose "Rename".
-  * Type in a new name (e.g. **Personal.config**). The name **must** end with **.config**.
-* Edit the new config file:
-  * Change the ConnectionString setting to point to your new database. If the database is SQLite, all you need to change is the Data Source file name - e.g. **Personal.db"".
-  * Change the Port setting to a different number (e.g. **8081**).
-  * If running on Windows, register the new port:
-     * Open a command prompt as administrator (in your start menu, search for "CMD", right click it, and choose "Run as Administrator").
-     * In the command prompt, register the new port - type **netsh http add urlacl url=http://+:8081/ user=Everyone**
-     * Close the command prompt.
-* Now you can run another copy of AccountServer using the new config file - just create a shortcut to run "AccountServer Personal.config" (or whatever you called your config file).
-* This copy will listen on the new port, and use the new database.
-* You can connect to it by browsing to **http://localhost:8081/**
+You achieve this by adding entries to the Servers array in AccountServer.config, as follows:
 
+	"Servers": [
+		{
+		"ServerName": "localhost",
+		"Namespace": "AccountServer",
+		"Title": "AccountServer Database",
+		"Database": "SQLite",
+		"ConnectionString": "Data Source=C:/ProgramData/AccountServer/AccountServer.db"
+		},
+		{
+		"ServerName": "127.0.0.1",
+		"Namespace": "AccountServer",
+		"Title": "Personal Database",
+		"Database": "SQLite",
+		"ConnectionString": "Data Source=C:/ProgramData/AccountServer/Personal.db"
+		}
+	]
+
+You can add more named urls by editing your hosts file (on Windows this is in C:\Windows\System32\drivers\etc\hosts), fort example by adding the following line:
+
+	127.0.0.1 personal accounts
+
+(You can add more different names separated by spaces on the same line if you needs more than 2 databases)
+
+The servers array would then be:
+
+	"Servers": [
+		{
+		"ServerName": "accounts",
+		"Namespace": "AccountServer",
+		"Title": "AccountServer Database",
+		"Database": "SQLite",
+		"ConnectionString": "Data Source=C:/ProgramData/AccountServer/AccountServer.db"
+		},
+		{
+		"ServerName": "personal",
+		"Namespace": "AccountServer",
+		"Title": "Personal Database",
+		"Database": "SQLite",
+		"ConnectionString": "Data Source=C:/ProgramData/AccountServer/Personal.db"
+		}
+	]
+
+and the urls would be http://accounts:8080/ and http://personal:8080/

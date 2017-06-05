@@ -467,9 +467,7 @@ JOIN NameAddress ON idNameAddress = NameAddressId")]
 	}
 
 	[Table]
-	public class Settings : JsonObject {
-		[Primary]
-		public int? idSettings;
+	public class Settings : CodeFirstWebFramework.Settings {
 		[ForeignKey("Account")]
 		public int? DefaultBankAccount;
 		[Length(75)]
@@ -503,18 +501,6 @@ JOIN NameAddress ON idNameAddress = NameAddressId")]
 		[Length(50)]
 		public string MailUserName;
 		public string MailPassword;
-		[DefaultValue("default")]
-		public string Skin;
-		[DefaultValue("2")]
-		public int DbVersion;
-		[DoNotStore]
-		public string AppVersion {
-			get { return Assembly.GetEntryAssembly().GetName().Version.ToString(); }
-		}
-		public override int? Id {
-			get { return idSettings; }
-			set { idSettings = value; }
-		}
 
 		public int NextNumber(DocType docType) {
 			switch (docType) {

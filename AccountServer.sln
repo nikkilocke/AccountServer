@@ -1,8 +1,14 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Express 2012 for Windows Desktop
+# Visual Studio 15
+VisualStudioVersion = 15.0.26403.7
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AccountServer", "AccountServer.csproj", "{1681E2F3-7956-45F8-A650-48742C192102}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeFirstWebFramework", "..\CodeFirstWebFramework.csproj", "{AEC5C370-7AB7-4A92-AB6F-D0164090B026}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup", "Setup\Setup.vdproj", "{4D3C2554-79FF-4D09-BB2D-73E6BE288C7D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RegisterAccountServer", "RegisterAccountServer\RegisterAccountServer.csproj", "{59D94ED6-7D48-4EAA-B8AF-3AB266447EAC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,6 +24,12 @@ Global
 		{AEC5C370-7AB7-4A92-AB6F-D0164090B026}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AEC5C370-7AB7-4A92-AB6F-D0164090B026}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AEC5C370-7AB7-4A92-AB6F-D0164090B026}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4D3C2554-79FF-4D09-BB2D-73E6BE288C7D}.Debug|Any CPU.ActiveCfg = Debug
+		{4D3C2554-79FF-4D09-BB2D-73E6BE288C7D}.Release|Any CPU.ActiveCfg = Release
+		{59D94ED6-7D48-4EAA-B8AF-3AB266447EAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59D94ED6-7D48-4EAA-B8AF-3AB266447EAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59D94ED6-7D48-4EAA-B8AF-3AB266447EAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59D94ED6-7D48-4EAA-B8AF-3AB266447EAC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
