@@ -83,6 +83,7 @@
     <Compile Include="Supplier.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Documentation.md" />
     <None Include="packages.config" />
     <None Include="README.md" />
   </ItemGroup>

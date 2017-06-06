@@ -183,12 +183,18 @@ namespace AccountServer {
 					Execute("UPDATE Account SET AccountTypeId = AccountTypeId + 1 WHERE AccountTypeId >= 10");
 					goto case 2;	// We have just upgraded to version 2
 				case 2:
-					// Version 3 introduced some new standard account numbers
-					Execute("UPDATE Account SET idAccount = idAccount + 1000011 WHERE idAccount >= 9");
-					Execute("UPDATE Account SET idAccount = idAccount - 1000000 WHERE idAccount >= 1000000");
-					Execute("UPDATE Journal SET AccountId = AccountId + 11 WHERE AccountId >= 9");
-					Execute("UPDATE Product SET AccountId = AccountId + 11 WHERE AccountId >= 9");
-					Execute("UPDATE StockTransaction SET ParentAccountId = ParentAccountId + 11 WHERE ParentAccountId >= 9");
+					// Version 3 introduced some new standard account numbers - move up existing accounts with the reserved numbers
+					foreach (Account a in Query<Account>("SELECT * FROM Account WHERE idAccount >= 9 AND idAccount <= 20").ToList()) {
+						Account n = a.Clone<Account>();
+						n.idAccount = null;
+						a.AccountName = "\tTemp\t";
+						Update(a);
+						Insert(n);
+						Execute("UPDATE Journal SET AccountId = " + n.idAccount + " WHERE AccountId =" + a.idAccount);
+						Execute("UPDATE Product SET AccountId = " + n.idAccount + " WHERE AccountId =" + a.idAccount);
+						Execute("UPDATE StockTransaction SET ParentAccountId = " + n.idAccount + " WHERE ParentAccountId =" + a.idAccount);
+						Delete(a);
+					}
 					break;
 				case 3:
 					break;

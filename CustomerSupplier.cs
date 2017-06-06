@@ -290,6 +290,7 @@ JOIN Journal ON DocumentId = idDocument AND AccountId = " + (int)LedgerAccount +
 JOIN DocumentType ON idDocumentType = DocumentTypeId
 LEFT JOIN Payments ON idPaid = idDocument AND idPayment = " + id + @"
 WHERE NameAddressId = " + name + @"
+AND idDocument <> " + id + @"
 AND (Outstanding <> 0 OR PaymentAmount IS NOT NULL)
 ORDER BY DocumentDate");
 			}
@@ -321,6 +322,7 @@ ORDER BY DocumentDate");
 				}
 			}
 			json.detail = json.detail.Where(l => l.AmountPaid != 0).ToList();
+			document.DocumentOutstanding = json.header.Remaining;
 			decimal changeInDocumentAmount;
 			decimal changeInOutstanding;
 			// Virtual method, as calculation is different for customers and suppliers

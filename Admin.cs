@@ -44,9 +44,15 @@ namespace AccountServer {
 		}
 
 		public AjaxReturn BatchStatus(int id) {
-			using (CodeFirstWebFramework.AdminModule m = new CodeFirstWebFramework.AdminModule(this)) {
-				return m.BatchStatus(id);
-			}
+			return new AdminHelper(this).BatchStatus(id);
+		}
+
+		public void Backup() {
+			new AdminHelper(this).Backup();
+		}
+
+		public void Restore() {
+			new AdminHelper(this).Restore();
 		}
 
 		public void Import() {
@@ -171,18 +177,6 @@ AND idMember IS NULL"))
 			if (errors.Count == 0)
 				errors.Add("No errors");
 			Record = errors;
-		}
-
-		public void Backup() {
-			using (CodeFirstWebFramework.AdminModule m = new CodeFirstWebFramework.AdminModule(this)) {
-				m.Backup();
-			}
-		}
-
-		public void Restore() {
-			using (CodeFirstWebFramework.AdminModule m = new CodeFirstWebFramework.AdminModule(this)) {
-				m.Restore();
-			}
 		}
 
 	}

@@ -497,6 +497,7 @@ JOIN NameAddress ON idNameAddress = NameAddressId")]
 		public string MailServer;
 		[DefaultValue("587")]
 		public int MailPort;
+		[DefaultValue("1")]
 		public bool MailSSL;
 		[Length(50)]
 		public string MailUserName;
