@@ -236,7 +236,7 @@ $(function() {
 				message('You must save the changes first');
 				return;
 			}
-			window.open(null, 'print').close();
+			window.open('', 'print').close();
 			window.open('/customer/print.html?id=' + record.header.idDocument, 'print');
 		});
 		actionButton('Print to file').click(function() {

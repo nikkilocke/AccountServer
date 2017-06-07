@@ -44,7 +44,7 @@ namespace AccountServer {
 		public void NameAddress(int id) {
 			Member m = Database.QueryOne<Member>("SELECT * FROM Member WHERE NameAddressId = " + id);
 			Utils.Check(m.idMember > 0, "Member not found");
-			Method = "Detail";
+			Method = "detail";
 			Detail((int)m.idMember);
 		}
 

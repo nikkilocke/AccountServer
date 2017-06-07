@@ -1,5 +1,9 @@
 # AccountServer Accounting Software
 
+## Full Documentation
+
+For full documentation see [AccountServer/help/documentation.md](AccountServer/help/documentation.md)
+
 ## Installation
 
 ### Windows

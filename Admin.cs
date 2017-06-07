@@ -59,7 +59,7 @@ namespace AccountServer {
 		}
 
 		public void ImportFile(UploadedFile file, string dateFormat) {
-			Method = "Import";
+			Method = "import";
 			Stream s = null;
 			try {
 				s = file.Stream();
