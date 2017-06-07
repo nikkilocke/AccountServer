@@ -99,7 +99,12 @@ $(function() {
 	});
 	$('body').on('click', 'button[href]', function() {
 		// Buttons with hrefs act like links
-		window.location = $(this).attr('href');
+		var href = $(this).attr('href');
+		var target = $(this).attr('target');
+		if(target)
+			window.open(href, target);
+		else
+			window.location = href;
 	});
 	$('body').on('click', 'button[data-goto]', function() {
 		// Buttons with data-goto act like links, but also store state to come back to

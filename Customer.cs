@@ -26,7 +26,7 @@ namespace AccountServer {
 		/// </summary>
 		public object DetailListing(int id) {
 			return Database.Query("Document.*, DocType, Amount, Outstanding",
-				"WHERE AccountId = " + (int)LedgerAccount + " AND NameAddressId = " + id + " ORDER BY DocumentDate, idDocument",
+				"WHERE AccountId = " + (int)LedgerAccount + " AND NameAddressId = " + id + " ORDER BY DocumentDate DESC, idDocument",
 				"Document", "Journal");
 		}
 

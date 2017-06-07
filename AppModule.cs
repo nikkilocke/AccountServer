@@ -22,6 +22,20 @@ namespace AccountServer {
 	/// </summary>
 	
 	public class AppModule : CodeFirstWebFramework.AppModule {
+		string _help;
+
+		public string Help {
+			get {
+				if (_help == null) {
+					FileInfo h = Server.FileInfo("/help/" + Module + "_" + Method + ".md");
+					if(!h.Exists)
+						h = Server.FileInfo("/help/" + Module + ".md");
+					_help = h.Exists ? "/help/" + h.Name : "";
+				}
+				return _help;
+			}
+		}
+
 		public new Database Database {
 			get {
 				return (Database)base.Database;
@@ -210,7 +224,7 @@ LEFT JOIN NameAddress ON NameAddress.idNameAddress = Journal.NameAddressId
 LEFT JOIN Journal AS J ON J.DocumentId = Journal.DocumentId AND J.AccountId <> Journal.AccountId
 LEFT JOIN Account ON Account.idAccount = J.AccountId
 WHERE Journal.AccountId = " + id + @"
-ORDER BY DocumentDate, idDocument")) {
+ORDER BY DocumentDate DESC, idDocument")) {
 				if (last != null) {
 					if (lastId == l.AsInt("idJournal")) {
 						// More than 1 line in this document

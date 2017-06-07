@@ -1,6 +1,6 @@
 # Getting Started
 
-The first thing is to go to *Admin Settings* and fill in all the details there. It is particularly important to get your year start correct - this should be set to your own financial year - the government tax year, it starts on the first Monday on April, but only use this if you don't have your own accounting year.
+The first thing is to go to *Admin* *Settings* and fill in all the details there. It is particularly important to get your year start correct - this should be set to your own financial year - the government tax year, it starts on the first Monday on April, but only use this if you don't have your own accounting year.
 
 For AccountServer to be able to send emails (e.g. invoices to your customers), you must fill in the details of your mail server - you should be able to get them from your ISP. The defaults are suitable for use with GMail (once you have entered your GMail user name and password).
 
@@ -10,7 +10,7 @@ If you want to import data from an existing system, do that next, otherwise set 
 
 ## Importing data
 
-If you wish to import data from Quick Books or Quicken, full details are provided in [README.md](README.md). You can also import from other packages if you can extract the data in Qif, CSV or tab-delimited format with the correct field names. See the help link under *Admin Import* for details.
+If you wish to import data from Quick Books or Quicken, full details are provided [here](admin_import.md). You can also import from other packages if you can extract the data in Qif, CSV or tab-delimited format with the correct field names. See the help link under *Admin* *Import* for details of the field names required.
 
 If you aren't importing a complete system, make sure you set up any data you aren't importing before you import something that depends on it - e.g. set up VAT codes before importing transactions with VAT on them, if you are VAT registered.
 

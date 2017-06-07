@@ -16,7 +16,7 @@ namespace AccountServer {
 		public BankingAccounting() {
 		}
 
-		public void Name() {
+		public void Names() {
 			// When maintaining names, use the template in banking
 			Module = "banking";
 		}

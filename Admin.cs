@@ -128,10 +128,6 @@ namespace AccountServer {
 			}
 		}
 
-		public Importer[] Importers {
-			get { return Importer.Importers; }
-		}
-
 		public void ImportHelp() {
 		}
 

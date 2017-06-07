@@ -290,7 +290,7 @@ JOIN Journal ON DocumentId = idDocument AND AccountId = " + (int)LedgerAccount +
 JOIN DocumentType ON idDocumentType = DocumentTypeId
 LEFT JOIN Payments ON idPaid = idDocument AND idPayment = " + id + @"
 WHERE NameAddressId = " + name + @"
-AND idDocument <> " + id + @"
+AND DocumentTypeId " + Database.In(InvoiceDoc, CreditDoc) + @"
 AND (Outstanding <> 0 OR PaymentAmount IS NOT NULL)
 ORDER BY DocumentDate");
 			}

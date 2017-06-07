@@ -87,9 +87,20 @@
     <Compile Include="Supplier.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="AccountServer\help\accounting.md" />
+    <None Include="AccountServer\help\admin.md" />
+    <None Include="AccountServer\help\admin_import.md" />
+    <None Include="AccountServer\help\banking.md" />
+    <None Include="AccountServer\help\customers.md" />
+    <None Include="AccountServer\help\default.md" />
+    <None Include="AccountServer\help\gettingstarted.md" />
+    <None Include="AccountServer\help\home.md" />
+    <None Include="AccountServer\help\installation.md" />
+    <None Include="AccountServer\help\investments.md" />
+    <None Include="AccountServer\help\reports.md" />
+    <None Include="AccountServer\help\suppliers.md" />
     <None Include="packages.config" />
     <None Include="README.md" />
-    <None Include="AccountServer\help\documentation.md" />
     <None Include="AccountServer\help\navigation.md" />
   </ItemGroup>
   <ItemGroup>

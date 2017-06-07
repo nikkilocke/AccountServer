@@ -18,3 +18,11 @@
 /mustache-sharp.dll
 /sqlite3.def
 /sqlite3.dll
+/.idea
+/.vs/AccountServer/v15/*.suo
+/*.user
+/*.ifp
+/Logs.8080
+/RegisterAccountServer/bin/Debug
+/RegisterAccountServer/obj/Debug
+/Setup/*.exe
