@@ -16,7 +16,7 @@ Each account must have a unique name. Choose the type (Bank or Credit Card). The
 
 ## Names
 
-*Names* lets you edit the list of people who you have written cheques to, or received payments from (other than customers or suppliers). Click on a name to edit it. This list is used to produce the drop-down list of names like the one you type when choosing who to pay. If you have a lot of names which appear on that list, but are no longer useful, you can edit them, and check the hidden box to prevent them appearing on the list in future. Hidden names don't appear on the Names list by default, but you can reveal them again by clicking the *Show all* button (perhaps to edit one, and unhide it).
+*Names* lets you edit the list of people who you have written cheques to, or received payments from (other than customers, suppliers or members). Click on a name to edit it. This list is used to produce the drop-down list of names like the one you type when choosing who to pay. If you have a lot of names which appear on that list, but are no longer useful, you can edit them, and check the hidden box to prevent them appearing on the list in future. Hidden names don't appear on the Names list by default, but you can reveal them again by clicking the *Show all* button (perhaps to edit one, and unhide it).
 
 ## Adding Transactions
 

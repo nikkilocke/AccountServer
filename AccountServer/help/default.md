@@ -20,6 +20,8 @@
 
 ## [Accounting](accounting.md)
 
+## [Members](members.md)
+
 ## [Reports](reports.md)
 
 ## [Admin](admin.md)

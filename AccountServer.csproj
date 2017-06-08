@@ -97,6 +97,7 @@
     <None Include="AccountServer\help\home.md" />
     <None Include="AccountServer\help\installation.md" />
     <None Include="AccountServer\help\investments.md" />
+    <None Include="AccountServer\help\members.md" />
     <None Include="AccountServer\help\reports.md" />
     <None Include="AccountServer\help\suppliers.md" />
     <None Include="packages.config" />
