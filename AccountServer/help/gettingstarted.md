@@ -38,7 +38,7 @@ If you are a membership organisation, you will want to enter your membership typ
 
 First set up the membership types, at least one for each annual subscription amount. If subscription payments are spread throughout the year, enter the number of payments (e.g. 12 for monthly payments).
 
-Now you can add members. When you chose the membership type, the Annhual Subscription, Amount Due and Payment Amount will be filled in, though you can change these (e.g. if a member joins paret way through the year, you may want to reduce the amount due accordingly).
+Now you can add members. When you chose the membership type, the Annhual Subscription, Amount Due and Payment Amount will be filled in, though you can change these (e.g. if a member joins part way through the year, you may want to reduce the amount due accordingly).
 
 ## Set up Securities and Investments
 
