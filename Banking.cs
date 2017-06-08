@@ -470,18 +470,23 @@ ORDER BY DocumentDate, idDocument"));
 					Database.Update(account);
 				}
 			}
+			List<string> plus = new List<string>();
+			List<string> minus = new List<string>();
+			plus.Add(account.AccountTypeId == (int)AcctType.Bank ? "Deposit" : "Card Credit");
+			minus.Add(account.AccountTypeId == (int)AcctType.Bank ? "Cheque" : "Card Charge");
+			plus.Add("Transfer");
+			minus.Add("Transfer");
+			if (Database.QueryOne("SELECT idNameAddress FROM NameAddress WHERE Type = 'C'") != null)
+				plus.Add("Customer Payment");
+			if (Database.QueryOne("SELECT idNameAddress FROM NameAddress WHERE Type = 'S'") != null)
+				minus.Add("Bill Payment");
+			if (Database.QueryOne("SELECT idNameAddress FROM NameAddress WHERE Type = 'M'") != null)
+				plus.Add("Subscriptions");
 			JObject record = new JObject().AddRange(
 					"import", result,
 					"transactions", potentialMatches(id, minDate),
-					"plus", new JArray(
-						account.AccountTypeId == (int)AcctType.Bank ? "Deposit" : "Card Credit",
-						"Transfer",
-						"CustomerPayment",
-						"Subscriptions"),
-					"minus", new JArray(
-						account.AccountTypeId == (int)AcctType.Bank ? "Cheque" : "Card Charge",
-						"Transfer",
-						"Bill Payment")
+					"plus", plus,
+					"minus", minus
 				);
 			// Save data to session
 			SessionData.StatementImport = record;

@@ -19,10 +19,10 @@
 /sqlite3.def
 /sqlite3.dll
 /.idea
-/.vs/AccountServer/v15/*.suo
+/.vs
 /*.user
 /*.ifp
 /Logs.8080
-/RegisterAccountServer/bin/Debug
-/RegisterAccountServer/obj/Debug
+/RegisterAccountServer/bin
+/RegisterAccountServer/obj
 /Setup/*.exe
