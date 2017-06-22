@@ -81,7 +81,7 @@ namespace AccountServer {
 		[Unique("Name_UNIQUE")]
 		public string AcctType;
 		/// <summary>
-		/// Reverse the sign in P & L and Balance sheet
+		/// Reverse the sign in P &amp; L and Balance sheet
 		/// </summary>
 		public bool Negate;
 		/// <summary>

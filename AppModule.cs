@@ -22,19 +22,6 @@ namespace AccountServer {
 	/// </summary>
 	
 	public class AppModule : CodeFirstWebFramework.AppModule {
-		string _help;
-
-		public string Help {
-			get {
-				if (_help == null) {
-					FileInfo h = Server.FileInfo("/help/" + Module + "_" + Method + ".md");
-					if(!h.Exists)
-						h = Server.FileInfo("/help/" + Module + ".md");
-					_help = h.Exists ? "/help/" + h.Name : "";
-				}
-				return _help;
-			}
-		}
 
 		public new Database Database {
 			get {
@@ -45,6 +32,11 @@ namespace AccountServer {
 		public new Settings Settings {
 			get { return (Settings)base.Settings; }
 		}
+
+		/// <summary>
+		/// Generic object for templates to use - usually contains data from the database
+		/// </summary>
+		public object Record;
 
 		/// <summary>
 		/// Get the last document of the given type with NameAddressId == id
@@ -224,7 +216,7 @@ LEFT JOIN NameAddress ON NameAddress.idNameAddress = Journal.NameAddressId
 LEFT JOIN Journal AS J ON J.DocumentId = Journal.DocumentId AND J.AccountId <> Journal.AccountId
 LEFT JOIN Account ON Account.idAccount = J.AccountId
 WHERE Journal.AccountId = " + id + @"
-ORDER BY DocumentDate DESC, idDocument")) {
+ORDER BY DocumentDate, idDocument")) {
 				if (last != null) {
 					if (lastId == l.AsInt("idJournal")) {
 						// More than 1 line in this document

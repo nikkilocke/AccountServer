@@ -18,7 +18,7 @@ Check the date is correct (the default date is today).
 
 Number the invoice - you can either type in your own invoice number, or press the *Next* button - the next unused invoice number will be assigned when you save the invoice.
 
-Now add the invoice lines - for each line, choose an account. Enter the Vat Code and Amount. Note that you can overwrite the calculated VAT if the supplier has calculated the VAT differently (perhaps they use a different rounding method). You can add a note to the line in the Memo field if you like. As you enter each new line, a new blank line will appear below. You can delete an existing line by pressing the red ![x](../../images/close.png).
+Now add the invoice lines - for each line, choose an account. Enter the Vat Code and Amount. Note that you can overwrite the calculated VAT if the supplier has calculated the VAT differently (perhaps they use a different rounding method). You can add a note to the line in the Memo field if you like. As you enter each new line, a new blank line will appear below. You can delete an existing line by pressing the red ![x](../images/close.png).
 
 Note that the total and VAT total are updated automatically as you amend the lines.
 

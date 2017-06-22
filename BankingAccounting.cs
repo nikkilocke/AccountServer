@@ -9,7 +9,7 @@ using CodeFirstWebFramework;
 
 namespace AccountServer {
 	/// <summary>
-	/// Common functionality from Banking & Accounting
+	/// Common functionality from Banking &amp; Accounting
 	/// </summary>
 	public class BankingAccounting : AppModule {
 

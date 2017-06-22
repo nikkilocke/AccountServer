@@ -176,7 +176,7 @@ $(function() {
 		}
 	}
 	if(readonly)
-		form.header.fields.AccountName.cell.find(':input').prop('disabled', true);
+		form.header.fields.DocumentAccountName.cell.find(':input').prop('disabled', true);
 	checkForNewRow();
 	disableVatAmounts();
 	form.header.bind('changed.field', function(e, newValue, rowData, col, input) {

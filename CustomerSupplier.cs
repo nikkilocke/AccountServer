@@ -9,7 +9,7 @@ using CodeFirstWebFramework;
 
 namespace AccountServer {
 	/// <summary>
-	/// Common code for customer & supplier
+	/// Common code for customer &amp; supplier
 	/// </summary>
 	public abstract class CustomerSupplier : AppModule {
 		/// <summary>

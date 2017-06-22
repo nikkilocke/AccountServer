@@ -2,7 +2,7 @@
 
 The top 3 lines of the page show the menus. The top line is the main menu, to select which module you want to use. The second line gives options in that module, and the third line shows options for the particular screen in view.
 
-On small devices such as mobile phones, the menu is hidden to save screen space - to display it, click the menu symbol ![Menu symbol](../../images/menu.png).
+On small devices such as mobile phones, the menu is hidden to save screen space - to display it, click the menu symbol ![Menu symbol](../images/menu.png).
 
 Input forms will show one or more of the following buttons
 

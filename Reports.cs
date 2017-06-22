@@ -793,7 +793,7 @@ LEFT JOIN (SELECT idDocument AS idVatPaid, DocumentDate AS VatPaidDate FROM Docu
 		/// If a field list is supplied, exactly those fields are added.
 		/// Otherwise the id of the first table is added as an essential field, and all other non foreign key fields are added
 		/// If table is preceded by "!", its id is also added as an essential field
-		/// For Journal table, Credit & Debit are also added, as an alternative to Amount.
+		/// For Journal table, Credit &amp; Debit are also added, as an alternative to Amount.
 		/// </summary>
 		void addTable(string table, params string[] fields) {
 			bool essential = _fields.FirstOrDefault(f => f.Essential) == null;

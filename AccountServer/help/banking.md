@@ -2,7 +2,7 @@
 
 ## Listing
 
-The Banking Listing lists all the bank and credit card accounts which aren't hidden by default - you can view the hidden ones as well if you click the *Show all* button.
+The Banking Listing lists all the bank and credit card accounts which aren't hidden by default - you can view the hidden ones as well if you click the *Show all* button. Click on one to see the detail.
 
 ## Bank Detail
 
@@ -26,9 +26,9 @@ Click on *New cheque*, *New deposit* or *New transfer* to create a new transacti
 
 ### Cheques and deposits
 
-Type the name of the payee or payer - as you type, a drop-down list of previous payees with similar names appears. As you type, a drop down of existing people with similar names appears, which you can click on to choose one. If you type a new name in, when you leave the field you will be asked if you want to create a new name. If you choose an existing name, the lines from the last cheque to or deposit from that name will be copied in, which you can amend or delete as appropriate.
+Type the name of the payee or payer - as you type, a drop down of existing people with similar names appears, which you can click on to choose one. If you type a new name in, when you leave the field you will be asked if you want to create a new name. If you choose an existing name, the lines from the last cheque to or deposit from that name will be copied in, which you can amend or delete as appropriate.
 
-Now add the invoice lines - for each line, choose an account. Enter the Vat Code and Amount. Note that you can overwrite the calculated VAT if the other party has calculated the VAT differently (perhaps they use a different rounding method). You can add a note to the line in the Memo field if you like. As you enter each new line, a new blank line will appear below. You can delete an existing line by pressing the red ![x](../../images/close.png).
+Now add the invoice lines - for each line, choose an account. Enter the Vat Code and Amount. Note that you can overwrite the calculated VAT if the other party has calculated the VAT differently (perhaps they use a different rounding method). You can add a note to the line in the Memo field if you like. As you enter each new line, a new blank line will appear below. You can delete an existing line by pressing the red ![x](../images/close.png).
 
 Note that the total and VAT total are updated automatically as you amend the lines.
 
@@ -85,6 +85,6 @@ As you tick off each transaction, the cleared balance and difference is updated 
 
 If you are unable to reconcile (perhaps because there are some transactions missong, or with the wrong value), you can press the *Leave* button to save your work so far, enter or edit the incorrect transactions, and return.
 
-If the reconciliation balances, you can save it - this will mark all the ticked transactions as reconciled (*Clr* will sho an 'X' on the bank detail screen).
+If the reconciliation balances, you can save it - this will mark all the ticked transactions as reconciled (The *Clr* column will show an 'X' on the bank detail screen).
 
 Once you have reconciled, you can print the reconciliation for your records with *Save and Print*.

@@ -20,7 +20,7 @@ Number the invoice - you can either type in your own invoice number, or press th
 
 The Memo field appears on the printed invoice, and can be used for any message you want to send the customer.
 
-Now add the invoice lines - for each line, choose a product - that will fill the Memo field with the product description, unit price and VAT code. Enter the Quantity (in whatever Unit you have chosen for the product), and the line amount will be calculated. You can overwrite the Memo field with different text if you like. As you enter each new line, a new blank line will appear below. You can delete an existing line by pressing the red ![x](../../images/close.png).
+Now add the invoice lines - for each line, choose a product - that will fill the Memo field with the product description, unit price and VAT code. Enter the Quantity (in whatever Unit you have chosen for the product), and the line amount will be calculated. You can overwrite the Memo field with different text if you like. As you enter each new line, a new blank line will appear below. You can delete an existing line by pressing the red ![x](../images/close.png).
 
 Note that the total and VAT total are updated automatically as you amend the lines.
 

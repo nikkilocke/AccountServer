@@ -20,7 +20,7 @@ Click *New Subscription Payment" to create a new one. Or choose an existing one 
 
 Choose the bank account into which the money has been paid.
 
-Now add the members - for each line, type the member name or number - as you type, a drop down of existing members with similar names or numbers appears, which you must click on to choose one. Then the payment amount will be filled in from the memebr record (but you can change it if you wish). As you enter each new line, a new blank line will appear below. You can delete an existing line by pressing the red ![x](../../images/close.png).
+Now add the members - for each line, type the member name or number - as you type, a drop down of existing members with similar names or numbers appears, which you must click on to choose one. Then the payment amount will be filled in from the memebr record (but you can change it if you wish). As you enter each new line, a new blank line will appear below. You can delete an existing line by pressing the red ![x](../images/close.png).
 
 Note that the total amount is updated automatically as you amend the lines.
 
