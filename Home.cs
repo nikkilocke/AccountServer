@@ -126,7 +126,7 @@ ORDER BY Name
 					Type type = Server.NamespaceDef.GetModuleType(moduleName);
 					Utils.Check(type != null, "Invalid schedule job {0}", job.Url);
 					AppModule module = (AppModule)Activator.CreateInstance(type);
-					module.Context = Context;
+					module.CopyFrom = this;
 					module.OriginalModule = module.Module = moduleName.ToLower();
 					module.OriginalMethod = module.Method = (string.IsNullOrEmpty(methodName) ? "default" : Path.GetFileNameWithoutExtension(methodName)).ToLower();
 					module.GetParameters = new NameValueCollection();
