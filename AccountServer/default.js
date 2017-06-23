@@ -24,6 +24,7 @@ $.widget( "custom.catcomplete", $.ui.autocomplete, {
 		});
 	}
 });
+var dateStyle = { dateFormat: 'dd MM yy'};
 
 /**
  * Account types - should correcpond to AcctType enum in C#
@@ -87,6 +88,11 @@ var DocType = {
 		Gain:16,
 		Subscriptions:17
 };
+
+function addJQueryUiControls() {
+	if (bowser.firefox)
+		$('input.date').datepicker(dateStyle);
+}
 
 $(function() {
 //	testHarness = bowser.firefox && hasParameter('test');
@@ -398,17 +404,27 @@ function parseDate(date) {
  * @param {string|Date} date
  * @returns {string} Formatted date, or '' if invalid
  */
-function formatDate(date) {
+function formatDate(date, format) {
 	if(!date)
 		return date || '';
 	try {
 		var d = Date.parse(date);
 		if(isNaN(d))
 			return date || '';
-		return new Date(d).toLocaleDateString(window.navigator.userLanguage || window.navigator.language);
+		return $.datepicker.formatDate(format || dateStyle.dateFormat, new Date(d));
+		// return new Date(d).toLocaleDateString(window.navigator.userLanguage || window.navigator.language);
 	} catch(e) {
 		return date || '';
 	}
+}
+
+/**
+ * Format a date for a date input field.
+ * @param {string|Date} date
+ * @returns {string} Formatted date, or '' if invalid
+ */
+function formatDateForInput(date) {
+	return bowser.firefox ? formatDate(date) : date ? date.substr(0, 10) : '';
 }
 
 /**
@@ -417,7 +433,13 @@ function formatDate(date) {
  * @returns {string} Formatted date, or '' if invalid
  */
 function formatDateTime(date) {
-	return formatDate(date);
+	if(!date)
+		return date;
+	try {
+		return new Date(Date.parse(date)).toLocaleString(window.navigator.userLanguage || window.navigator.language);
+	} catch(e) {
+		return date;
+	}
 }
 
 /**
@@ -444,6 +466,11 @@ function formatNumberWithCommas(number) {
 	return (number + '00').substr(0, p + 3);
 }
 
+/**
+ * Format an integer with commas.
+ * @param number
+ * @returns {string}
+ */
 function formatWholeNumberWithCommas(number) {
 	number = formatNumberWithCommas(number);
 	var p = number.indexOf(decPoint);
@@ -901,14 +928,14 @@ var Type = {
 	},
 	dateInput: {
 		defaultContent: function(index, col) {
-			return '<input type="date" data-col="' + col.name + '" ' + col.attributes + '/>';
+			return '<input class="date" type="date" data-col="' + col.name + '" ' + col.attributes + '/>';
 		},
 		draw: function(data, rowno, row) {
-			data = data ? data.substr(0, 10) : '';
-			return '<input type="date" id="r' + rowno + 'c' + this.name + '" data-col="' + this.name + '" value="' + data + '" ' + this.attributes + '/>';
+			data = formatDateForInput(data);
+			return '<input class="date" type="date" id="r' + rowno + 'c' + this.name + '" data-col="' + this.name + '" value="' + data + '" ' + this.attributes + '/>';
 		},
 		update: function(cell, data, rowno, row) {
-			data = data ? data.substr(0, 10) : '';
+			data = formatDateForInput(data);
 			colUpdate('input', cell, data, rowno, this, row);
 		}
 	},
@@ -1696,11 +1723,6 @@ function makeDataTable(selector, options) {
  * {*} [type] Type.* - sets defaults for column options
  * {string} data item name
  * {string} [heading]
- * {boolean|*}	nonZero true to suppress zero items, with button to reveal, false opposite, or:
- * 	{boolean} [hide] true to suppress zero items, with button to reveal, false opposite
- * 	{string} [heading] to use in button text (col.heading)
- * 	{string} [zeroText] prompt for button (Show all <heading>)
- * 	{string} [nonZeroText] prompt for button (Only non-zero <heading>)
  * @param {string} selector
  * @param options
  * @param {string} [options.table] Name of SQL table
@@ -1846,6 +1868,7 @@ function makeForm(selector, options) {
 			var colData = result.data[col.data];
 			col.update(col.cell, colData, 0, result.data);
 		});
+		addJQueryUiControls();
 	}
 	var drawn = false;
 
@@ -2148,9 +2171,9 @@ function makeListForm(selector, options) {
 				return;
 			}
 			if(col.change) {
-				var nval = col.change(val, table.data[rowIndex].data, col, this);
+				var nval = col.change(val, table.data[rowIndex], col, this);
 				if(nval === false) {
-					$(this).val(table.data[rowIndex].data[col.data])
+					$(this).val(table.data[rowIndex][col.data])
 						.focus();
 					return;
 				} else if(nval !== undefined && nval !== null)
@@ -2249,6 +2272,7 @@ function makeListForm(selector, options) {
 		for(var row = 0; row < table.data.length; row++) {
 			drawRow(row);
 		}
+		addJQueryUiControls();
 	}
 	function dataReady(d) {
 		table.data = d;
@@ -2308,6 +2332,7 @@ function makeListForm(selector, options) {
 	table.addRow = function(row) {
 		table.data.push(row);
 		drawRow(table.data.length - 1);
+		addJQueryUiControls();
 	};
 	/**
 	 * The cell for a data item
@@ -2567,7 +2592,9 @@ function selectClick(selector, selectFunction) {
  */
 function defaultUrl(defaultSuffix) {
 	var url = window.location.pathname.replace(/\.html$/, '');
-	if(url.substr(1).indexOf('/') < 0)
+	if(url == '/')
+		url = '/home/default';
+	else if(url.substr(1).indexOf('/') < 0)
 		url += '/default';
 	return url + defaultSuffix + ".html" + window.location.search
 }
