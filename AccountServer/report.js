@@ -25,6 +25,7 @@ function initialiseReport(select, update) {
 	 * @param record
 	 */
 	function loadData(record) {
+		$('#reportTitle').text(record.settings.ReportName);
 		fields = record.settings.fields;
 		// If there is a date filter, show it in the heading
 		$('#reportDates').text('');
