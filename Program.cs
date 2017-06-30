@@ -34,13 +34,13 @@ namespace AccountServer {
 			}
 			if (!string.IsNullOrEmpty(Config.CommandLineFlags["tz"]))
 				Utils._tz = TimeZoneInfo.FindSystemTimeZoneById(Config.CommandLineFlags["tz"] ?? (windows ? "GMT Standard Time" : "GB"));
+			string startPage = "";
+			bool serverRunning = false;
 			if (windows) {
-				string startPage = "";
-				if (Config.CommandLineFlags["url"] != null)
-					startPage = Config.CommandLineFlags["url"];
 				if (Config.CommandLineFlags["nolaunch"] == null) {
+					if (Config.CommandLineFlags["url"] != null)
+						startPage = Config.CommandLineFlags["url"];
 					// Is server already running?
-					bool serverRunning = false;
 					try {
 						using (var client = new TcpClient()) {
 							var result = client.BeginConnect(Config.Default.DefaultServer.ServerName, Config.Default.Port, null, null);
@@ -50,12 +50,19 @@ namespace AccountServer {
 						}
 					} catch {
 					}
-					System.Diagnostics.Process.Start("http://" + Config.Default.DefaultServer.ServerName + ":" + Config.Default.Port + "/" + startPage);
-					if (serverRunning)
-						return;
+					if(!startPage.StartsWith("http"))
+						startPage = "http://" + Config.Default.DefaultServer.ServerName + ":" + Config.Default.Port + "/" + startPage;
 				}
 			}
-			new WebServer().Start();
+			if (serverRunning) {
+				if (!string.IsNullOrEmpty(startPage))
+					System.Diagnostics.Process.Start(startPage);
+			} else {
+				WebServer server = new WebServer();
+				if (!string.IsNullOrEmpty(startPage))
+					System.Diagnostics.Process.Start(startPage);
+				server.Start();
+			}
 		}
 
 		/// <summary>
