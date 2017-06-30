@@ -236,10 +236,17 @@ namespace AccountServer {
 		public int MemberTypeId;
 		[ForeignKey("NameAddress")]
 		public int NameAddressId;
+		public string Title;
+		public string FirstName;
+		public string LastName;
+		public string Name {
+			get {
+				return FirstName + " " + LastName;
+			}
+		}
 		public decimal PaymentAmount;
 		public decimal AmountDue;
-		public override int? Id
-		{
+		public override int? Id {
 			get { return idMember; }
 			set { idMember = value; }
 		}
@@ -253,8 +260,7 @@ namespace AccountServer {
 		public string MemberTypeName;
 		public decimal AnnualSubscription;
 		public int NumberOfPayments = 1;
-		public override int? Id
-		{
+		public override int? Id {
 			get { return idMemberType; }
 			set { idMemberType = value; }
 		}
@@ -270,8 +276,6 @@ JOIN NameAddress ON idNameAddress = NameAddressId")]
 		public decimal AnnualSubscription;
 		[Field(Type = "int", Visible = false)]
 		public int NumberOfPayments = 1;
-		[Writeable]
-		public string Name;
 		[Length(0)]
 		[Writeable]
 		public string Address;
@@ -288,11 +292,6 @@ JOIN NameAddress ON idNameAddress = NameAddressId")]
 		[Field(Heading = "Left")]
 		[Writeable]
 		public bool Hidden;
-		public override int? Id
-		{
-			get { return idMember; }
-			set { idMember = value; }
-		}
 	}
 
 	[Table]

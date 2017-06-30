@@ -187,7 +187,7 @@ namespace AccountServer {
 		public object AuditMembersPost(JObject json) {
 			initialiseAuditReport(json);
 			membersSetup();
-			return auditReportData(json, "Full_Member", "MemberTypeName", "MemberNo", "Name", "Address", "PostCode", "Telephone", "Email", "Contact", "AnnualSubscription", "PaymentAmount", "AmountDue");
+			return auditReportData(json, "Full_Member", "MemberTypeName", "MemberNo", "Title", "FirstName", "LastName", "Address", "PostCode", "Telephone", "Email", "Contact", "AnnualSubscription", "PaymentAmount", "AmountDue");
 		}
 
 		public void AuditProducts(int id) {
@@ -522,9 +522,9 @@ LEFT JOIN DocumentType ON DocumentType.idDocumentType = rDocType
 		public object MembersPost(JObject json) {
 			initialiseReport(json);
 			membersSetup();
-			makeSortable("Name", "MemberTypeName");
-			setDefaultFields(json, "MemberTypeName", "Name", "Address", "PostCode", "Telephone", "Email", "Contact", "AnnualSubscription", "PaymentAmount", "AmountDue");
-			return finishReport(json, "Full_Member", "Name", "");
+			makeSortable("LastName", "FirstName", "MemberTypeName,LastName=MemberType");
+			setDefaultFields(json, "MemberTypeName", "Title", "FirstName", "LastName", "Address", "PostCode", "Telephone", "Email", "Contact", "AnnualSubscription", "PaymentAmount", "AmountDue");
+			return finishReport(json, "Full_Member", "LastName", "");
 		}
 
 		void membersSetup() {
@@ -1486,12 +1486,14 @@ JOIN Security ON idSecurity = SecurityId")) {
 			HashSet<string> flds = new HashSet<string>(tables.SelectMany(t => Database.TableFor(t).Fields.Select(f => f.Name)));
 			// Our fields in the repeating tables
 			HashSet<string> fields = new HashSet<string>();
+			string[] sortFields = _sortFields == null ? new string[0] : _sortFields.Where(f => fieldFor(f).Include).ToArray();
 			List<string> essentialFields = _fields.Where(f => f.Essential).Select(f => f.Name).ToList();
 			foreach (string f in _fields.Where(f => tables.Contains(f.Table)).Select(f => f.Name))
 				fields.Add(f);	// One of our fields in a potentially repeating table (need to be at front)
 			foreach (string f in flds.Where(f => !fields.Contains(f)))
-				fields.Add(f);	// Rest of potentially repeating fields
-			string[] sortFields = _sortFields == null ? new string[0] : _sortFields.Where(f => fieldFor(f).Include).ToArray();
+				fields.Add(f);  // Rest of potentially repeating fields
+			foreach (string f in sortFields)
+				fields.Add(f);
 			string[] lastTotalBreak = new string[sortFields.Length + 1];
 			Dictionary<string, decimal[]> totals = new Dictionary<string, decimal[]>();
 			string firstStringField = null;

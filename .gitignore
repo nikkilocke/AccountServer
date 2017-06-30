@@ -29,3 +29,4 @@
 /Setup/*.exe
 /Setup/*.msi
 /contentFiles
+/Setup/Release

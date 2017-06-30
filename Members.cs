@@ -35,7 +35,7 @@ namespace AccountServer {
 		}
 
 		public object DefaultListing() {
-			return Database.Query(@"SELECT * FROM Full_Member ORDER BY Name");
+			return Database.Query(@"SELECT * FROM Full_Member ORDER BY LastName");
 		}
 
 		/// <summary>
