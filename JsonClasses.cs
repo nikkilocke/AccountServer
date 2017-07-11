@@ -688,7 +688,11 @@ JOIN Account ON Account.idAccount = Journal.AccountId
 		}
 	}
 
-	[View(@"SELECT Extended_Document.*, CASE DocumentAccountId WHEN 1 THEN -1 ELSE 1 END AS VatType,
+	[View(@"SELECT Extended_Document.*, CASE DocumentAccountId 
+WHEN 1 THEN -1 
+WHEN 2 THEN 1
+ELSE Sign
+END AS VatType,
 Memo,Line.VatCodeId, Line.VatRate, SUM(Line.VatAmount) VatAmount, SUM(Line.LineAmount) AS LineAmount 
 FROM Extended_Document
 JOIN Journal ON IdDocument = DocumentId

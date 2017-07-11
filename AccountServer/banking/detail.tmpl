@@ -25,12 +25,12 @@
 						selectOptions: [
 							{ id: AcctType.Bank, value: 'Bank'},
 							{ id: AcctType.CreditCard, value: 'Credit Card'}
-						]
+						],
+						sameRow: true
 					},
 					{
 						data: 'AccountCode',
-						type: 'textInput',
-						sameRow: true
+						type: 'textInput'
 					},
 					{
 						data: 'AccountDescription',
@@ -48,13 +48,13 @@
 						sameRow: true
 					},
 					{
+						data: 'StatementFormat',
+						type: 'textAreaInput'
+					},
+					{
 						data: 'HideAccount',
 						type: 'checkboxInput',
 						sameRow: true
-					},
-					{
-						data: 'StatementFormat',
-						type: 'textAreaInput'
 					}
 				]
 			});

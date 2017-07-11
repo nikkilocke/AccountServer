@@ -4850,15 +4850,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:AccountServer"
-        "ProductCode" = "8:{5D4016CD-4E96-4A21-94E3-9EF5A5CD936C}"
-        "PackageCode" = "8:{A3A5CEE5-83F5-4391-A3F1-48FD54B875EA}"
+        "ProductCode" = "8:{03626FF7-6D49-4FF9-B9CC-8E539DE8B7DC}"
+        "PackageCode" = "8:{2947CC36-B1C7-445D-802A-5D7092DCE22C}"
         "UpgradeCode" = "8:{5F4B0E7A-A2BC-47D9-A428-075DF0BD7449}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.4.2"
+        "ProductVersion" = "8:1.4.3"
         "Manufacturer" = "8:Trumphurst Ltd."
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:http://www.trumphurst.com/contact.php"
@@ -5428,7 +5428,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_5FF57C894648470A84448BA0923CC924"
             {
-            "SourcePath" = "8:..\\obj\\Release\\AccountServer.exe"
+            "SourcePath" = "8:..\\obj\\Debug\\AccountServer.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_72DF1EB2093A4D19B31910B932256C43"
@@ -5512,7 +5512,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_7CBDF3876A24493A91FA7A2A44D75CDA"
             {
-            "SourcePath" = "8:..\\RegisterAccountServer\\obj\\Release\\RegisterAccountServer.exe"
+            "SourcePath" = "8:..\\RegisterAccountServer\\obj\\Debug\\RegisterAccountServer.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_72DF1EB2093A4D19B31910B932256C43"

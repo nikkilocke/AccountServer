@@ -1893,7 +1893,7 @@ function makeForm(selector, options) {
 					autoOpen: false,
 					modal: true,
 					height: Math.min(result.height() + 200, $(window).height() * 0.9),
-					width: Math.min(result.width() + 20, $(window).width()),
+					width: Math.min(result.width() + 100, $(window).width() - 50),
 					buttons: {
 						Ok: {
 							id: 'Ok',
