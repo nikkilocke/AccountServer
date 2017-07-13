@@ -58,6 +58,12 @@ $(function() {
 			canDelete: !readonly && record.header.idDocument,
 			columns: [
 				{
+					data: 'DocumentName',
+					type: 'autoComplete',
+					selectOptions: names,
+					confirmAdd: true
+				},
+				{
 					data: 'DocumentDate',
 					type: 'dateInput'
 				},
@@ -69,6 +75,11 @@ $(function() {
 				{
 					data: 'AmountToBalance',
 					type: 'decimalField'
+				},
+				{
+					data: 'DocumentMemo',
+					type: 'textInput',
+					attributes: 'size="50"'
 				}
 			]
 		},
@@ -127,6 +138,35 @@ $(function() {
 	if(readonly)
 		form.header.fields.AccountName.cell.find(':input').prop('disabled', true);
 	checkForNewRow();
+	form.header.bind('changed.field', function(e, newValue, rowData, col, input) {
+		if(col.name == 'DocumentName') {
+			var name = _.find(names, function(v) { return v.value == newValue});
+			if(name && name.id) {
+				rowData.DocumentName = name.value;
+				rowData.DocumentNameAddressId = name.id;
+				if(!dataEntered && newValue) {
+					get('/accounting/journallast.html', {
+						id: name.id
+					}, function(data) {
+						if(data.header) {
+							record.header.DocumentIdentifier = data.header.DocumentIdentifier;
+							record.header.DocumentMemo = data.header.DocumentMemo;
+							record.header.DocumentAmount = data.header.DocumentAmount;
+							record.detail = data.detail;
+							calculateDocument();
+							form.header.draw();
+							form.detail.dataReady(record.detail);
+							checkForNewRow();
+							message('Last matching document copied - please check and correct the accounts and amounts');
+						}
+					});
+				}
+				form.header.draw();
+			} else {
+				rowData.DocumentNameAddressId = 0;
+			}
+		}
+	});
 	form.detail.bind('changed.field', function(e, newValue, rowData, col, input) {
 		dataEntered = true;
 		if(col.name == 'Credit' || col.name == 'Debit') {

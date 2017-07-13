@@ -14,7 +14,8 @@ namespace AccountServer {
 	public class Accounting : BankingAccounting {
 		public Accounting() {
 			Menu = new MenuOption[] {
-				new MenuOption("Listing", "/accounting/default.html"),
+				new MenuOption("List Accounts", "/accounting/default.html"),
+				new MenuOption("List Journals", "/accounting/journals.html"),
 				new MenuOption("Names", "/accounting/names.html"),
 				new MenuOption("VAT Return", "/accounting/vatreturn.html?id=0"),
 				new MenuOption("New Account", "/accounting/detail.html?id=0"),
@@ -108,6 +109,32 @@ ORDER BY DocumentDate DESC, idDocument DESC")) {
 			}
 			Database.Commit();
 			return result;
+		}
+
+		public class JournalDoc : JsonObject {
+			[Primary(AutoIncrement = false)]
+			public int? idDocument;
+			public DateTime DocumentDate;
+			public string DocumentIdentifier;
+			[Length(75)]
+			public string DocumentName;
+			[Length(0)]
+			public string DocumentMemo;
+		}
+
+		public void Journals() {
+			DataTableForm form = new DataTableForm(this, typeof(JournalDoc));
+			form.Options["table"] = "Document";
+			form.Select = "/accounting/document.html";
+			Form = form;
+			form.Show();
+		}
+
+		public IEnumerable<JournalDoc> JournalsListing() {
+			return Database.Query<JournalDoc>(@"SELECT idDocument, DocumentDate, DocumentIdentifier, DocumentName, DocumentMemo 
+FROM Extended_Document
+WHERE DocumentTypeId = " + (int)DocType.GeneralJournal + @"
+ORDER BY DocumentDate DESC, idDocument DESC");
 		}
 
 		/// <summary>
@@ -242,6 +269,25 @@ ORDER BY DocumentDate DESC, idDocument DESC")) {
 			Settings.RegisterNumber(this, document.DocumentTypeId, Utils.ExtractNumber(document.DocumentIdentifier));
 			Database.Commit();
 			return new AjaxReturn() { message = "Journal saved", id = document.idDocument };
+		}
+
+		/// <summary>
+		/// Get the last document of the given type with NameAddressId == id
+		/// </summary>
+		public object JournalLast(int id) {
+			JObject result = new JObject();
+			Extended_Document header = Database.QueryOne<Extended_Document>("SELECT * FROM Extended_Document WHERE DocumentTypeId = " + (int)DocType.GeneralJournal
+				+ " AND DocumentNameAddressId = " + id
+				+ " ORDER BY DocumentDate DESC, idDocument DESC");
+			if (header.idDocument != null) {
+				if (Utils.ExtractNumber(header.DocumentIdentifier) > 0)
+					header.DocumentIdentifier = "";
+				result.AddRange("header", header,
+					"detail", Database.Query("idJournal, DocumentId, JournalNum, AccountId, Memo, Amount, NameAddressId, Name",
+						"WHERE Journal.DocumentId = " + header.idDocument + " ORDER BY JournalNum",
+						"Document", "Journal"));
+			}
+			return result;
 		}
 
 		/// <summary>
