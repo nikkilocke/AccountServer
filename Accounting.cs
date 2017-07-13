@@ -291,10 +291,12 @@ ORDER BY idDocument DESC");
 				Utils.Check(id == 0, "VAT return " + id + " not found");
 				header.DocumentNameAddressId = 1;
 				header.DocumentName = "";
-				Account acc = Database.QueryOne<Account>("*", "WHERE idAccount = " + Settings.DefaultBankAccount, "Account");
-				if (acc.idAccount != null) {
-					header.DocumentAccountId = (int)acc.idAccount;
-					header.DocumentAccountName = acc.AccountName;
+				if (Settings.DefaultBankAccount > 0) {
+					Account acc = Database.QueryOne<Account>("*", "WHERE idAccount = " + Settings.DefaultBankAccount, "Account");
+					if (acc.idAccount != null) {
+						header.DocumentAccountId = (int)acc.idAccount;
+						header.DocumentAccountName = acc.AccountName;
+					}
 				}
 			}
 			// If most recent VAT return is not for this quarter, we will create a new one (later, on save)

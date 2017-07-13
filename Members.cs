@@ -131,11 +131,11 @@ ORDER BY JournalNum")
 				header.DocType = "Subscriptions";
 				header.DocumentDate = Utils.Today;
 				header.DocumentName = "";
-				if (GetParameters["acct"].IsInteger()) {
-					FullAccount acct = Database.QueryOne<FullAccount>("*", "WHERE idAccount = " + GetParameters["acct"], "Account");
-					if (acct.idAccount != null) {
-						header.DocumentAccountId = (int)acct.idAccount;
-						header.DocumentAccountName = acct.AccountName;
+				if (Settings.DefaultBankAccount > 0) {
+					Account acc = Database.QueryOne<Account>("*", "WHERE idAccount = " + Settings.DefaultBankAccount, "Account");
+					if (acc.idAccount != null) {
+						header.DocumentAccountId = (int)acc.idAccount;
+						header.DocumentAccountName = acc.AccountName;
 					}
 				}
 			} else {
