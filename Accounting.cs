@@ -116,14 +116,13 @@ ORDER BY DocumentDate DESC, idDocument DESC")) {
 			public int? idDocument;
 			public DateTime DocumentDate;
 			public string DocumentIdentifier;
-			[Length(75)]
-			public string DocumentName;
 			[Length(0)]
 			public string DocumentMemo;
 		}
 
 		public void Journals() {
 			DataTableForm form = new DataTableForm(this, typeof(JournalDoc));
+			form["idDocument"].Visible = false;
 			form.Options["table"] = "Document";
 			form.Select = "/accounting/document.html";
 			Form = form;
@@ -269,25 +268,6 @@ ORDER BY DocumentDate DESC, idDocument DESC");
 			Settings.RegisterNumber(this, document.DocumentTypeId, Utils.ExtractNumber(document.DocumentIdentifier));
 			Database.Commit();
 			return new AjaxReturn() { message = "Journal saved", id = document.idDocument };
-		}
-
-		/// <summary>
-		/// Get the last document of the given type with NameAddressId == id
-		/// </summary>
-		public object JournalLast(int id) {
-			JObject result = new JObject();
-			Extended_Document header = Database.QueryOne<Extended_Document>("SELECT * FROM Extended_Document WHERE DocumentTypeId = " + (int)DocType.GeneralJournal
-				+ " AND DocumentNameAddressId = " + id
-				+ " ORDER BY DocumentDate DESC, idDocument DESC");
-			if (header.idDocument != null) {
-				if (Utils.ExtractNumber(header.DocumentIdentifier) > 0)
-					header.DocumentIdentifier = "";
-				result.AddRange("header", header,
-					"detail", Database.Query("idJournal, DocumentId, JournalNum, AccountId, Memo, Amount, NameAddressId, Name",
-						"WHERE Journal.DocumentId = " + header.idDocument + " ORDER BY JournalNum",
-						"Document", "Journal"));
-			}
-			return result;
 		}
 
 		/// <summary>
