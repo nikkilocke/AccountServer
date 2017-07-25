@@ -5,6 +5,7 @@ $(function() {
 	var form = makeForm('#record', {
 		table: 'NameAddress',
 		data: record,
+		readonly: '!{{ReadOnly}}',
 		columns: [
 			{
 				data: 'Name',

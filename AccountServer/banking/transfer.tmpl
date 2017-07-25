@@ -4,7 +4,7 @@
 	<script>
 $(function() {
 	var record = loadRecord();
-	var readonly = record.header.DocumentOutstanding != record.header.DocumentAmount;
+	var readonly = record.header.DocumentOutstanding != record.header.DocumentAmount || '!{{ReadOnly}}';
 	var form = makeForm('#form', {
 		data: record.header,
 		table: 'Document',
@@ -17,6 +17,7 @@ $(function() {
 				return "Amount must be filled in";
 		},
 		canDelete: !readonly,
+		readonly: '!{{ReadOnly}}',
 		saveAndNew: true,
 		columns: [
 			{
@@ -59,6 +60,7 @@ $(function() {
 			form.find('#r0cTransferAccountId').prop('disabled', true);
 	} else {
 		nextPreviousButtons(record);
+		//{{#if ReadWrite}}
 		actionButton('Memorise').click(function () {
 			if (unsavedInput) {
 				message('You must save the changes first');
@@ -66,6 +68,7 @@ $(function() {
 			}
 			goto('/banking/memorisetransfer.html?id=' + record.header.idDocument);
 		});
+		//{{/if}}
 		actionButton('Print').click(function () {
 			if (unsavedInput) {
 				message('You must save the changes first');

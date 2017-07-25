@@ -100,6 +100,7 @@ namespace AccountServer {
 		public int? idAuditTrail;
 		public DateTime DateChanged;
 		public string TableName;
+		public int? UserId;
 		/// <summary>
 		/// <see cref="AuditType" />
 		/// </summary>

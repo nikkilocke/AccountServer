@@ -28,7 +28,7 @@ $(function() {
 		VatAmount: 0.00,
 		LineAmount: 0.00
 	};
-	var readonly = record.header.DocumentOutstanding != record.header.DocumentAmount;
+	var readonly = record.header.DocumentOutstanding != record.header.DocumentAmount || '!{{ReadOnly}}';
 	var dataEntered = readonly || record.detail.length > 0;
 	record.header.StatementAmount = record.header.DocumentAmount;
 	function calculateDocument() {
@@ -100,6 +100,7 @@ $(function() {
 		header: {
 			table: 'Document',
 			canDelete: !readonly && record.header.idDocument,
+			readonly: '!{{ReadOnly}}',
 			validate: function() {
 				if(matchingStatement() && record.header.StatementAmount != record.header.DocumentAmount) {
 					return 'The document amount must be ' + formatNumber(record.header.StatementAmount);
@@ -235,6 +236,7 @@ $(function() {
 		}
 	} else {
 		if (record.header.idDocument) {
+			//{{#if ReadWrite}}
 			actionButton('Memorise').click(function () {
 				if (unsavedInput) {
 					message('You must save the changes first');
@@ -242,6 +244,7 @@ $(function() {
 				}
 				goto('/banking/memorise.html?id=' + record.header.idDocument);
 			});
+			//{{/if}}
 			actionButton('Audit').click(function () {
 				goto('/reports/audithistory.html?id=' + record.header.idDocument + '&table=Transactions');
 			});

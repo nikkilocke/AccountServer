@@ -215,9 +215,6 @@ namespace AccountServer {
 			get { return Importer.Importers; }
 		}
 
-		public void ImportHelp() {
-		}
-
 		public void IntegrityCheck() {
 			List<string> errors = new List<string>();
 			foreach (JObject r in Database.Query(@"SELECT * FROM 

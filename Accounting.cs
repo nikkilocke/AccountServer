@@ -12,15 +12,18 @@ namespace AccountServer {
 	/// Accounting module has some functionality in common with Banking (e.g. NameAddress maintenance)
 	/// </summary>
 	public class Accounting : BankingAccounting {
-		public Accounting() {
-			Menu = new MenuOption[] {
+		protected override void Init() {
+			insertMenuOptions(
 				new MenuOption("List Accounts", "/accounting/default.html"),
 				new MenuOption("List Journals", "/accounting/journals.html"),
-				new MenuOption("Names", "/accounting/names.html"),
-				new MenuOption("VAT Return", "/accounting/vatreturn.html?id=0"),
-				new MenuOption("New Account", "/accounting/detail.html?id=0"),
-				new MenuOption("New Journal", "/accounting/document.html?id=0")
-			};
+				new MenuOption("Names", "/accounting/names.html")
+				);
+			if(!SecurityOn || UserAccessLevel >= AccessLevel.ReadWrite)
+				insertMenuOptions(
+					new MenuOption("VAT Return", "/accounting/vatreturn.html?id=0"),
+					new MenuOption("New Account", "/accounting/detail.html?id=0"),
+					new MenuOption("New Journal", "/accounting/document.html?id=0")
+				);
 		}
 
 		/// <summary>
@@ -161,7 +164,7 @@ ORDER BY DocumentDate DESC, idDocument DESC");
 				"detail", Database.Query("idJournal, DocumentId, JournalNum, AccountId, Memo, Amount, NameAddressId, Name",
 					"WHERE Journal.DocumentId = " + id + " ORDER BY JournalNum",
 					"Document", "Journal"));
-			Database.NextPreviousDocument(record, "JOIN Journal ON DocumentId = idDocument WHERE DocumentTypeId = " + (int)DocType.GeneralJournal
+			nextPreviousDocument(record, "JOIN Journal ON DocumentId = idDocument WHERE DocumentTypeId = " + (int)DocType.GeneralJournal
 				+ (header.DocumentAccountId > 0 ? " AND AccountId = " + header.DocumentAccountId : ""));
 			record.AddRange("Accounts", SelectAllAccounts(),
 				"VatCodes", SelectVatCodes(),

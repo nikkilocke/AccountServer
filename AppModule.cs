@@ -20,7 +20,7 @@ namespace AccountServer {
 	/// <summary>
 	/// Base class for all app modules
 	/// </summary>
-	
+	[Auth(AccessLevel.ReadOnly)]
 	public class AppModule : CodeFirstWebFramework.AppModule {
 
 		public new Database Database {
@@ -295,22 +295,44 @@ WHERE Journal.DocumentId = " + document.idDocument));
 		}
 
 		/// <summary>
+		/// Fill in the "next" and "previous" variables in record with the next and previous
+		/// document ids.
+		/// </summary>
+		/// <param name="sql">Sql to add to document select to limit the documents returned,
+		/// e.g. to the next cheque from this bank account.</param>
+		protected void nextPreviousDocument(JObject record, string sql) {
+			JObject header = (JObject)record["header"];
+			int id = header.AsInt("idDocument");
+			string d = Database.Quote(header.AsDate("DocumentDate"));
+			JObject next = id == 0 ? null : Database.QueryOne("SELECT idDocument FROM Document " + sql
+				+ " AND (DocumentDate > " + d + " OR (DocumentDate = " + d + " AND idDocument > " + id + "))"
+				+ " ORDER BY DocumentDate, idDocument");
+			if(next != null || ReadWrite)
+				record["next"] = next == null ? 0 : next.AsInt("idDocument");
+			JObject previous = Database.QueryOne("SELECT idDocument FROM Document " + sql
+				+ (id == 0 ? "" : " AND (DocumentDate < " + d + " OR (DocumentDate = " + d + " AND idDocument < " + id + "))")
+				+ " ORDER BY DocumentDate DESC, idDocument DESC");
+			if (previous != null || ReadWrite)
+				record["previous"] = previous == null ? 0 : previous.AsInt("idDocument");
+		}
+
+		/// <summary>
 		/// Return the sign to use for documents of the supplied type.
 		/// </summary>
 		/// <returns>-1 or 1</returns>
 		static public int SignFor(DocType docType) {
-				switch (docType) {
-					case DocType.Invoice:
-					case DocType.Payment:
-					case DocType.Credit:
-					case DocType.Deposit:
-					case DocType.CreditCardCredit:
-					case DocType.GeneralJournal:
-					case DocType.Sell:
-						return -1;
-					default: 
-						return 1;
-				}
+			switch (docType) {
+				case DocType.Invoice:
+				case DocType.Payment:
+				case DocType.Credit:
+				case DocType.Deposit:
+				case DocType.CreditCardCredit:
+				case DocType.GeneralJournal:
+				case DocType.Sell:
+					return -1;
+				default: 
+					return 1;
+			}
 		}
 
 		/// <summary>

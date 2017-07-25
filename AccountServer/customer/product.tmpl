@@ -6,6 +6,7 @@
 				data: record.header,
 				table: 'Product',
 				canDelete: record.allowDelete,
+				readonly: '!{{ReadOnly}}',
 				validate: function() {
 					if(!form.data.VatCodeId)
 						return "The product must have a VAT code";

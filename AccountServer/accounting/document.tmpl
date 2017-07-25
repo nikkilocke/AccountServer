@@ -26,7 +26,7 @@ $(function() {
 		Amount: 0.00,
 		Name: record.header.DocumentName
 	};
-	var readonly = record.header.DocumentOutstanding != record.header.DocumentAmount;
+	var readonly = record.header.DocumentOutstanding != record.header.DocumentAmount || '!{{ReadOnly}}';
 	var dataEntered = readonly || record.detail.length > 0;
 	function calculateDocument() {
 		record.header.AmountToBalance = 0;
@@ -56,6 +56,7 @@ $(function() {
 		header: {
 			table: 'Document',
 			canDelete: !readonly && record.header.idDocument,
+			readonly: '!{{ReadOnly}}',
 			columns: [
 				{
 					data: 'DocumentDate',

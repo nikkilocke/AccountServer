@@ -215,6 +215,8 @@ function initialiseReport(select, update) {
 				text: 'Ok',
 				click: function () {
 					$(this).dialog("close");
+					if(record.readonly)
+						unsavedInput = false;
 					refresh();
 				}
 			},
@@ -231,60 +233,63 @@ function initialiseReport(select, update) {
 		dialog.dialog('open');
 	});
 	actionButton('Refresh').click(refresh);
-	actionButton('Memorise').click(function() {
-		function postIt() {
-			postJson('/reports/savereport.html', record.settings, function(r) {
-				record.settings.idReport = r.id;
-				originalName = record.settings.ReportName;
-			});
-		}
-		if(record.settings.idReport && record.settings.ReportName != originalName) {
-			var dlg = $('<div>Create another copy of the report<br />or just update the existing one</div>')
-				.appendTo($('body'))
-				.dialog({
-					autoOpen: true,
-					modal: true,
-					title: 'Memorising report',
-					buttons: {
-						Copy: {
-							id: 'Copy',
-							text: 'Copy',
-							click: function () {
-								record.settings.idReport = null;
-								$(this).dialog("close");
-								dlg.remove();
-								postIt();
-							}
-						},
-						Overwrite: {
-							id: 'Overwrite',
-							text: 'Overwrite',
-							click: function () {
-								$(this).dialog("close");
-								dlg.remove();
-								postIt();
-							}
-						},
-						Cancel: {
-							id: 'Cancel',
-							text: 'Cancel',
-							click: function () {
-								$(this).dialog("close");
-								dlg.remove();
+	if(!record.readonly) {
+		actionButton('Memorise').click(function () {
+			function postIt() {
+				postJson('/reports/savereport.html', record.settings, function (r) {
+					record.settings.idReport = r.id;
+					originalName = record.settings.ReportName;
+				});
+			}
+
+			if (record.settings.idReport && record.settings.ReportName != originalName) {
+				var dlg = $('<div>Create another copy of the report<br />or just update the existing one</div>')
+					.appendTo($('body'))
+					.dialog({
+						autoOpen: true,
+						modal: true,
+						title: 'Memorising report',
+						buttons: {
+							Copy: {
+								id: 'Copy',
+								text: 'Copy',
+								click: function () {
+									record.settings.idReport = null;
+									$(this).dialog("close");
+									dlg.remove();
+									postIt();
+								}
+							},
+							Overwrite: {
+								id: 'Overwrite',
+								text: 'Overwrite',
+								click: function () {
+									$(this).dialog("close");
+									dlg.remove();
+									postIt();
+								}
+							},
+							Cancel: {
+								id: 'Cancel',
+								text: 'Cancel',
+								click: function () {
+									$(this).dialog("close");
+									dlg.remove();
+								}
 							}
 						}
-					}
-				});
-		} else
-			postIt();
-	});
-	if(record.settings.idReport)
-		actionButton('Delete').click(function() {
-			if(confirm('Delete this memorised report'))
-				postJson('/reports/DeleteReport?id=' + record.settings.idReport, function() {
-					goback();
-				});
+					});
+			} else
+				postIt();
 		});
+		if (record.settings.idReport)
+			actionButton('Delete').click(function () {
+				if (confirm('Delete this memorised report'))
+					postJson('/reports/DeleteReport?id=' + record.settings.idReport, function () {
+						goback();
+					});
+			});
+	}
 	actionButton('Print').click(function() {
 		window.print();
 	});

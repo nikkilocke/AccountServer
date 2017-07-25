@@ -13,12 +13,15 @@ namespace AccountServer {
 	/// </summary>
 	public class Banking : BankingAccounting {
 
-		public Banking() {
-			Menu = new MenuOption[] {
+		protected override void Init() {
+			insertMenuOptions(
 				new MenuOption("Listing", "/banking/default.html"),
-				new MenuOption("Names", "/banking/names.html"),
-				new MenuOption("New Account", "/banking/detail.html?id=0")
-			};
+				new MenuOption("Names", "/banking/names.html")
+				);
+			if (!SecurityOn || UserAccessLevel >= AccessLevel.ReadWrite)
+				insertMenuOptions(
+					new MenuOption("New Account", "/banking/detail.html?id=0")
+				);
 		}
 
 		/// <summary>
@@ -96,7 +99,7 @@ namespace AccountServer {
 			Title = Title.Replace("Document", type.UnCamel());
 			JObject record = GetDocument(id, type);
 			dynamic header = ((dynamic)record).header;
-			Database.NextPreviousDocument(record, "JOIN Journal ON DocumentId = idDocument WHERE DocumentTypeId = " + (int)type
+			nextPreviousDocument(record, "JOIN Journal ON DocumentId = idDocument WHERE DocumentTypeId = " + (int)type
 				+ (header.DocumentAccountId > 0 ? " AND AccountId = " + header.DocumentAccountId : ""));
 			record.AddRange("Accounts", SelectAccounts(),
 				"VatCodes", SelectVatCodes(),
@@ -212,6 +215,7 @@ namespace AccountServer {
 		/// Bank reconciliation
 		/// </summary>
 		/// <param name="id"></param>
+		[Auth(AccessLevel.ReadWrite)]
 		public void Reconcile(int id) {
 			JObject header = Database.QueryOne("*", "WHERE idAccount = " + id, "Account");
 			JObject openingBalance = Database.QueryOne("SELECT SUM(Amount) AS OpeningBalance FROM Journal WHERE AccountId = " + id 
@@ -347,6 +351,7 @@ ORDER BY DocumentDate, idDocument"));
 		/// <summary>
 		/// Statement import form
 		/// </summary>
+		[Auth(AccessLevel.ReadWrite)]
 		public void StatementImport(int id) {
 			Account account = Database.Get<Account>(id);
 			checkAcctType(account.AccountTypeId, AcctType.Bank, AcctType.CreditCard);
@@ -530,10 +535,11 @@ ORDER BY DocumentDate, idDocument"));
 				}
 			}
 		}
-		
+
 		/// <summary>
 		/// Return saved session data for statement matching
 		/// </summary>
+		[Auth(AccessLevel.ReadWrite)]
 		public void StatementMatching() {
 			Record = SessionData.StatementImport;
 			SessionData.Remove("StatementMatch");
@@ -566,6 +572,7 @@ ORDER BY DocumentDate, idDocument"));
 		/// <summary>
 		/// Update a matched transaction
 		/// </summary>
+		[Auth(AccessLevel.ReadWrite)]
 		public void StatementMatch() {
 			Utils.Check(SessionData.StatementMatch != null, "Invalid call to StatementMatch");
 			MatchInfo match = SessionData.StatementMatch.ToObject<MatchInfo>();
@@ -715,7 +722,7 @@ ORDER BY DocumentDate, idDocument"));
 				doc.Clr = "";
 				doc.idDocument = doc.Id = null;
 				if (Utils.ExtractNumber(doc.DocumentIdentifier.ToString()) > 0)
-					doc.DocumentIdentifier = "";
+					doc.DocumentIdentifier = "<next>";
 			}
 			if(string.IsNullOrEmpty(doc.DocumentIdentifier.ToString())) {
 				if (current.Id != null) {

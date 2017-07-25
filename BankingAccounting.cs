@@ -78,7 +78,7 @@ namespace AccountServer {
 				"Account", acct,
 				"BankAccounts", SelectBankOrStockAccounts());
 			if (acct != null)
-				Database.NextPreviousDocument(record, "JOIN Journal ON DocumentId = idDocument WHERE AccountId = "
+				nextPreviousDocument(record, "JOIN Journal ON DocumentId = idDocument WHERE AccountId = "
 					+ acct + " AND DocumentTypeId = " + (int)DocType.Transfer);
 			Record = record;
 		}

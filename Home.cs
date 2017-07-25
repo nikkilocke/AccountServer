@@ -24,12 +24,15 @@ namespace AccountServer {
 	/// </summary>
 	public class Home : AppModule {
 
-		public Home() {
-			Menu = new MenuOption[] {
+		protected override void Init() {
+			insertMenuOptions(
 				new MenuOption("Summary", "/home/default.html"),
-				new MenuOption("To Do", "/home/schedule.html"),
-				new MenuOption("New To Do", "/home/job.html?id=0")
-			};
+				new MenuOption("To Do", "/home/schedule.html")
+				);
+			if (!SecurityOn || UserAccessLevel >= AccessLevel.ReadWrite)
+				insertMenuOptions(
+					new MenuOption("New To Do", "/home/job.html?id=0")
+				);
 		}
 
 		public override void Default() {
@@ -123,9 +126,9 @@ ORDER BY Name
 					// It posts a record
 					string methodName = job.Url;
 					string moduleName = Utils.NextToken(ref methodName, "/");
-					Type type = Server.NamespaceDef.GetModuleType(moduleName);
-					Utils.Check(type != null, "Invalid schedule job {0}", job.Url);
-					AppModule module = (AppModule)Activator.CreateInstance(type);
+					ModuleInfo info = Server.NamespaceDef.GetModuleInfo(moduleName);
+					Utils.Check(info != null, "Invalid schedule job {0}", job.Url);
+					AppModule module = (AppModule)Activator.CreateInstance(info.Type);
 					module.CopyFrom = this;
 					module.OriginalModule = module.Module = moduleName.ToLower();
 					module.OriginalMethod = module.Method = (string.IsNullOrEmpty(methodName) ? "default" : Path.GetFileNameWithoutExtension(methodName)).ToLower();

@@ -25,6 +25,7 @@ $(function() {
 	var form = makeForm('#form', {
 		table: 'Document',
 		data: record.header,
+		readonly: '!{{ReadOnly}}',
 		saveAndNew: true,
 		columns: [
 			{

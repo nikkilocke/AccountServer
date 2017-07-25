@@ -69,6 +69,8 @@ namespace AccountServer {
 		/// </summary>
 		DateFilter _dates;
 
+		public object ReportList;
+
 		/// <summary>
 		/// Reports menu
 		/// </summary>
@@ -112,13 +114,14 @@ namespace AccountServer {
 				}
 				reports.Add(report);
 			}
-			Record = groups;
+			ReportList = groups;
 		}
 
 		public void Accounts(int id) {
 			Record = AccountsPost(getJson(id, "Accounts List"));
 		}
 
+		[Auth(AccessLevel.ReadOnly)]
 		public object AccountsPost(JObject json) {
 			initialiseReport(json);
 			accountSetup();
@@ -141,6 +144,7 @@ namespace AccountServer {
 			Method = "accounts";
 		}
 
+		[Auth(AccessLevel.ReadOnly)]
 		public object AuditAccountsPost(JObject json) {
 			initialiseAuditReport(json);
 			accountSetup();
@@ -160,6 +164,7 @@ namespace AccountServer {
 			Record = AuditHistoryPost(json);
 		}
 
+		[Auth(AccessLevel.ReadOnly)]
 		public object AuditHistoryPost(JObject json) {
 			OriginalMethod = json.AsString("ReportType");
 			Method = OriginalMethod.Substring(5).ToLower();
@@ -173,6 +178,7 @@ namespace AccountServer {
 			Method = "names";
 		}
 
+		[Auth(AccessLevel.ReadOnly)]
 		public object AuditNamesPost(JObject json) {
 			initialiseAuditReport(json);
 			namesSetup();
@@ -184,6 +190,7 @@ namespace AccountServer {
 			Method = "members";
 		}
 
+		[Auth(AccessLevel.ReadOnly)]
 		public object AuditMembersPost(JObject json) {
 			initialiseAuditReport(json);
 			membersSetup();
@@ -195,6 +202,7 @@ namespace AccountServer {
 			Method = "products";
 		}
 
+		[Auth(AccessLevel.ReadOnly)]
 		public object AuditProductsPost(JObject json) {
 			initialiseAuditReport(json);
 			addTable("Product");
@@ -211,6 +219,7 @@ namespace AccountServer {
 			Method = "securities";
 		}
 
+		[Auth(AccessLevel.ReadOnly)]
 		public object AuditSecuritiesPost(JObject json) {
 			initialiseAuditReport(json);
 			addTable("Security");
@@ -224,6 +233,7 @@ namespace AccountServer {
 			Method = "transactions";
 		}
 
+		[Auth(AccessLevel.ReadOnly)]
 		public object AuditReconciliationPost(JObject json) {
 			// Not looking at changes - reconciliations are stored as created
 			_changeTypeNotRequired = true;
@@ -247,6 +257,7 @@ namespace AccountServer {
 			Method = "transactions";
 		}
 
+		[Auth(AccessLevel.ReadOnly)]
 		public object AuditTransactionsPost(JObject json) {
 			initialiseAuditReport(json);
 			addTable("Extended_Document", "idDocument", "DocumentDate", "DocumentIdentifier", "DocumentName", "DocumentAddress", "DocumentAmount", "DocumentOutstanding", "DocType", "DocumentTypeId", "DocumentMemo");
@@ -279,6 +290,7 @@ namespace AccountServer {
 			Method = "vatcodes";
 		}
 
+		[Auth(AccessLevel.ReadOnly)]
 		public object AuditVatCodesPost(JObject json) {
 			initialiseAuditReport(json);
 			vatCodeSetup();
@@ -292,6 +304,7 @@ namespace AccountServer {
 			Record = AgeingPost(getJson(id, "Ageing Report"));
 		}
 
+		[Auth(AccessLevel.ReadOnly)]
 		public object AgeingPost(JObject json) {
 			initialiseReport(json);
 			// Can select Sales or Purchases
@@ -335,6 +348,7 @@ AND Outstanding <> 0
 			Record = BalanceSheetPost(getJson(id, "Balance Sheet"));
 		}
 
+		[Auth(AccessLevel.ReadOnly)]
 		public object BalanceSheetPost(JObject json) {
 			_total = false;
 			initialiseReport(json);
@@ -390,6 +404,7 @@ ORDER BY " + string.Join(",", sort.Select(s => s + (_sortDescending ? " DESC" : 
 			Method = "transactions";
 		}
 
+		[Auth(AccessLevel.ReadOnly)]
 		public object DocumentsPost(JObject json) {
 			initialiseReport(json);
 			addTable("Extended_Document");
@@ -420,6 +435,7 @@ ORDER BY " + string.Join(",", sort.Select(s => s + (_sortDescending ? " DESC" : 
 			Record = JournalsPost(getJson(id, "Journals Report"));
 		}
 
+		[Auth(AccessLevel.ReadOnly)]
 		public object JournalsPost(JObject json) {
 			initialiseReport(json);
 			addTable("AccountType");
@@ -496,6 +512,7 @@ LEFT JOIN DocumentType ON DocumentType.idDocumentType = rDocType
 			Record = NamesPost(getJson(id, "Names List"));
 		}
 
+		[Auth(AccessLevel.ReadOnly)]
 		public object NamesPost(JObject json) {
 			initialiseReport(json);
 			namesSetup();
@@ -519,6 +536,7 @@ LEFT JOIN DocumentType ON DocumentType.idDocumentType = rDocType
 			Record = MembersPost(getJson(id, "Members List"));
 		}
 
+		[Auth(AccessLevel.ReadOnly)]
 		public object MembersPost(JObject json) {
 			initialiseReport(json);
 			membersSetup();
@@ -541,6 +559,7 @@ LEFT JOIN DocumentType ON DocumentType.idDocumentType = rDocType
 			Record = ProductsPost(getJson(id, "Products List"));
 		}
 
+		[Auth(AccessLevel.ReadOnly)]
 		public object ProductsPost(JObject json) {
 			initialiseReport(json);
 			addTable("Product");
@@ -563,6 +582,7 @@ LEFT JOIN VatCode ON idVatCode = VatCodeId
 			Record = ProfitAndLossPost(getJson(id, "Profit and Loss"));
 		}
 
+		[Auth(AccessLevel.ReadOnly)]
 		public object ProfitAndLossPost(JObject json) {
 			_total = false;
 			initialiseReport(json);
@@ -614,6 +634,7 @@ LEFT JOIN Document ON Document.idDocument = Journal.DocumentId
 			Record = SecuritiesPost(getJson(id, "Securities List"));
 		}
 
+		[Auth(AccessLevel.ReadOnly)]
 		public object SecuritiesPost(JObject json) {
 			initialiseReport(json);
 			addTable("Security");
@@ -629,6 +650,7 @@ LEFT JOIN Document ON Document.idDocument = Journal.DocumentId
 			Record = TransactionsPost(getJson(id, "Transactions Report"));
 		}
 
+		[Auth(AccessLevel.ReadOnly)]
 		public object TransactionsPost(JObject json) {
 			initialiseReport(json);
 			addTable("Extended_Document", "idDocument", "DocumentDate", "DocumentIdentifier", "DocumentName", "DocumentAddress", "DocumentAmount", "DocumentOutstanding", "DocType", "DocumentTypeId");
@@ -674,6 +696,7 @@ LEFT JOIN Product ON Product.idProduct = Line.ProductId
 			Record = TrialBalancePost(getJson(id, "Trial Balance"));
 		}
 
+		[Auth(AccessLevel.ReadOnly)]
 		public object TrialBalancePost(JObject json) {
 			_total = false;
 			initialiseReport(json);
@@ -716,6 +739,7 @@ ORDER BY " + string.Join(",", sort.Select(s => s + (_sortDescending ? " DESC" : 
 			Record = VatCodesPost(getJson(id, "VAT Codes List"));
 		}
 
+		[Auth(AccessLevel.ReadOnly)]
 		public object VatCodesPost(JObject json) {
 			initialiseReport(json);
 			vatCodeSetup();
@@ -735,6 +759,7 @@ ORDER BY " + string.Join(",", sort.Select(s => s + (_sortDescending ? " DESC" : 
 			Record = VatDetailPost(getJson(id, "VAT Detail Report"));
 		}
 
+		[Auth(AccessLevel.ReadOnly)]
 		public object VatDetailPost(JObject json) {
 			initialiseReport(json);
 			_total = true;
@@ -875,13 +900,22 @@ LEFT JOIN (SELECT idDocument AS idVatPaid, DocumentDate AS VatPaidDate FROM Docu
 		/// <param name="type">Report type</param>
 		/// <param name="defaultFields">Fields that appear by default, if user has not changed settings</param>
 		object auditReportData(JObject json, string type, params string[] defaultFields) {
-			defaultFields = (_changeTypeNotRequired ? new string[] { "DateChanged" } : new string[] { "DateChanged", "ChangeType" }).Concat(defaultFields).ToArray();
-			setDefaultFields(json, defaultFields);
+			List<string> fields = new List<string>();
+			fields.Add("DateChanged");
+			if (!_changeTypeNotRequired)
+				fields.Add("ChangeType");
+			fields.AddRange(defaultFields);
+			if (SecurityOn)
+				fields.Add("Login");
+			setDefaultFields(json, fields.ToArray());
 			setFilters(json);
 			string where = _dates.Active ? " AND " + _dates.Where(Database) : "";
 			if (json.AsInt("recordId") > 0)
 				where += " AND RecordId = " + json.AsInt("recordId");
-			JObjectEnumerable report = Database.Query("SELECT ChangeType, DateChanged, Record FROM AuditTrail WHERE TableName = "
+			JObjectEnumerable report = Database.Query(@"SELECT ChangeType, DateChanged, Login, Record
+FROM AuditTrail 
+LEFT JOIN User ON idUser = UserId
+WHERE TableName = "
 				+ Database.Quote(type)
 				+ where
 				+ " ORDER BY DateChanged, idAuditTrail");
@@ -983,10 +1017,13 @@ LEFT JOIN (SELECT idDocument AS idVatPaid, DocumentDate AS VatPaidDate FROM Docu
 				fieldFor("ChangeType")["type"] = "select";
 				fieldFor("ChangeType")["selectOptions"] = new JArray(SelectAuditTypes());
 			}
+			_fields.Add(new ReportField("User.Login", "string", "User"));
 			fieldFor("DateChanged")["type"] = "dateTime";
 			fieldFor("idAuditTrail").Hide();
 			_dates = new DateFilter(Settings, "DateChanged", DateRange.ThisMonth);
 			_filters.Add(_dates);
+			if(SecurityOn)
+				_filters.Add(new SelectFilter("User", "Login", Database.Query("SELECT Login as value FROM User ORDER BY Login")));
 		}
 
 		/// <summary>
@@ -1631,6 +1668,7 @@ JOIN Security ON idSecurity = SecurityId")) {
 				"settings", json,
 				"filters", new JArray(_filters),
 				"sortOrders", _sortOrders,
+				"readonly", ReadOnly,
 				"report", removeRepeatsAndTotal(report, tables)
 				);
 		}

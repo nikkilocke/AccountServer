@@ -37,8 +37,8 @@
     <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CodeFirstWebFramework, Version=1.0.6.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\CodeFirstWebFramework.1.0.6\lib\net45\CodeFirstWebFramework.dll</HintPath>
+    <Reference Include="CodeFirstWebFramework, Version=1.0.7.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\CodeFirstWebFramework.1.0.7\lib\net45\CodeFirstWebFramework.dll</HintPath>
     </Reference>
     <Reference Include="Markdig, Version=0.12.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\Markdig.0.12.1\lib\net40\Markdig.dll</HintPath>
@@ -114,6 +114,9 @@
     <None Include="AccountServer\help\reports.md" />
     <None Include="AccountServer\help\suppliers.md" />
     <None Include="contentFiles\CodeFirstWebFramework\admin\batch.tmpl" />
+    <None Include="contentFiles\CodeFirstWebFramework\admin\default.tmpl" />
+    <None Include="contentFiles\CodeFirstWebFramework\admin\edituser.tmpl" />
+    <None Include="contentFiles\CodeFirstWebFramework\admin\login.tmpl" />
     <None Include="contentFiles\CodeFirstWebFramework\admin\restore.tmpl" />
     <None Include="contentFiles\CodeFirstWebFramework\datatable.tmpl" />
     <None Include="contentFiles\CodeFirstWebFramework\default.tmpl" />
@@ -157,6 +160,16 @@
     <Content Include="contentFiles\CodeFirstWebFramework\images\untick.png" />
     <Content Include="contentFiles\CodeFirstWebFramework\images\z.png" />
     <Content Include="contentFiles\CodeFirstWebFramework\jsdoc.js" />
+    <Content Include="contentFiles\CodeFirstWebFramework\libs\bowser.min.js" />
+    <Content Include="contentFiles\CodeFirstWebFramework\libs\jquery-ui.min.css" />
+    <Content Include="contentFiles\CodeFirstWebFramework\libs\jquery-ui.min.js" />
+    <Content Include="contentFiles\CodeFirstWebFramework\libs\jquery-ui.structure.css" />
+    <Content Include="contentFiles\CodeFirstWebFramework\libs\jquery.dataTables.min.css" />
+    <Content Include="contentFiles\CodeFirstWebFramework\libs\jquery.dataTables.min.js" />
+    <Content Include="contentFiles\CodeFirstWebFramework\libs\jquery.min.js" />
+    <Content Include="contentFiles\CodeFirstWebFramework\libs\jquery.multiselect.css" />
+    <Content Include="contentFiles\CodeFirstWebFramework\libs\jquery.multiselect.js" />
+    <Content Include="contentFiles\CodeFirstWebFramework\libs\underscore-min.js" />
     <Content Include="contentFiles\CodeFirstWebFramework\skin\default.css" />
     <Content Include="contentFiles\CodeFirstWebFramework\skin\default.js" />
     <Content Include="contentFiles\CodeFirstWebFramework\skin\styled.css" />

@@ -8,6 +8,7 @@
 				table: 'Account',
 				dialog: record.idAccount > 0,
 				// canDelete: record.Transactions == 0,
+				readonly: '!{{ReadOnly}}',
 				validate: function() {
 					if(!form.data.AccountName)
 						return "The account must have a name";
@@ -95,6 +96,7 @@
 						}
 					}
 				});
+				//{{#if ReadWrite}}
 				addButton('Import statement', 'statementimport.html?id=' + record.idAccount);
 				if (record.AccountTypeId == AcctType.Bank) {
 					addButton('New cheque', 'document.html?id=0&type=' + DocType.Cheque + '&acct=' + record.idAccount);
@@ -105,6 +107,7 @@
 				}
 				addButton('New transfer', 'transfer.html?id=0&acct=' + record.idAccount);
 				addButton('Reconcile', 'reconcile.html?id=' + record.idAccount);
+				//{{/if}}
 				actionButton('Audit').click(function () {
 					goto('/reports/audithistory.html?id=' + record.idAccount + '&table=Accounts');
 				});

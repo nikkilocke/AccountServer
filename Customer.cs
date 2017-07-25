@@ -18,6 +18,9 @@ namespace AccountServer {
 
 		public Customer()
 			: base("C", Acct.SalesLedger, DocType.Invoice, DocType.CreditMemo, DocType.Payment) {
+		}
+
+		protected override void Init() {
 			insertMenuOption(new MenuOption("Products", "/customer/products.html"));
 		}
 

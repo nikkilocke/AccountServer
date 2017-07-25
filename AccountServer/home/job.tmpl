@@ -6,6 +6,7 @@ $(function() {
 		table: 'Schedule',
 		data: record,
 		canDelete: record.idSchedule > 0,
+		readonly: '!{{ReadOnly}}',
 		columns: [
 			{
 				data: 'ActionDate',

@@ -7,6 +7,7 @@
 				table: 'Account',
 				dialog: record.header.idAccount > 0,
 				canDelete: !record.Transactions,
+				readonly: '!{{ReadOnly}}',
 				validate: function() {
 					if(!form.data.AccountName)
 						return "The account must have a name";
@@ -63,7 +64,9 @@
 						}
 					]
 				});
+				//{{#if ReadWrite}}
 				addButton('New journal', 'document.html?id=0&acct=' + record.idAccount);
+				//{{/if}}
 				actionButton('Audit').click(function () {
 					goto('/reports/audithistory.html?id=' + record.header.idAccount + '&table=Accounts');
 				});

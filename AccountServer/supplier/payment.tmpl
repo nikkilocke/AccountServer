@@ -67,6 +67,7 @@ $(function() {
 		header: {
 			table: 'Document',
 			canDelete: record.header.DocumentAmount == 0,
+			readonly: '!{{ReadOnly}}',
 			columns: headerColumns
 		},
 		detail: {

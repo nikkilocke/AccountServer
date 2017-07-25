@@ -264,11 +264,12 @@ namespace AccountServer {
 				return;
 			Utils.Check(id != null, "Attempt to audit null record id");
 			string date = Utils.Now.ToString("yyyy-MM-dd HH:mm:ss");
-			Execute("INSERT INTO AuditTrail (TableName, ChangeType, DateChanged, RecordId, Record) VALUES("
-				+ Quote(table) + ", " + (int)type + ", " + Quote(date) + ", " + id + ", " + Quote(transaction) + ")");
+			int? userId = Module != null && Module.Session != null && Module.Session.User != null ? Module.Session.User.idUser : null;
+			Execute("INSERT INTO AuditTrail (TableName, UserId, ChangeType, DateChanged, RecordId, Record) VALUES("
+				+ Quote(table) + ", " + Quote(userId) + ", " + (int)type + ", " + Quote(date) + ", " + id + ", " + Quote(transaction) + ")");
 			if(!string.IsNullOrEmpty(previous))
-				Execute("INSERT INTO AuditTrail (TableName, ChangeType, DateChanged, RecordId, Record) VALUES("
-				+ Quote(table) + ", " + (int)AuditType.Previous + ", " + Quote(date) + ", " + id + ", " + Quote(previous) + ")");
+				Execute("INSERT INTO AuditTrail (TableName, UserId, ChangeType, DateChanged, RecordId, Record) VALUES("
+				+ Quote(table) + ", " + Quote(userId) + ", " + (int)AuditType.Previous + ", " + Quote(date) + ", " + id + ", " + Quote(previous) + ")");
 		}
 
 		/// <summary>
@@ -287,26 +288,6 @@ namespace AccountServer {
 			} else {
 				Audit(AuditType.Update, table, id, newTransaction.ToString(), oldTransaction.ToString());
 			}
-		}
-
-		/// <summary>
-		/// Fill in the "next" and "previous" variables in record with the next and previous
-		/// document ids.
-		/// </summary>
-		/// <param name="sql">Sql to add to document select to limit the documents returned,
-		/// e.g. to the next cheque from this bank account.</param>
-		public void NextPreviousDocument(JObject record, string sql) {
-			JObject header = (JObject)record["header"];
-			int id = header.AsInt("idDocument");
-			string d = Quote(header.AsDate("DocumentDate"));
-			JObject next = id == 0 ? null : QueryOne("SELECT idDocument FROM Document " + sql
-				+ " AND (DocumentDate > " + d + " OR (DocumentDate = " + d + " AND idDocument > " + id + "))"
-				+ " ORDER BY DocumentDate, idDocument");
-			record["next"] = next == null ? 0 : next.AsInt("idDocument");
-			JObject previous = QueryOne("SELECT idDocument FROM Document " + sql
-				+ (id == 0 ? "" : " AND (DocumentDate < " + d + " OR (DocumentDate = " + d + " AND idDocument < " + id + "))")
-				+ " ORDER BY DocumentDate DESC, idDocument DESC");
-			record["previous"] = previous == null ? 0 : previous.AsInt("idDocument");
 		}
 
 		/// <summary>

@@ -29,6 +29,8 @@ namespace AccountServer {
 		/// </summary>
 		public Acct LedgerAccount;
 
+		string _module;
+
 		public CustomerSupplier(string nameType, Acct ledgerAccount, DocType invoiceDoc, DocType creditDoc, DocType paymentDoc) {
 			NameType = nameType;
 			Name = NameType.NameType();
@@ -36,15 +38,21 @@ namespace AccountServer {
 			InvoiceDoc = invoiceDoc;
 			CreditDoc = creditDoc;
 			PaymentDoc = paymentDoc;
-			string module = nameType == "C" ? "/customer/" : "/supplier/";
-			Menu = new MenuOption[] {
-				new MenuOption("Listing", module + "default.html"),
-				new MenuOption("VAT codes", module + "vatcodes.html"),
-				new MenuOption("New " + Name, module + "detail.html?id=0"),
-				new MenuOption("New " + InvoiceDoc.UnCamel(), module + "document.html?id=0&type=" + (int)InvoiceDoc),
-				new MenuOption("New " + CreditDoc.UnCamel(), module + "document.html?id=0&type=" + (int)CreditDoc),
-				new MenuOption("New " + PaymentDoc.UnCamel(), module + "payment.html?id=0")
-			};
+			_module = nameType == "C" ? "/customer/" : "/supplier/";
+		}
+
+		protected override void Init() {
+			insertMenuOptions(
+				new MenuOption("Listing", _module + "default.html"),
+				new MenuOption("VAT codes", _module + "vatcodes.html")
+				);
+			if (!SecurityOn || UserAccessLevel >= AccessLevel.ReadWrite)
+				insertMenuOptions(
+					new MenuOption("New " + Name, _module + "detail.html?id=0"),
+					new MenuOption("New " + InvoiceDoc.UnCamel(), _module + "document.html?id=0&type=" + (int)InvoiceDoc),
+					new MenuOption("New " + CreditDoc.UnCamel(), _module + "document.html?id=0&type=" + (int)CreditDoc),
+					new MenuOption("New " + PaymentDoc.UnCamel(), _module + "payment.html?id=0")
+				);
 		}
 
 		/// <summary>
@@ -114,7 +122,7 @@ WHERE idNameAddress = " + id
 				checkNameType(header.DocumentNameAddressId, NameType);
 			}
 			JObject record = new JObject().AddRange("header", header);
-			Database.NextPreviousDocument(record, "WHERE DocumentTypeId = " + (int)type);
+			nextPreviousDocument(record, "WHERE DocumentTypeId = " + (int)type);
 			record.AddRange("VatCodes", SelectVatCodes(),
 				"Names", SelectNames(NameType));
 			return record;
@@ -220,7 +228,7 @@ WHERE idNameAddress = " + id
 		public void Payment(int id) {
 			PaymentDocument document = getPayment(id);
 			JObject record = document.ToJObject();
-			Database.NextPreviousDocument(record, "WHERE DocumentTypeId = " + (int)PaymentDoc);
+			nextPreviousDocument(record, "WHERE DocumentTypeId = " + (int)PaymentDoc);
 			record.Add("BankAccounts", SelectBankAccounts());
 			record.Add("Names", SelectNames(NameType));
 			Record = record;

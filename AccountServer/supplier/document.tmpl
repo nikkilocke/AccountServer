@@ -54,6 +54,7 @@ $(function() {
 		header: {
 			table: 'Document',
 			canDelete: !readonly && record.header.idDocument,
+			readonly: '!{{ReadOnly}}',
 			columns: [
 				{
 					data: 'DocumentName',

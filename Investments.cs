@@ -9,12 +9,15 @@ using CodeFirstWebFramework;
 
 namespace AccountServer {
 	public class Investments : BankingAccounting {
-		public Investments() {
-			Menu = new MenuOption[] {
+		protected override void Init() {
+			insertMenuOptions(
 				new MenuOption("Listing", "/investments/default.html"),
-				new MenuOption("Securities", "/investments/securities.html"),
-				new MenuOption("New Account", "/investments/detail.html?id=0")
-			};
+				new MenuOption("Securities", "/investments/securities.html")
+				);
+			if (!SecurityOn || UserAccessLevel >= AccessLevel.ReadWrite)
+				insertMenuOptions(
+					new MenuOption("New Account", "/investments/detail.html?id=0")
+				);
 		}
 
 		/// <summary>
@@ -127,7 +130,7 @@ AND DocumentId = " + id).ToList();
 					header.Quantity = -header.Quantity;
 			}
 			JObject record = new JObject().AddRange("header", header);
-			Database.NextPreviousDocument(record, "JOIN Journal ON DocumentId = idDocument WHERE DocumentTypeId " 
+			nextPreviousDocument(record, "JOIN Journal ON DocumentId = idDocument WHERE DocumentTypeId " 
 				+ Database.In(DocType.Buy, DocType.Sell)
 				+ (header.DocumentAccountId > 0 ? " AND AccountId = " + header.DocumentAccountId : ""));
 			record.AddRange("Accounts", SelectExpenseAccounts(),

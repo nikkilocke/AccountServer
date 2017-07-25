@@ -10,19 +10,29 @@ using Newtonsoft.Json.Linq;
 using CodeFirstWebFramework;
 
 namespace AccountServer {
+	[Auth(AccessLevel.Admin)]
 	public class AdminModule : AppModule {
 
-		public AdminModule() {
-			Menu = new MenuOption[] {
-				new MenuOption("Settings", "/admin/default.html"),
+		protected override void Init() {
+			insertMenuOptions(
+				new MenuOption("Settings", "/admin/editsettings.html"),
+				new MenuOption("Users", "/admin/users"),
 				new MenuOption("Integrity Check", "/admin/integritycheck.html"),
 				new MenuOption("Import", "/admin/import.html"),
 				new MenuOption("Backup", "/admin/backup.html"),
 				new MenuOption("Restore", "/admin/restore.html")
-			};
+			);
+			if (SecurityOn)
+				insertMenuOption(new MenuOption(Session.User == null ? "Login" : "Logout", "/admin/login"));
 		}
 
+		[Auth(AccessLevel.Any)]
 		public override void Default() {
+			if (UserAccessLevel < AccessLevel.Admin)
+				Redirect("/admin/login");
+		}
+
+		public void EditSettings() {
 			JObject header = Settings.ToJObject();
 			header.Add("YearStart", Settings.YearStart(Utils.Today));
 			header.Add("YearEnd", Settings.YearEnd(Utils.Today));
@@ -35,14 +45,11 @@ namespace AccountServer {
 					);
 		}
 
-		public AjaxReturn DefaultPost(Settings json) {
-			Database.BeginTransaction();
-			Database.Update(json);
-			ReloadSettings();
-			Database.Commit();
-			return new AjaxReturn() { message = "Settings saved", redirect = "/Admin" };
+		public AjaxReturn EditSettingsPost(JObject json) {
+			return new AdminHelper(this).EditSettingsPost(json);
 		}
 
+		[Auth(AccessLevel.Any)]
 		public AjaxReturn BatchStatus(int id) {
 			return new AdminHelper(this).BatchStatus(id);
 		}
@@ -53,6 +60,37 @@ namespace AccountServer {
 
 		public void Restore() {
 			new AdminHelper(this).Restore();
+		}
+
+		public void Users() {
+			insertMenuOption(new MenuOption("New User", "/admin/EditUser?id=0"));
+			new AdminHelper(this).Users();
+		}
+
+		public JObjectEnumerable UsersListing() {
+			return new AdminHelper(this).UsersListing();
+		}
+
+		public void EditUser(int id) {
+			new AdminHelper(this).EditUser(id);
+		}
+
+		public AjaxReturn EditUserPost(JObject json) {
+			return new AdminHelper(this).EditUserPost(json);
+		}
+
+		public AjaxReturn DeleteUserPost(int id) {
+			return new AdminHelper(this).DeleteUserPost(id);
+		}
+
+		[Auth(AccessLevel.Any)]
+		public void Login() {
+			new AdminHelper(this).Login();
+		}
+
+		[Auth(AccessLevel.Any)]
+		public void Logout() {
+			new AdminHelper(this).Login();
 		}
 
 		public void Import() {
@@ -126,9 +164,6 @@ namespace AccountServer {
 					_recordReset = true;
 				}
 			}
-		}
-
-		public void ImportHelp() {
 		}
 
 		public void IntegrityCheck() {

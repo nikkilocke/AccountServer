@@ -19,6 +19,7 @@ $(function() {
 		header: {
 			table: 'Document',
 			canDelete: record.header.Allocated == 0,
+			readonly: '!{{ReadOnly}}',
 			saveAndNew: true,
 			columns: [
 				{

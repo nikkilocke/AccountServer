@@ -6,6 +6,7 @@ $(function() {
 		table: 'NameAddress',
 		data: record,
 		dialog: record.idNameAddress > 0,
+		readonly: '!{{ReadOnly}}',
 		columns: [
 			{
 				data: 'Name',
