@@ -63,7 +63,7 @@ namespace AccountServer {
 		}
 
 		public void Users() {
-			insertMenuOption(new MenuOption("New User", "/admin/EditUser?id=0"));
+			insertMenuOption(new MenuOption("New User", "/admin/EditUser?id=0&from=http%3A%2F%2Fadmin%2Fusers"));
 			new AdminHelper(this).Users();
 		}
 

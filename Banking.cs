@@ -215,7 +215,7 @@ namespace AccountServer {
 		/// Bank reconciliation
 		/// </summary>
 		/// <param name="id"></param>
-		[Auth(AccessLevel.ReadWrite)]
+		[Auth(AccessLevel.ReadWrite, Hide = true)]
 		public void Reconcile(int id) {
 			JObject header = Database.QueryOne("*", "WHERE idAccount = " + id, "Account");
 			JObject openingBalance = Database.QueryOne("SELECT SUM(Amount) AS OpeningBalance FROM Journal WHERE AccountId = " + id 
@@ -351,7 +351,7 @@ ORDER BY DocumentDate, idDocument"));
 		/// <summary>
 		/// Statement import form
 		/// </summary>
-		[Auth(AccessLevel.ReadWrite)]
+		[Auth(AccessLevel.ReadWrite, Hide = true)]
 		public void StatementImport(int id) {
 			Account account = Database.Get<Account>(id);
 			checkAcctType(account.AccountTypeId, AcctType.Bank, AcctType.CreditCard);
@@ -539,7 +539,7 @@ ORDER BY DocumentDate, idDocument"));
 		/// <summary>
 		/// Return saved session data for statement matching
 		/// </summary>
-		[Auth(AccessLevel.ReadWrite)]
+		[Auth(AccessLevel.ReadWrite, Hide = true)]
 		public void StatementMatching() {
 			Record = SessionData.StatementImport;
 			SessionData.Remove("StatementMatch");
@@ -572,7 +572,7 @@ ORDER BY DocumentDate, idDocument"));
 		/// <summary>
 		/// Update a matched transaction
 		/// </summary>
-		[Auth(AccessLevel.ReadWrite)]
+		[Auth(AccessLevel.ReadWrite, Hide = true)]
 		public void StatementMatch() {
 			Utils.Check(SessionData.StatementMatch != null, "Invalid call to StatementMatch");
 			MatchInfo match = SessionData.StatementMatch.ToObject<MatchInfo>();

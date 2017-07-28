@@ -11,7 +11,7 @@ namespace AccountServer {
 	/// <summary>
 	/// Common functionality from Banking &amp; Accounting
 	/// </summary>
-	public class BankingAccounting : AppModule {
+	public abstract class BankingAccounting : AppModule {
 
 		public BankingAccounting() {
 		}

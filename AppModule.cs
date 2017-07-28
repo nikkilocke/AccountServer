@@ -21,7 +21,7 @@ namespace AccountServer {
 	/// Base class for all app modules
 	/// </summary>
 	[Auth(AccessLevel.ReadOnly)]
-	public class AppModule : CodeFirstWebFramework.AppModule {
+	public abstract class AppModule : CodeFirstWebFramework.AppModule {
 
 		public new Database Database {
 			get {

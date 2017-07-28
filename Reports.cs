@@ -121,7 +121,7 @@ namespace AccountServer {
 			Record = AccountsPost(getJson(id, "Accounts List"));
 		}
 
-		[Auth(AccessLevel.ReadOnly)]
+		[Auth(AccessLevel.ReadOnly, Hide = true)]
 		public object AccountsPost(JObject json) {
 			initialiseReport(json);
 			accountSetup();
@@ -144,7 +144,7 @@ namespace AccountServer {
 			Method = "accounts";
 		}
 
-		[Auth(AccessLevel.ReadOnly)]
+		[Auth(AccessLevel.ReadOnly, Hide = true)]
 		public object AuditAccountsPost(JObject json) {
 			initialiseAuditReport(json);
 			accountSetup();
@@ -164,7 +164,7 @@ namespace AccountServer {
 			Record = AuditHistoryPost(json);
 		}
 
-		[Auth(AccessLevel.ReadOnly)]
+		[Auth(AccessLevel.ReadOnly, Hide = true)]
 		public object AuditHistoryPost(JObject json) {
 			OriginalMethod = json.AsString("ReportType");
 			Method = OriginalMethod.Substring(5).ToLower();
@@ -178,7 +178,7 @@ namespace AccountServer {
 			Method = "names";
 		}
 
-		[Auth(AccessLevel.ReadOnly)]
+		[Auth(AccessLevel.ReadOnly, Hide = true)]
 		public object AuditNamesPost(JObject json) {
 			initialiseAuditReport(json);
 			namesSetup();
@@ -190,7 +190,7 @@ namespace AccountServer {
 			Method = "members";
 		}
 
-		[Auth(AccessLevel.ReadOnly)]
+		[Auth(AccessLevel.ReadOnly, Hide = true)]
 		public object AuditMembersPost(JObject json) {
 			initialiseAuditReport(json);
 			membersSetup();
@@ -202,7 +202,7 @@ namespace AccountServer {
 			Method = "products";
 		}
 
-		[Auth(AccessLevel.ReadOnly)]
+		[Auth(AccessLevel.ReadOnly, Hide = true)]
 		public object AuditProductsPost(JObject json) {
 			initialiseAuditReport(json);
 			addTable("Product");
@@ -219,7 +219,7 @@ namespace AccountServer {
 			Method = "securities";
 		}
 
-		[Auth(AccessLevel.ReadOnly)]
+		[Auth(AccessLevel.ReadOnly, Hide = true)]
 		public object AuditSecuritiesPost(JObject json) {
 			initialiseAuditReport(json);
 			addTable("Security");
@@ -233,7 +233,7 @@ namespace AccountServer {
 			Method = "transactions";
 		}
 
-		[Auth(AccessLevel.ReadOnly)]
+		[Auth(AccessLevel.ReadOnly, Hide = true)]
 		public object AuditReconciliationPost(JObject json) {
 			// Not looking at changes - reconciliations are stored as created
 			_changeTypeNotRequired = true;
@@ -257,7 +257,7 @@ namespace AccountServer {
 			Method = "transactions";
 		}
 
-		[Auth(AccessLevel.ReadOnly)]
+		[Auth(AccessLevel.ReadOnly, Hide = true)]
 		public object AuditTransactionsPost(JObject json) {
 			initialiseAuditReport(json);
 			addTable("Extended_Document", "idDocument", "DocumentDate", "DocumentIdentifier", "DocumentName", "DocumentAddress", "DocumentAmount", "DocumentOutstanding", "DocType", "DocumentTypeId", "DocumentMemo");
@@ -290,7 +290,7 @@ namespace AccountServer {
 			Method = "vatcodes";
 		}
 
-		[Auth(AccessLevel.ReadOnly)]
+		[Auth(AccessLevel.ReadOnly, Hide = true)]
 		public object AuditVatCodesPost(JObject json) {
 			initialiseAuditReport(json);
 			vatCodeSetup();
@@ -304,7 +304,7 @@ namespace AccountServer {
 			Record = AgeingPost(getJson(id, "Ageing Report"));
 		}
 
-		[Auth(AccessLevel.ReadOnly)]
+		[Auth(AccessLevel.ReadOnly, Hide = true)]
 		public object AgeingPost(JObject json) {
 			initialiseReport(json);
 			// Can select Sales or Purchases
@@ -348,7 +348,7 @@ AND Outstanding <> 0
 			Record = BalanceSheetPost(getJson(id, "Balance Sheet"));
 		}
 
-		[Auth(AccessLevel.ReadOnly)]
+		[Auth(AccessLevel.ReadOnly, Hide = true)]
 		public object BalanceSheetPost(JObject json) {
 			_total = false;
 			initialiseReport(json);
@@ -404,7 +404,7 @@ ORDER BY " + string.Join(",", sort.Select(s => s + (_sortDescending ? " DESC" : 
 			Method = "transactions";
 		}
 
-		[Auth(AccessLevel.ReadOnly)]
+		[Auth(AccessLevel.ReadOnly, Hide = true)]
 		public object DocumentsPost(JObject json) {
 			initialiseReport(json);
 			addTable("Extended_Document");
@@ -435,7 +435,7 @@ ORDER BY " + string.Join(",", sort.Select(s => s + (_sortDescending ? " DESC" : 
 			Record = JournalsPost(getJson(id, "Journals Report"));
 		}
 
-		[Auth(AccessLevel.ReadOnly)]
+		[Auth(AccessLevel.ReadOnly, Hide = true)]
 		public object JournalsPost(JObject json) {
 			initialiseReport(json);
 			addTable("AccountType");
@@ -512,7 +512,7 @@ LEFT JOIN DocumentType ON DocumentType.idDocumentType = rDocType
 			Record = NamesPost(getJson(id, "Names List"));
 		}
 
-		[Auth(AccessLevel.ReadOnly)]
+		[Auth(AccessLevel.ReadOnly, Hide = true)]
 		public object NamesPost(JObject json) {
 			initialiseReport(json);
 			namesSetup();
@@ -536,7 +536,7 @@ LEFT JOIN DocumentType ON DocumentType.idDocumentType = rDocType
 			Record = MembersPost(getJson(id, "Members List"));
 		}
 
-		[Auth(AccessLevel.ReadOnly)]
+		[Auth(AccessLevel.ReadOnly, Hide = true)]
 		public object MembersPost(JObject json) {
 			initialiseReport(json);
 			membersSetup();
@@ -559,7 +559,7 @@ LEFT JOIN DocumentType ON DocumentType.idDocumentType = rDocType
 			Record = ProductsPost(getJson(id, "Products List"));
 		}
 
-		[Auth(AccessLevel.ReadOnly)]
+		[Auth(AccessLevel.ReadOnly, Hide = true)]
 		public object ProductsPost(JObject json) {
 			initialiseReport(json);
 			addTable("Product");
@@ -582,7 +582,7 @@ LEFT JOIN VatCode ON idVatCode = VatCodeId
 			Record = ProfitAndLossPost(getJson(id, "Profit and Loss"));
 		}
 
-		[Auth(AccessLevel.ReadOnly)]
+		[Auth(AccessLevel.ReadOnly, Hide = true)]
 		public object ProfitAndLossPost(JObject json) {
 			_total = false;
 			initialiseReport(json);
@@ -634,7 +634,7 @@ LEFT JOIN Document ON Document.idDocument = Journal.DocumentId
 			Record = SecuritiesPost(getJson(id, "Securities List"));
 		}
 
-		[Auth(AccessLevel.ReadOnly)]
+		[Auth(AccessLevel.ReadOnly, Hide = true)]
 		public object SecuritiesPost(JObject json) {
 			initialiseReport(json);
 			addTable("Security");
@@ -650,7 +650,7 @@ LEFT JOIN Document ON Document.idDocument = Journal.DocumentId
 			Record = TransactionsPost(getJson(id, "Transactions Report"));
 		}
 
-		[Auth(AccessLevel.ReadOnly)]
+		[Auth(AccessLevel.ReadOnly, Hide = true)]
 		public object TransactionsPost(JObject json) {
 			initialiseReport(json);
 			addTable("Extended_Document", "idDocument", "DocumentDate", "DocumentIdentifier", "DocumentName", "DocumentAddress", "DocumentAmount", "DocumentOutstanding", "DocType", "DocumentTypeId");
@@ -696,7 +696,7 @@ LEFT JOIN Product ON Product.idProduct = Line.ProductId
 			Record = TrialBalancePost(getJson(id, "Trial Balance"));
 		}
 
-		[Auth(AccessLevel.ReadOnly)]
+		[Auth(AccessLevel.ReadOnly, Hide = true)]
 		public object TrialBalancePost(JObject json) {
 			_total = false;
 			initialiseReport(json);
@@ -739,7 +739,7 @@ ORDER BY " + string.Join(",", sort.Select(s => s + (_sortDescending ? " DESC" : 
 			Record = VatCodesPost(getJson(id, "VAT Codes List"));
 		}
 
-		[Auth(AccessLevel.ReadOnly)]
+		[Auth(AccessLevel.ReadOnly, Hide = true)]
 		public object VatCodesPost(JObject json) {
 			initialiseReport(json);
 			vatCodeSetup();
@@ -759,7 +759,7 @@ ORDER BY " + string.Join(",", sort.Select(s => s + (_sortDescending ? " DESC" : 
 			Record = VatDetailPost(getJson(id, "VAT Detail Report"));
 		}
 
-		[Auth(AccessLevel.ReadOnly)]
+		[Auth(AccessLevel.ReadOnly, Hide = true)]
 		public object VatDetailPost(JObject json) {
 			initialiseReport(json);
 			_total = true;

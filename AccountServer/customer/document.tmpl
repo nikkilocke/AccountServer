@@ -246,13 +246,15 @@ $(function() {
 			}
 			window.open('/customer/download.html?id=' + record.header.idDocument, 'print');
 		});
-		actionButton('Email').click(function() {
-			if(unsavedInput) {
-				message('You must save the changes first');
-				return;
-			}
-			postJson('/customer/email.html?id=' + record.header.idDocument);
-		});
+		if(!form.header.readonly) {
+			actionButton('Email').click(function() {
+				if(unsavedInput) {
+					message('You must save the changes first');
+					return;
+				}
+				postJson('/customer/email.html?id=' + record.header.idDocument);
+			});
+		}
 	}
 });
 	</script>

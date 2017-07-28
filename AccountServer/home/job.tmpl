@@ -75,7 +75,7 @@ $(function() {
 			}
 		});
 	}
-	if (record.idSchedule) {
+	if (record.idSchedule && !form.options.readonly) {
 		var button = actionButton('Action').click(function () {
 			if (unsavedInput) {
 				message('You must save your changes first');

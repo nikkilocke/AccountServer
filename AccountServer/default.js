@@ -1962,7 +1962,7 @@ function makeForm(selector, options) {
 				}
 			}
 		}
-		if(deleteUrl) {
+		if(deleteUrl && !options.readonly) {
 			deleteButton = actionButton('Delete')
 				.click(function (e) {
 					if(confirm("Are you sure you want to delete this record"))
@@ -2099,7 +2099,7 @@ function makeListForm(selector, options) {
 	if(selectUrl === undefined && submitUrl === undefined) {
 		submitUrl = defaultUrl('Post');
 	}
-	if(typeof(submitUrl) == 'string') {
+	if(selectUrl === undefined && typeof(submitUrl) == 'string') {
 		var s = submitUrl;
 		//noinspection JSUnusedAssignment,JSUnusedLocalSymbols
 		submitUrl = function(button) {
@@ -2296,10 +2296,32 @@ function makeListForm(selector, options) {
 		if(options.readonly)
 			table.find('input,select,textarea').attr('disabled', true);
 	}
+	var drawn = false;
 	function dataReady(d) {
 		table.data = d;
 		body.find('tr').remove();
 		draw();
+		if(!drawn && submitUrl) {
+			drawn = true;
+			if(!options.readonly) {
+				actionButton(options.submitText || 'Save')
+					.click(function (e) {
+						submitUrl(this);
+						e.preventDefault();
+					});
+				if (options.saveAndClose !== false)
+					actionButton((options.submitText || 'Save') + ' and Close')
+						.addClass('goback')
+						.click(function (e) {
+							submitUrl(this);
+							e.preventDefault();
+						});
+				actionButton('Reset')
+					.click(function () {
+						window.location.reload();
+					});
+			}
+		}
 	}
 
 	/**
