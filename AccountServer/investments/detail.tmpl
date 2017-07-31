@@ -1,7 +1,7 @@
 <head>{{#with Record}}
 	<script>
 		$(function() {
-			var record = loadRecord();
+			var record = '!{{Record}}';
 			var today = new Date().toYMD() + "T00:00:00Z";
 			var form = makeForm('#form', {
 				data: record,

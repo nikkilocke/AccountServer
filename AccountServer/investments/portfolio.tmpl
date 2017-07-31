@@ -1,7 +1,7 @@
 <head>{{#with Record}}
 	<script>
 		$(function() {
-			var record = loadRecord();
+			var record = '!{{Record}}';
 			var table = makeDataTable('#docs', {
 				table: 'Document',
 					select: function (row) {

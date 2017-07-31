@@ -4,9 +4,8 @@
  * @param {function} [update] Function to call after loading report data
  * @returns {*}
  */
-function initialiseReport(select, update) {
+function initialiseReport(record, select, update) {
 	var report;
-	var record = loadRecord();
 	var fields;
 	var filters = record.filters;
 	var originalName = record.settings.ReportName;

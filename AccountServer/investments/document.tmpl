@@ -15,7 +15,7 @@
 {{#with Record}}
 	<script>
 $(function() {
-	var record = loadRecord();
+	var record = '!{{Record}}';
 	var names = record.Names;
 	var securities = record.Securities;
 	var accounts = record.Accounts;

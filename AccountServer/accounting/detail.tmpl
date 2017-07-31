@@ -1,7 +1,7 @@
 <head>{{#with Record}}
 	<script>
 		$(function() {
-			var record = loadRecord();
+			var record = '!{{Record}}';
 			var form = makeForm('#form', {
 				data: record.header,
 				table: 'Account',

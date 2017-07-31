@@ -2,7 +2,7 @@
 	<script>
 		$(function() {
 			var formOptions = {{Form.Options}};
-			var record = loadRecord();
+			var record = '!{{Record}}';
 			var fixedAmount = matchingStatement();
 			if(fixedAmount) {
 				record.Allocated = 0;

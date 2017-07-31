@@ -13,7 +13,7 @@ if(/^DataTables_/.test(key)) {
 }
 }
 $(function() {
-	var record = loadRecord();
+	var record = '!{{Record}}';
 	var form = makeListForm('#scheduleTable', {
 		table: 'Schedule',
 		select: '/home/job.html',

@@ -15,7 +15,7 @@
 {{#with Record}}
 	<script>
 $(function() {
-	var record = loadRecord();
+	var record = '!{{Record}}';
 	var vatCodes = record.VatCodes;
 	var vatCodesHash = hashFromArray(vatCodes);
 	var names = record.Names;

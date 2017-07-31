@@ -16,7 +16,7 @@
 {{#with Record}}
 	<script>
 $(function() {
-	var record = loadRecord();
+	var record = '!{{Record}}';
 	record.header.ClearedBalance = record.header.OpeningBalance;
 	var form = makeHeaderDetailForm('#form', '#docs', {
 		data: record,

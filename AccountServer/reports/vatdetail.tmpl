@@ -19,7 +19,7 @@
 	<script src="/report.js" type="text/javascript"></script>
 <script>
 $(function() {
-	var report = initialiseReport(function(row) {
+	var report = initialiseReport('!{{Record}}', function(row) {
 		return openDocument(row.recordId);
 	});
 });

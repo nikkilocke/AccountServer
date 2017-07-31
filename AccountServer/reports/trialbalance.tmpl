@@ -24,7 +24,7 @@
 	<script src="/report.js" type="text/javascript"></script>
 <script>
 $(function() {
-	initialiseReport(function(row, record) {
+	initialiseReport('!{{Record}}', function(row, record) {
 		if(!row || !row.recordId || !row.recordId.idAccount)
 			return false;
 		postReportSettings('journals', record.settings, {
