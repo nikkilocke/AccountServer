@@ -664,13 +664,13 @@
         "Entry"
         {
         "MsmKey" = "8:_8B18B8A5C597D13FCDB0712B65FA030B"
-        "OwnerKey" = "8:_7CBDF3876A24493A91FA7A2A44D75CDA"
+        "OwnerKey" = "8:_F3B4FDB1D59B986D36104E2A4DE364FB"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_8B18B8A5C597D13FCDB0712B65FA030B"
-        "OwnerKey" = "8:_F3B4FDB1D59B986D36104E2A4DE364FB"
+        "OwnerKey" = "8:_7CBDF3876A24493A91FA7A2A44D75CDA"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -1125,6 +1125,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_E931AEE5490A4D9991F44B7B2A784523"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_EC1AFD3BA64A4740BED7675369DD646D"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -1228,55 +1234,7 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_5FF57C894648470A84448BA0923CC924"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_F3B4FDB1D59B986D36104E2A4DE364FB"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_8B18B8A5C597D13FCDB0712B65FA030B"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_CCA532A20CA8A530881325AD1633010C"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_6E626E24ABC4D9A6E50C75785CC6B16C"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_C6C3008E20214D19043BC8C5458551C2"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_0EADB62BB2E8AC47C8A058A8B5D95542"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_5CB9FD66650FBEFDE578FCBAB5DE3484"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_79D692CCB8FE5E09017EFAB053325C6A"
+        "OwnerKey" = "8:_526169EE3776DCB5A3EB94DFF6FB6E2E"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -1288,7 +1246,55 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_526169EE3776DCB5A3EB94DFF6FB6E2E"
+        "OwnerKey" = "8:_79D692CCB8FE5E09017EFAB053325C6A"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_5CB9FD66650FBEFDE578FCBAB5DE3484"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_0EADB62BB2E8AC47C8A058A8B5D95542"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_C6C3008E20214D19043BC8C5458551C2"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_6E626E24ABC4D9A6E50C75785CC6B16C"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_CCA532A20CA8A530881325AD1633010C"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_8B18B8A5C597D13FCDB0712B65FA030B"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_F3B4FDB1D59B986D36104E2A4DE364FB"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_5FF57C894648470A84448BA0923CC924"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -1627,11 +1633,6 @@
             "AssemblyAsmDisplayName" = "8:Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_0EADB62BB2E8AC47C8A058A8B5D95542"
-                    {
-                    "Name" = "8:Newtonsoft.Json.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:Newtonsoft.Json.dll"
             "TargetName" = "8:"
@@ -2558,11 +2559,6 @@
             "AssemblyAsmDisplayName" = "8:Markdig, Version=0.12.1.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_526169EE3776DCB5A3EB94DFF6FB6E2E"
-                    {
-                    "Name" = "8:Markdig.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:Markdig.dll"
             "TargetName" = "8:"
@@ -2749,11 +2745,6 @@
             "AssemblyAsmDisplayName" = "8:MySql.Data, Version=6.9.9.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_5CB9FD66650FBEFDE578FCBAB5DE3484"
-                    {
-                    "Name" = "8:MySql.Data.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:MySql.Data.dll"
             "TargetName" = "8:"
@@ -3060,11 +3051,6 @@
             "AssemblyAsmDisplayName" = "8:System.Data.Portable, Version=4.0.0.0, Culture=neutral, PublicKeyToken=59e704a76bc4613a, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_6E626E24ABC4D9A6E50C75785CC6B16C"
-                    {
-                    "Name" = "8:System.Data.Portable.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:System.Data.Portable.dll"
             "TargetName" = "8:"
@@ -3191,11 +3177,6 @@
             "AssemblyAsmDisplayName" = "8:mustache-sharp, Version=0.2.10.0, Culture=neutral, PublicKeyToken=40ca26c1e088cef4, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_79D692CCB8FE5E09017EFAB053325C6A"
-                    {
-                    "Name" = "8:mustache-sharp.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:mustache-sharp.dll"
             "TargetName" = "8:"
@@ -3482,11 +3463,6 @@
             "AssemblyAsmDisplayName" = "8:System.Net.Http, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a"
                 "ScatterAssemblies"
                 {
-                    "_8B18B8A5C597D13FCDB0712B65FA030B"
-                    {
-                    "Name" = "8:System.Net.Http.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:System.Net.Http.dll"
             "TargetName" = "8:"
@@ -4533,11 +4509,6 @@
             "AssemblyAsmDisplayName" = "8:CodeFirstWebFramework, Version=1.0.7.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_C6C3008E20214D19043BC8C5458551C2"
-                    {
-                    "Name" = "8:CodeFirstWebFramework.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:CodeFirstWebFramework.dll"
             "TargetName" = "8:"
@@ -4664,11 +4635,6 @@
             "AssemblyAsmDisplayName" = "8:System.Transactions.Portable, Version=4.0.0.0, Culture=neutral, PublicKeyToken=59e704a76bc4613a, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_CCA532A20CA8A530881325AD1633010C"
-                    {
-                    "Name" = "8:System.Transactions.Portable.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:System.Transactions.Portable.dll"
             "TargetName" = "8:"
@@ -5028,6 +4994,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_E931AEE5490A4D9991F44B7B2A784523"
+            {
+            "SourcePath" = "8:..\\AccountServer\\reports\\users.tmpl"
+            "TargetName" = "8:users.tmpl"
+            "Tag" = "8:"
+            "Folder" = "8:_00AB83D328DD417CAB761D6B540897F4"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_EC1AFD3BA64A4740BED7675369DD646D"
             {
             "SourcePath" = "8:..\\AccountServer\\banking\\default.tmpl"
@@ -5155,11 +5141,6 @@
             "AssemblyAsmDisplayName" = "8:System.Net.Http.WebRequest, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a"
                 "ScatterAssemblies"
                 {
-                    "_F3B4FDB1D59B986D36104E2A4DE364FB"
-                    {
-                    "Name" = "8:System.Net.Http.WebRequest.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:System.Net.Http.WebRequest.dll"
             "TargetName" = "8:"
@@ -5226,11 +5207,6 @@
             "AssemblyAsmDisplayName" = "8:Mono.Data.Sqlite, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_F9E79D797D1D98E9F6DDD5090F4E81A7"
-                    {
-                    "Name" = "8:Mono.Data.Sqlite.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:Mono.Data.Sqlite.dll"
             "TargetName" = "8:"

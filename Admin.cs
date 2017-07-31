@@ -76,7 +76,27 @@ namespace AccountServer {
 		}
 
 		public AjaxReturn EditUserPost(JObject json) {
-			return new AdminHelper(this).EditUserPost(json);
+			AdminHelper helper = new AdminHelper(this);
+			User user = (User)((JObject)json["header"]).To(typeof(User));
+			JObject old = null;
+			string oldPassword = null;
+			if (user.idUser > 0) {
+				// Existing record
+				User header = Database.Get<User>((int)user.idUser);
+				oldPassword = header.Password;
+				header.Password = "";
+				old = new JObject().AddRange("header", header);
+				old["detail"] = user.ModulePermissions ? helper.permissions((int)user.idUser).ToJToken() : new JArray();
+			}
+			AjaxReturn result = helper.EditUserPost(json);
+			if (result.error == null) {
+				JObject header = (JObject)json["header"];
+				header["Password"] = oldPassword != null && header.AsString("Password") != oldPassword ? "(changed)" : "";
+				if (!header.AsBool("ModulePermissions"))
+					json["detail"] = new JArray();
+				Database.AuditUpdate("User", header.AsInt("idUser"), old, json);
+			}
+			return result;
 		}
 
 		public AjaxReturn DeleteUserPost(int id) {

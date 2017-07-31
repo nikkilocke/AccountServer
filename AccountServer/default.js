@@ -2045,6 +2045,7 @@ function makeHeaderDetailForm(headerSelector, detailSelector, options) {
 	}
 	if(options.header.submit === undefined)
 		options.header.submit = submitUrl;
+	options.detail.submit = null;
 	if(options.header.readonly === undefined)
 		options.header.readonly = options.readonly;
 	if(options.detail.readonly === undefined)

@@ -79,32 +79,34 @@ namespace AccountServer {
 			Dictionary<string, List<JObject>> groups = new Dictionary<string, List<JObject>>();
 			groups["Memorised Reports"] = new List<JObject>();
 			List<JObject> reports = new List<JObject>();
-			reports.Add(new JObject().AddRange("ReportName", "Document Report", "ReportType", "Documents", "idReport", 0));
-			reports.Add(new JObject().AddRange("ReportName", "Transaction Report", "ReportType", "Transactions", "idReport", 0));
-			reports.Add(new JObject().AddRange("ReportName", "Journals Report", "ReportType", "Journals", "idReport", 0));
-			reports.Add(new JObject().AddRange("ReportName", "Profit and Loss", "ReportType", "ProfitAndLoss", "idReport", 0));
-			reports.Add(new JObject().AddRange("ReportName", "Balance Sheet", "ReportType", "BalanceSheet", "idReport", 0));
-			reports.Add(new JObject().AddRange("ReportName", "Trial Balance", "ReportType", "TrialBalance", "idReport", 0));
-			reports.Add(new JObject().AddRange("ReportName", "VAT Detail Report", "ReportType", "VatDetail", "idReport", 0));
-			reports.Add(new JObject().AddRange("ReportName", "Ageing Report", "ReportType", "Ageing", "idReport", 0));
+			addReport(reports, new JObject().AddRange("ReportName", "Document Report", "ReportType", "Documents", "idReport", 0));
+			addReport(reports, new JObject().AddRange("ReportName", "Transaction Report", "ReportType", "Transactions", "idReport", 0));
+			addReport(reports, new JObject().AddRange("ReportName", "Journals Report", "ReportType", "Journals", "idReport", 0));
+			addReport(reports, new JObject().AddRange("ReportName", "Profit and Loss", "ReportType", "ProfitAndLoss", "idReport", 0));
+			addReport(reports, new JObject().AddRange("ReportName", "Balance Sheet", "ReportType", "BalanceSheet", "idReport", 0));
+			addReport(reports, new JObject().AddRange("ReportName", "Trial Balance", "ReportType", "TrialBalance", "idReport", 0));
+			addReport(reports, new JObject().AddRange("ReportName", "VAT Detail Report", "ReportType", "VatDetail", "idReport", 0));
+			addReport(reports, new JObject().AddRange("ReportName", "Ageing Report", "ReportType", "Ageing", "idReport", 0));
 			groups["Standard Reports"] = reports;
 			reports = new List<JObject>();
-			reports.Add(new JObject().AddRange("ReportName", "Accounts List", "ReportType", "Accounts", "idReport", 0));
-			reports.Add(new JObject().AddRange("ReportName", "Names List", "ReportType", "Names", "idReport", 0));
-			reports.Add(new JObject().AddRange("ReportName", "Members List", "ReportType", "Members", "idReport", 0));
-			reports.Add(new JObject().AddRange("ReportName", "Products List", "ReportType", "Products", "idReport", 0));
-			reports.Add(new JObject().AddRange("ReportName", "VAT Codes List", "ReportType", "VatCodes", "idReport", 0));
-			reports.Add(new JObject().AddRange("ReportName", "Securities List", "ReportType", "Securities", "idReport", 0));
+			addReport(reports, new JObject().AddRange("ReportName", "Accounts List", "ReportType", "Accounts", "idReport", 0));
+			addReport(reports, new JObject().AddRange("ReportName", "Names List", "ReportType", "Names", "idReport", 0));
+			addReport(reports, new JObject().AddRange("ReportName", "Members List", "ReportType", "Members", "idReport", 0));
+			addReport(reports, new JObject().AddRange("ReportName", "Products List", "ReportType", "Products", "idReport", 0));
+			addReport(reports, new JObject().AddRange("ReportName", "VAT Codes List", "ReportType", "VatCodes", "idReport", 0));
+			addReport(reports, new JObject().AddRange("ReportName", "Securities List", "ReportType", "Securities", "idReport", 0));
+			addReport(reports, new JObject().AddRange("ReportName", "Users List", "ReportType", "Users", "idReport", 0));
 			groups["Lists"] = reports;
 			reports = new List<JObject>();
-			reports.Add(new JObject().AddRange("ReportName", "Audit Transactions Report", "ReportType", "AuditTransactions", "idReport", 0));
-			reports.Add(new JObject().AddRange("ReportName", "Audit Accounts Report", "ReportType", "AuditAccounts", "idReport", 0));
-			reports.Add(new JObject().AddRange("ReportName", "Audit Names Report", "ReportType", "AuditNames", "idReport", 0));
-			reports.Add(new JObject().AddRange("ReportName", "Audit Members Report", "ReportType", "AuditMembers", "idReport", 0));
-			reports.Add(new JObject().AddRange("ReportName", "Audit Products Report", "ReportType", "AuditProducts", "idReport", 0));
-			reports.Add(new JObject().AddRange("ReportName", "Audit VAT Codes Report", "ReportType", "AuditVatCodes", "idReport", 0));
-			reports.Add(new JObject().AddRange("ReportName", "Audit Securities Report", "ReportType", "AuditSecurities", "idReport", 0));
-			reports.Add(new JObject().AddRange("ReportName", "Reconciliation Report", "ReportType", "AuditReconciliation", "idReport", 0));
+			addReport(reports, new JObject().AddRange("ReportName", "Audit Transactions Report", "ReportType", "AuditTransactions", "idReport", 0));
+			addReport(reports, new JObject().AddRange("ReportName", "Audit Accounts Report", "ReportType", "AuditAccounts", "idReport", 0));
+			addReport(reports, new JObject().AddRange("ReportName", "Audit Names Report", "ReportType", "AuditNames", "idReport", 0));
+			addReport(reports, new JObject().AddRange("ReportName", "Audit Members Report", "ReportType", "AuditMembers", "idReport", 0));
+			addReport(reports, new JObject().AddRange("ReportName", "Audit Products Report", "ReportType", "AuditProducts", "idReport", 0));
+			addReport(reports, new JObject().AddRange("ReportName", "Audit VAT Codes Report", "ReportType", "AuditVatCodes", "idReport", 0));
+			addReport(reports, new JObject().AddRange("ReportName", "Audit Securities Report", "ReportType", "AuditSecurities", "idReport", 0));
+			addReport(reports, new JObject().AddRange("ReportName", "Audit Users", "ReportType", "AuditUsers", "idReport", 0));
+			addReport(reports, new JObject().AddRange("ReportName", "Reconciliation Report", "ReportType", "AuditReconciliation", "idReport", 0));
 			groups["Audit Reports"] = reports;
 			foreach (JObject report in Database.Query("SELECT idReport, ReportGroup, ReportName, ReportType FROM Report ORDER BY ReportGroup, ReportName")) {
 				string group = report.AsString("ReportGroup");
@@ -112,9 +114,14 @@ namespace AccountServer {
 					reports = new List<JObject>();
 					groups[group] = reports;
 				}
-				reports.Add(report);
+				addReport(reports, report);
 			}
 			ReportList = groups;
+		}
+
+		void addReport(List<JObject> reports, JObject report) {
+			if(HasAccess(Info, report.AsString("ReportType").ToLower() + "post", out int accessLevel))
+				reports.Add(report);
 		}
 
 		public void Accounts(int id) {
@@ -226,6 +233,30 @@ namespace AccountServer {
 			_filters.Add(new StringFilter("SecurityName", "Security.SecurityName"));
 			_filters.Add(new StringFilter("Ticker", "Security.Ticker"));
 			return auditReportData(json, "Security", "SecurityName", "Ticker");
+		}
+
+		public void AuditUsers(int id) {
+			Record = AuditUsersPost(getJson(id, "Users Audit Report"));
+			Method = "users";
+		}
+
+		[Auth(AccessLevel.Admin, Hide = true)]
+		public object AuditUsersPost(JObject json) {
+			initialiseAuditReport(json);
+			addTable("User");
+			addTable("Permission");
+			RemoveField("Password");
+			var levelSelect = Server.NamespaceDef.GetAccessLevel().Select();
+			ReportField level = fieldFor("AccessLevel");
+			level["type"] = "select";
+			level["selectOptions"] = new JArray(levelSelect);
+			level = fieldFor("FunctionAccessLevel");
+			level["type"] = "select";
+			level["selectOptions"] = new JArray(levelSelect);
+			_filters.Add(new StringFilter("Login", "User.Login"));
+			_filters.Add(new StringFilter("Email", "User.Email"));
+			_filters.Add(new SelectFilter("AccessLevel", "User.AccessLevel", levelSelect));
+			return auditReportData(json, "User", "Login", "Email", "AccessLevel", "ModulePermissions");
 		}
 
 		public void AuditReconciliation(int id) {
@@ -646,6 +677,31 @@ LEFT JOIN Document ON Document.idDocument = Journal.DocumentId
 			return finishReport(json, "Security", "SecurityName, Date", "JOIN StockPrice ON SecurityId = idSecurity", "Security");
 		}
 
+		public void Users(int id) {
+			Record = UsersPost(getJson(id, "Users List"));
+		}
+
+		[Auth(AccessLevel.Admin, Hide = true)]
+		public object UsersPost(JObject json) {
+			initialiseReport(json);
+			addTable("User");
+			addTable("Permission");
+			RemoveField("Password");
+			var levelSelect = Server.NamespaceDef.GetAccessLevel().Select();
+			ReportField level = fieldFor("AccessLevel");
+			level["type"] = "select";
+			level["selectOptions"] = new JArray(levelSelect);
+			level = fieldFor("FunctionAccessLevel");
+			level["type"] = "select";
+			level["selectOptions"] = new JArray(levelSelect);
+			_filters.Add(new StringFilter("Login", "User.Login"));
+			_filters.Add(new StringFilter("Email", "User.Email"));
+			_filters.Add(new SelectFilter("AccessLevel", "User.AccessLevel", levelSelect));
+			makeSortable("Login", "Email", "AccessLevel");
+			setDefaultFields(json, "Login", "Email", "AccessLevel", "ModulePermissions");
+			return finishReport(json, "User", "Login", "LEFT JOIN Permission ON UserId = idUser AND ModulePermissions = 1", "User");
+		}
+
 		public void Transactions(int id) {
 			Record = TransactionsPost(getJson(id, "Transactions Report"));
 		}
@@ -921,8 +977,11 @@ WHERE TableName = "
 				+ " ORDER BY DateChanged, idAuditTrail");
 			List<string> tables = new List<string>();
 			tables.Add("AuditTrail");
-			if (type == "Document") tables.Add("Extended_Document");
-			else if (type == "Reconciliation") tables.Add("Account");
+			switch (type) {
+				case "Document": tables.Add("Extended_Document"); break;
+				case "Reconciliation": tables.Add("Account"); break;
+				case "User": tables.Add("User"); break;
+			}
 			_sortOrder = "idAuditTrail";
 			return reportJson(json, auditFilter(auditFlatten(report)), tables.ToArray());
 		}
@@ -1500,12 +1559,24 @@ JOIN Security ON idSecurity = SecurityId")) {
 		}
 
 		/// <summary>
+		/// Remove a named field
+		/// </summary>
+		/// <param name="name"></param>
+		void RemoveField(string name) {
+			ReportField f = fieldFor(name);
+			int p = _fields.IndexOf(f);
+			_fields.RemoveAt(p);
+		}
+
+		/// <summary>
 		/// Move a field to a given position in the field list (e.g. to move sort fields to front)
 		/// </summary>
 		void positionField(string name, int position) {
 			ReportField f = fieldFor(name);
 			int p = _fields.IndexOf(f);
 			_fields.RemoveAt(p);
+			if (position < 0)
+				return;
 			if (p < position)
 				position--;
 			_fields.Insert(position, f);
