@@ -62,9 +62,9 @@ GROUP BY idAccount ORDER BY AccountName");
 		/// <summary>
 		/// Update account info after editing
 		/// </summary>
-		public AjaxReturn DetailPost(Account json) {
+		public AjaxReturn DetailSave(Account json) {
 			checkAcctType(json.AccountTypeId, AcctType.Investment);
-			return PostRecord(json, true);
+			return SaveRecord(json, true);
 		}
 
 		/// <summary>
@@ -146,7 +146,7 @@ AND DocumentId = " + id).ToList();
 		/// <summary>
 		/// Update Buy/Sell after editing
 		/// </summary>
-		public AjaxReturn DocumentPost(InvestmentDocument json) {
+		public AjaxReturn DocumentSave(InvestmentDocument json) {
 			Database.BeginTransaction();
 			JObject oldDoc = getCompleteDocument(json.idDocument);
 			DocType t = checkDocType(json.DocumentTypeId, DocType.Buy, DocType.Sell);
@@ -297,10 +297,10 @@ AND Journal.AccountId = " + acct);
 		}
 
 		/// <summary>
-		/// Post a BalanceAdjustment after editing. 
+		/// Save a BalanceAdjustment after editing. 
 		/// Transaction amount is NewBalance - ExistingBalance
 		/// </summary>
-		public AjaxReturn BalanceAdjustmentPost(BalanceAdjustmentDocument json) {
+		public AjaxReturn BalanceAdjustmentSave(BalanceAdjustmentDocument json) {
 			checkAccountIsAcctType(json.DocumentAccountId, AcctType.Investment);
 			Utils.Check(json.AccountId > 0, "No account selected");
 			// Pointless to post a new transaction that does nothing
@@ -361,7 +361,7 @@ AND Journal.AccountId = " + acct);
 				"detail", Database.Query("SELECT *, 7 AS Unit FROM StockPrice WHERE SecurityId = " + id + " ORDER BY Date DESC"));
 		}
 
-		public AjaxReturn SecurityPost(SecurityInfo json) {
+		public AjaxReturn SecuritySave(SecurityInfo json) {
 			Security existing = Database.Get(json.header);
 			Database.BeginTransaction();
 			Database.Update(json.header, true);

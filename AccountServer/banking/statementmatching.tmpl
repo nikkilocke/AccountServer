@@ -10,7 +10,7 @@
 	<script>
 		$(function() {
 			var record = loadRecord();
-			var submitUrl = defaultUrl('Post');
+			var submitUrl = defaultUrl('Save');
 			var current = {};
 			var id = getParameter('id');
 			function zeroRanks() {
@@ -130,7 +130,7 @@
 				switch(col.name) {
 					case 'New':
 					case 'Same':
-						postJson('statementmatchingpost.html', {
+						postJson('statementmatchingsave.html', {
 							id: id,
 							type: col.name,
 							current: _.indexOf(record.import, current),
@@ -158,7 +158,7 @@
 						var mnu = menu.menu({
 							select: function (e, ui) {
 								current = rowData;
-								postJson('statementmatchingpost.html', {
+								postJson('statementmatchingsave.html', {
 									id: id,
 									type: ui.item[0].id,
 									current: _.indexOf(record.import, current),

@@ -155,8 +155,8 @@ namespace AccountServer {
 			return result;
 		}
 
-		public AjaxReturn ProductPost(Product json) {
-			return PostRecord(json, true);
+		public AjaxReturn ProductSave(Product json) {
+			return SaveRecord(json, true);
 		}
 
 	}

@@ -338,7 +338,7 @@ WHERE Journal.DocumentId = " + document.idDocument));
 		/// <summary>
 		/// Save an arbitrary JObject to the database, optionally also saving an audit trail
 		/// </summary>
-		public AjaxReturn PostRecord(JsonObject record, bool audit) {
+		public AjaxReturn SaveRecord(JsonObject record, bool audit) {
 			AjaxReturn retval = new AjaxReturn();
 			try {
 				if (record.Id <= 0)

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
@@ -45,8 +45,8 @@ namespace AccountServer {
 					);
 		}
 
-		public AjaxReturn EditSettingsPost(JObject json) {
-			return new AdminHelper(this).EditSettingsPost(json);
+		public AjaxReturn EditSettingsSave(JObject json) {
+			return new AdminHelper(this).EditSettingsSave(json);
 		}
 
 		[Auth(AccessLevel.Any)]
@@ -75,7 +75,7 @@ namespace AccountServer {
 			new AdminHelper(this).EditUser(id);
 		}
 
-		public AjaxReturn EditUserPost(JObject json) {
+		public AjaxReturn EditUserSave(JObject json) {
 			AdminHelper helper = new AdminHelper(this);
 			User user = (User)((JObject)json["header"]).To(typeof(User));
 			JObject old = null;
@@ -88,7 +88,7 @@ namespace AccountServer {
 				old = new JObject().AddRange("header", header);
 				old["detail"] = user.ModulePermissions ? helper.permissions((int)user.idUser).ToJToken() : new JArray();
 			}
-			AjaxReturn result = helper.EditUserPost(json);
+			AjaxReturn result = helper.EditUserSave(json);
 			if (result.error == null) {
 				JObject header = (JObject)json["header"];
 				header["Password"] = oldPassword != null && header.AsString("Password") != oldPassword ? "(changed)" : "";
@@ -99,8 +99,8 @@ namespace AccountServer {
 			return result;
 		}
 
-		public AjaxReturn DeleteUserPost(int id) {
-			return new AdminHelper(this).DeleteUserPost(id);
+		public AjaxReturn EditUserDelete(int id) {
+			return new AdminHelper(this).EditUserDelete(id);
 		}
 
 		[Auth(AccessLevel.Any)]

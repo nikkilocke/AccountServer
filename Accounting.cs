@@ -95,11 +95,11 @@ ORDER BY DocumentDate DESC, idDocument DESC")) {
 		/// <summary>
 		/// Update an account after editing.
 		/// </summary>
-		public AjaxReturn DetailPost(Account json) {
+		public AjaxReturn DetailSave(Account json) {
 			Account existing = Database.Get(json);
 			Utils.Check(!existing.Protected, "Cannot edit a protected account");
 			Database.BeginTransaction();
-			AjaxReturn result = PostRecord(json, true);
+			AjaxReturn result = SaveRecord(json, true);
 			if (string.IsNullOrEmpty(result.error) && existing.idAccount > 0 && json.AccountName != existing.AccountName) {
 				// This might be a parent account - if so change the name of subaccounts
 				foreach(Account a in Database.Query<Account>("SELECT * FROM Account WHERE AccountName LIKE "
@@ -182,7 +182,7 @@ ORDER BY DocumentDate DESC, idDocument DESC");
 		/// <summary>
 		/// Update a General Ledger Journal after editing.
 		/// </summary>
-		public AjaxReturn DocumentPost(JournalDocument json) {
+		public AjaxReturn DocumentSave(JournalDocument json) {
 			Database.BeginTransaction();
 			Extended_Document document = json.header;
 			JObject oldDoc = getCompleteDocument(document.idDocument);
@@ -323,7 +323,7 @@ ORDER BY idDocument DESC");
 		/// <summary>
 		/// Update a VAt Return after review
 		/// </summary>
-		public AjaxReturn VatReturnPost(JObject json) {
+		public AjaxReturn VatReturnSave(JObject json) {
 			Database.BeginTransaction();
 			Extended_Document header = json["payment"].To<Extended_Document>();
 			Utils.Check(header.idDocument == null, "Cannot amend existing VAT return");

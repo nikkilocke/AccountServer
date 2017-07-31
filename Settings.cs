@@ -107,7 +107,7 @@ namespace AccountServer {
 					);
 		}
 
-		public AjaxReturn DefaultPost(Settings json) {
+		public AjaxReturn DefaultSave(Settings json) {
 			Database.BeginTransaction();
 			Database.Update(json);
 			_settings = Database.QueryOne<Settings>("SELECT * FROM Settings");

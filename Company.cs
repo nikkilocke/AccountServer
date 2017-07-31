@@ -93,9 +93,9 @@ ORDER BY Name
 			Record = job;
 		}
 
-		public AjaxReturn JobPost(Schedule json) {
+		public AjaxReturn JobSave(Schedule json) {
 			Utils.Check(json.RepeatFrequency > 0, "Repeat frequency must be > 0");
-			return PostRecord(json, false);
+			return SaveRecord(json, false);
 		}
 
 		public AjaxReturn JobDelete(int id) {

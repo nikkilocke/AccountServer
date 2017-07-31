@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
@@ -75,7 +75,7 @@ namespace AccountServer {
 			form.Data = record.ToJToken();
 		}
 
-		public AjaxReturn DetailPost(Full_Member json) {
+		public AjaxReturn DetailSave(Full_Member json) {
 			Utils.Check(json.MemberTypeId > 0, "Must choose membership type");
 			Utils.Check(!string.IsNullOrWhiteSpace(json.Name), "Name must be filled in");
 			Utils.Check(json.MemberNo > 0, "Must assign a membership number");
@@ -90,7 +90,7 @@ namespace AccountServer {
 			nameAddress["Type"] = "M";
 			Database.Update("NameAddress", nameAddress);
 			json.NameAddressId = nameAddress.AsInt("idNameAddress");
-			AjaxReturn r = PostRecord(json, true);
+			AjaxReturn r = SaveRecord(json, true);
 			if(r.error == null)
 				Database.Commit();
 			return r;
@@ -166,7 +166,7 @@ ORDER BY JournalNum")
 			Record = record;
 		}
 
-		public AjaxReturn DocumentPost(SubscriptionDocument json) {
+		public AjaxReturn DocumentSave(SubscriptionDocument json) {
 			AjaxReturn result = new AjaxReturn();
 			Database.BeginTransaction();
 			JObject oldDoc = null;
@@ -297,10 +297,10 @@ ORDER BY JournalNum")
 			form.Show();
 		}
 
-		public AjaxReturn TypePost(MemberType json) {
+		public AjaxReturn TypeSave(MemberType json) {
 			if (json.NumberOfPayments < 1)
 				json.NumberOfPayments = 1;
-			return PostRecord(json);
+			return SaveRecord(json);
 		}
 
 		public void YearEnd() {

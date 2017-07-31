@@ -64,6 +64,7 @@ function initialiseReport(select, update) {
 		report.fieldForm = makeListForm('#fields', {
 			data: fields,
 			submit: null,
+			readonly: record.readonly,
 			columns: [
 				'heading/Name',
 				{
@@ -76,12 +77,14 @@ function initialiseReport(select, update) {
 		report.filterForm = makeForm('#filters', {
 			data: record.settings.filters,
 			submit: null,
+			readonly: record.readonly,
 			columns: _.map(filters, _.clone)
 		});
 		// Report name
 		report.nameForm = makeForm('#names', {
 			data: record.settings,
 			submit: null,
+			readonly: record.readonly,
 			columns: [
 				{
 					data: 'ReportName',
@@ -96,6 +99,7 @@ function initialiseReport(select, update) {
 				data: record.settings.sorting,
 				table: 'Report',
 				submit: null,
+				readonly: record.readonly,
 				columns: [
 					{
 						data: 'sort',
@@ -192,7 +196,7 @@ function initialiseReport(select, update) {
 	 */
 	function refresh() {
 		var modified = unsavedInput;
-		postJson(defaultUrl('Post'), record.settings, function(data) {
+		postJson(defaultUrl('Save'), record.settings, function(data) {
 			record = data;
 			$('#report thead,#report tbody,#settings table thead,#settings table tbody').remove();
 			loadData(record);
@@ -209,15 +213,21 @@ function initialiseReport(select, update) {
 		title: 'Report settings',
 		height: Math.min($('#settings').height() + 200, $(window).height() * 0.9),
 		width: $('#settings').width(),
-		buttons: {
+		buttons: record.readonly ? {
 			Ok: {
 				id: 'Ok',
 				text: 'Ok',
-				click: function () {
+				click: function() {
 					$(this).dialog("close");
-					if(record.readonly)
-						unsavedInput = false;
-					refresh();
+				}
+			}
+		} : {
+			Ok: {
+				id: 'Ok',
+				text: 'Ok',
+				click: function() {
+					submitUrl(this);
+					$(this).dialog("close");
 				}
 			},
 			Cancel: {
@@ -229,7 +239,7 @@ function initialiseReport(select, update) {
 			}
 		}
 	});
-	actionButton('Modify report').click(function() {
+	actionButton(record.readonly ? 'View report settings' : 'Modify report').click(function() {
 		dialog.dialog('open');
 	});
 	actionButton('Refresh').click(refresh);

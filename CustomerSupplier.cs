@@ -91,9 +91,9 @@ WHERE idNameAddress = " + id
 			Record = record;
 		}
 
-		public AjaxReturn DetailPost(NameAddress json) {
+		public AjaxReturn DetailSave(NameAddress json) {
 			checkNameType(json.Type, NameType);
-			return PostRecord(json, true);
+			return SaveRecord(json, true);
 		}
 
 		/// <summary>
@@ -131,7 +131,7 @@ WHERE idNameAddress = " + id
 		/// <summary>
 		/// Update a document after editing
 		/// </summary>
-		public AjaxReturn DocumentPost(InvoiceDocument json) {
+		public AjaxReturn DocumentSave(InvoiceDocument json) {
 			Database.BeginTransaction();
 			Extended_Document document = json.header;
 			DocType t = checkDocType(document.DocumentTypeId, InvoiceDoc, CreditDoc);
@@ -305,7 +305,7 @@ ORDER BY DocumentDate");
 			return new List<PaymentLine>();
 		}
 
-		public AjaxReturn PaymentPost(PaymentDocument json) {
+		public AjaxReturn PaymentSave(PaymentDocument json) {
 			decimal amount = 0;
 			Database.BeginTransaction();
 			PaymentHeader document = json.header;
@@ -444,8 +444,8 @@ ORDER BY DocumentDate, idDocument"));
 			return result;
 		}
 
-		public AjaxReturn VatCodePost(VatCode json) {
-			return PostRecord(json, true);
+		public AjaxReturn VatCodeSave(VatCode json) {
+			return SaveRecord(json, true);
 		}
 
 		void addNameToMenuOptions(int id) {

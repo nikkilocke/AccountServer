@@ -61,9 +61,9 @@ namespace AccountServer {
 		/// <summary>
 		/// Update account details after editing
 		/// </summary>
-		public AjaxReturn DetailPost(Account json) {
+		public AjaxReturn DetailSave(Account json) {
 			checkAcctType(json.AccountTypeId, AcctType.Bank, AcctType.CreditCard);
-			return PostRecord(json, true);
+			return SaveRecord(json, true);
 		}
 
 		/// <summary>
@@ -114,7 +114,7 @@ namespace AccountServer {
 		/// <summary>
 		/// Update a document after editing
 		/// </summary>
-		public AjaxReturn DocumentPost(BankingDocument json) {
+		public AjaxReturn DocumentSave(BankingDocument json) {
 			Database.BeginTransaction();
 			Extended_Document document = json.header;
 			JObject oldDoc = getCompleteDocument(document.idDocument);
@@ -233,9 +233,9 @@ ORDER BY DocumentDate, idDocument"));
 		}
 
 		/// <summary>
-		/// Post bank reconciliation
+		/// Save bank reconciliation
 		/// </summary>
-		public AjaxReturn ReconcilePost(ReconcileDocument json) {
+		public AjaxReturn ReconcileSave(ReconcileDocument json) {
 			// Temporary indicates they haven't finished - no need to check balances, save Clr marks as "*" instead of "X"
 			string mark = json.Temporary ? "*" : "X";
 			decimal bal = json.header.OpeningBalance;
@@ -262,7 +262,7 @@ ORDER BY DocumentDate, idDocument"));
 		}
 
 		/// <summary>
-		/// Prepare to memorise a transaction for automatic retrieval and posting later.
+		/// Prepare to memorise a transaction for automatic retrieval and saving later.
 		/// </summary>
 		public void Memorise(int id) {
 			dynamic record = GetDocument(id, DocType.Cheque);
@@ -271,7 +271,7 @@ ORDER BY DocumentDate, idDocument"));
 			Schedule job = new Schedule() {
 				ActionDate = record.header.DocumentDate,
 				Task = type.UnCamel() + " " + record.header.DocumentAmount.ToString("0.00") + (type == DocType.Cheque || type == DocType.CreditCardCharge ? " to " : " from ") + record.header.DocumentName + " " + record.header.DocumentMemo,
-				Url = "banking/standingorderpost",
+				Url = "banking/standingordersave",
 				Parameters = record.ToString(),
 				RepeatFrequency = 1,
 				Post = true
@@ -282,28 +282,28 @@ ORDER BY DocumentDate, idDocument"));
 		}
 
 		/// <summary>
-		/// Post a memorised transaction schedule record after editing/review
+		/// Save a memorised transaction schedule record after editing/review
 		/// </summary>
-		public AjaxReturn MemorisePost(Schedule json) {
-			return PostRecord(json, false);
+		public AjaxReturn MemoriseSave(Schedule json) {
+			return SaveRecord(json, false);
 		}
 
 		/// <summary>
-		/// Post a memorised transaction, then redirect to it for review
+		/// Save a memorised transaction, then redirect to it for review
 		/// </summary>
-		public AjaxReturn StandingOrderPost(BankingDocument json, DateTime date) {
+		public AjaxReturn StandingOrderSave(BankingDocument json, DateTime date) {
 			json.header.idDocument = null;
 			json.header.DocumentDate = date;
 			if (Utils.ExtractNumber(json.header.DocumentIdentifier) > 0)
 				json.header.DocumentIdentifier = "";
-			AjaxReturn result = DocumentPost(json);
+			AjaxReturn result = DocumentSave(json);
 			if (result.error == null && result.id > 0)
 				result.redirect = "/banking/document.html?message=" + json.header.DocType.UnCamel() + "+saved&id=" + result.id + "&type=" + json.header.DocumentTypeId;
 			return result;
 		}
 
 		/// <summary>
-		/// Prepare to memorise a transaction for automatic retrieval and posting later.
+		/// Prepare to memorise a transaction for automatic retrieval and saving later.
 		/// </summary>
 		public void MemoriseTransfer(int id) {
 			TransferDocument header = GetTransferDocument(id);
@@ -313,7 +313,7 @@ ORDER BY DocumentDate, idDocument"));
 			Schedule job = new Schedule() {
 				ActionDate = header.DocumentDate,
 				Task = "Transfer " + header.DocumentAmount.ToString("0.00") + " from " + header.DocumentAccountName + " to " + account.AccountName + " " + header.DocumentMemo,
-				Url = "banking/repeattransferpost",
+				Url = "banking/repeattransfersave",
 				Parameters = header.ToString(),
 				RepeatFrequency = 1,
 				Post = true
@@ -324,19 +324,19 @@ ORDER BY DocumentDate, idDocument"));
 		}
 
 		/// <summary>
-		/// Post a memorised transaction schedule record after editing/review
+		/// Save a memorised transaction schedule record after editing/review
 		/// </summary>
-		public AjaxReturn MemoriseTransferPost(Schedule json) {
-			return PostRecord(json, false);
+		public AjaxReturn MemoriseTransferSave(Schedule json) {
+			return SaveRecord(json, false);
 		}
 
 		/// <summary>
-		/// Post a memorised transaction, then redirect to it for review
+		/// Save a memorised transaction, then redirect to it for review
 		/// </summary>
-		public AjaxReturn RepeatTransferPost(TransferDocument json, DateTime date) {
+		public AjaxReturn RepeatTransferSave(TransferDocument json, DateTime date) {
 			json.idDocument = null;
 			json.DocumentDate = date;
-			AjaxReturn result = TransferPost(json);
+			AjaxReturn result = TransferSave(json);
 			if (result.error == null && result.id > 0)
 				result.redirect = "/banking/transfer.html?message=Transfer+saved&id=" + result.id;
 			return result;
@@ -371,7 +371,7 @@ ORDER BY DocumentDate, idDocument"));
 		/// <param name="data">Pasted statement</param>
 		/// <param name="file">Uploaded Qif statement</param>
 		/// <param name="dateFormat">For Qif import</param>
-		public void StatementImportPost(int id, string format, string data, UploadedFile file, string dateFormat) {
+		public void StatementImportSave(int id, string format, string data, UploadedFile file, string dateFormat) {
 			Account account = Database.Get<Account>(id);
 			checkAcctType(account.AccountTypeId, AcctType.Bank, AcctType.CreditCard);
 			JArray result;
@@ -548,7 +548,7 @@ ORDER BY DocumentDate, idDocument"));
 		/// <summary>
 		/// Update 1 matched transaction
 		/// </summary>
-		public AjaxReturn StatementMatchingPost(MatchInfo json) {
+		public AjaxReturn StatementMatchingSave(MatchInfo json) {
 			checkAccountIsAcctType(json.id, AcctType.Bank, AcctType.CreditCard);
 			JObject current = SessionData.StatementImport.import[json.current];
 			Utils.Check(current != null, "Current not found");
@@ -752,7 +752,7 @@ ORDER BY DocumentDate, idDocument"));
 				// Just post the new information
 				if (type == DocType.Transfer)
 					record = record.header;		// Transfer posts header alone
-				AjaxReturn p = StatementMatchPost((JObject)record);
+				AjaxReturn p = StatementMatchSave((JObject)record);
 				if (p.error == null)
 					Redirect(p.redirect);		// If no error, go on with matching
 			}
@@ -776,12 +776,12 @@ ORDER BY DocumentDate, idDocument"));
 		}
 
 		/// <summary>
-		/// Post a matched transaction.
+		/// Save a matched transaction.
 		/// May be called direct from StatementMatch for Same transactions,
 		/// or when the user presses "Save" for other transactions
 		/// </summary>
-		public AjaxReturn StatementMatchPost(JObject json) {
-			Utils.Check(SessionData.StatementMatch != null, "Invalid call to StatementMatchPost");
+		public AjaxReturn StatementMatchSave(JObject json) {
+			Utils.Check(SessionData.StatementMatch != null, "Invalid call to StatementMatchSave");
 			MatchInfo match = SessionData.StatementMatch.ToObject<MatchInfo>();
 			JArray transactions = SessionData.StatementImport.transactions;
 			dynamic transaction = match.transaction < 0 ? null : SessionData.StatementImport.transactions[match.transaction];
@@ -795,7 +795,7 @@ ORDER BY DocumentDate, idDocument"));
 						GetParameters = GetParameters,
 						PostParameters = PostParameters,
 						Parameters = Parameters,
-					}.PaymentPost(json.To<CustomerSupplier.PaymentDocument>());
+					}.PaymentSave(json.To<CustomerSupplier.PaymentDocument>());
 					break;
 				case DocType.BillPayment:
 					result = new Supplier() {
@@ -803,16 +803,16 @@ ORDER BY DocumentDate, idDocument"));
 						GetParameters = GetParameters,
 						PostParameters = PostParameters,
 						Parameters = Parameters,
-					}.PaymentPost(json.To<CustomerSupplier.PaymentDocument>());
+					}.PaymentSave(json.To<CustomerSupplier.PaymentDocument>());
 					break;
 				case DocType.Cheque:
 				case DocType.Deposit:
 				case DocType.CreditCardCharge:
 				case DocType.CreditCardCredit:
-					result = DocumentPost(json.To<BankingDocument>());
+					result = DocumentSave(json.To<BankingDocument>());
 					break;
 				case DocType.Transfer:
-					result = TransferPost(json.To<TransferDocument>());
+					result = TransferSave(json.To<TransferDocument>());
 					break;
 				case DocType.Subscriptions:
 					result = new Members() {
@@ -820,7 +820,7 @@ ORDER BY DocumentDate, idDocument"));
 						GetParameters = GetParameters,
 						PostParameters = PostParameters,
 						Parameters = Parameters,
-					}.DocumentPost(json.To<Members.SubscriptionDocument>());
+					}.DocumentSave(json.To<Members.SubscriptionDocument>());
 					break;
 				default:
 					throw new CheckException("Unexpected document type:{0}", type.UnCamel());

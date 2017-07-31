@@ -39,9 +39,9 @@ namespace AccountServer {
 			Record = record;
 		}
 
-		public AjaxReturn NamePost(NameAddress json) {
+		public AjaxReturn NameSave(NameAddress json) {
 			checkNameType(json.Type, "O");
-			return PostRecord(json, true);
+			return SaveRecord(json, true);
 		}
 
 		/// <summary>
@@ -83,7 +83,7 @@ namespace AccountServer {
 			Record = record;
 		}
 
-		public AjaxReturn TransferPost(TransferDocument json) {
+		public AjaxReturn TransferSave(TransferDocument json) {
 			Database.BeginTransaction();
 			checkDocType(json.DocumentTypeId, DocType.Transfer);
 			checkAccountIsAcctType(json.DocumentAccountId, AcctType.Bank, AcctType.CreditCard, AcctType.Investment);

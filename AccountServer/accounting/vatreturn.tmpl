@@ -106,7 +106,7 @@ $(function() {
 						return;
 					}
 					message("Saving data - please wait...");
-					postJson("/accounting/vatreturnpost.html", {
+					postJson("/accounting/vatreturnsave.html", {
 						return: record.return,
 						payment: record.payment
 					}, function (data) {

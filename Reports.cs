@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using CodeFirstWebFramework;
 
 namespace AccountServer {
+	[Auth(AccessLevel.ReadOnly)]
 	public class Reports : AppModule {
 		public enum DateRange {
 			All = 1,
@@ -108,7 +109,7 @@ namespace AccountServer {
 			addReport(reports, new JObject().AddRange("ReportName", "Audit Users", "ReportType", "AuditUsers", "idReport", 0));
 			addReport(reports, new JObject().AddRange("ReportName", "Reconciliation Report", "ReportType", "AuditReconciliation", "idReport", 0));
 			groups["Audit Reports"] = reports;
-			foreach (JObject report in Database.Query("SELECT idReport, ReportGroup, ReportName, ReportType FROM Report ORDER BY ReportGroup, ReportName")) {
+			foreach (JObject report in Database.Query("SELECT idReport, ReportGroup, ReportName, ReportType FROM Report ORDER BY ReportGroup, ReportName").ToList()) {
 				string group = report.AsString("ReportGroup");
 				if (!groups.TryGetValue(group, out reports)) {
 					reports = new List<JObject>();
@@ -120,16 +121,15 @@ namespace AccountServer {
 		}
 
 		void addReport(List<JObject> reports, JObject report) {
-			if(HasAccess(Info, report.AsString("ReportType").ToLower() + "post", out int accessLevel))
+			if(HasAccess(Info, report.AsString("ReportType").ToLower(), out int accessLevel))
 				reports.Add(report);
 		}
 
 		public void Accounts(int id) {
-			Record = AccountsPost(getJson(id, "Accounts List"));
+			Record = AccountsSave(getJson(id, "Accounts List"));
 		}
 
-		[Auth(AccessLevel.ReadOnly, Hide = true)]
-		public object AccountsPost(JObject json) {
+		public object AccountsSave(JObject json) {
 			initialiseReport(json);
 			accountSetup();
 			setDefaultFields(json, "AccountName", "AccountDescription", "AcctType");
@@ -147,12 +147,11 @@ namespace AccountServer {
 		}
 
 		public void AuditAccounts(int id) {
-			Record = AuditAccountsPost(getJson(id, "Accounts Audit Report"));
+			Record = AuditAccountsSave(getJson(id, "Accounts Audit Report"));
 			Method = "accounts";
 		}
 
-		[Auth(AccessLevel.ReadOnly, Hide = true)]
-		public object AuditAccountsPost(JObject json) {
+		public object AuditAccountsSave(JObject json) {
 			initialiseAuditReport(json);
 			accountSetup();
 			return auditReportData(json, "Account", "AccountName", "AccountDescription", "AcctType");
@@ -168,49 +167,45 @@ namespace AccountServer {
 				"ReportType", "Audit" + table,
 				"idReport", null,
 				"recordId", id);
-			Record = AuditHistoryPost(json);
+			Record = AuditHistorySave(json);
 		}
 
-		[Auth(AccessLevel.ReadOnly, Hide = true)]
-		public object AuditHistoryPost(JObject json) {
+		public object AuditHistorySave(JObject json) {
 			OriginalMethod = json.AsString("ReportType");
 			Method = OriginalMethod.Substring(5).ToLower();
-			MethodInfo method = this.GetType().GetMethod(OriginalMethod + "Post", BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+			MethodInfo method = this.GetType().GetMethod(OriginalMethod + "Save", BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
 			Utils.Check(method != null, "Invalid table {0}", Method);
 			return method.Invoke(this, new object[] { json });
 		}
 
 		public void AuditNames(int id) {
-			Record = AuditNamesPost(getJson(id, "Names Audit Report"));
+			Record = AuditNamesSave(getJson(id, "Names Audit Report"));
 			Method = "names";
 		}
 
-		[Auth(AccessLevel.ReadOnly, Hide = true)]
-		public object AuditNamesPost(JObject json) {
+		public object AuditNamesSave(JObject json) {
 			initialiseAuditReport(json);
 			namesSetup();
 			return auditReportData(json, "NameAddress", "Type", "Name", "Address", "PostCode", "Telephone", "Email", "Contact");
 		}
 
 		public void AuditMembers(int id) {
-			Record = AuditMembersPost(getJson(id, "Members Audit Report"));
+			Record = AuditMembersSave(getJson(id, "Members Audit Report"));
 			Method = "members";
 		}
 
-		[Auth(AccessLevel.ReadOnly, Hide = true)]
-		public object AuditMembersPost(JObject json) {
+		public object AuditMembersSave(JObject json) {
 			initialiseAuditReport(json);
 			membersSetup();
 			return auditReportData(json, "Full_Member", "MemberTypeName", "MemberNo", "Title", "FirstName", "LastName", "Address", "PostCode", "Telephone", "Email", "Contact", "AnnualSubscription", "PaymentAmount", "AmountDue");
 		}
 
 		public void AuditProducts(int id) {
-			Record = AuditProductsPost(getJson(id, "Products Audit Report"));
+			Record = AuditProductsSave(getJson(id, "Products Audit Report"));
 			Method = "products";
 		}
 
-		[Auth(AccessLevel.ReadOnly, Hide = true)]
-		public object AuditProductsPost(JObject json) {
+		public object AuditProductsSave(JObject json) {
 			initialiseAuditReport(json);
 			addTable("Product");
 			addTable("Account", "AccountName");
@@ -222,12 +217,11 @@ namespace AccountServer {
 		}
 
 		public void AuditSecurities(int id) {
-			Record = AuditSecuritiesPost(getJson(id, "Securities Audit Report"));
+			Record = AuditSecuritiesSave(getJson(id, "Securities Audit Report"));
 			Method = "securities";
 		}
 
-		[Auth(AccessLevel.ReadOnly, Hide = true)]
-		public object AuditSecuritiesPost(JObject json) {
+		public object AuditSecuritiesSave(JObject json) {
 			initialiseAuditReport(json);
 			addTable("Security");
 			_filters.Add(new StringFilter("SecurityName", "Security.SecurityName"));
@@ -235,13 +229,13 @@ namespace AccountServer {
 			return auditReportData(json, "Security", "SecurityName", "Ticker");
 		}
 
+		[Auth(AccessLevel.Admin, Hide = true)]
 		public void AuditUsers(int id) {
-			Record = AuditUsersPost(getJson(id, "Users Audit Report"));
+			Record = AuditUsersSave(getJson(id, "Users Audit Report"));
 			Method = "users";
 		}
 
-		[Auth(AccessLevel.Admin, Hide = true)]
-		public object AuditUsersPost(JObject json) {
+		public object AuditUsersSave(JObject json) {
 			initialiseAuditReport(json);
 			addTable("User");
 			addTable("Permission");
@@ -260,12 +254,11 @@ namespace AccountServer {
 		}
 
 		public void AuditReconciliation(int id) {
-			Record = AuditReconciliationPost(getJson(id, "Reconciliation Report"));
+			Record = AuditReconciliationSave(getJson(id, "Reconciliation Report"));
 			Method = "transactions";
 		}
 
-		[Auth(AccessLevel.ReadOnly, Hide = true)]
-		public object AuditReconciliationPost(JObject json) {
+		public object AuditReconciliationSave(JObject json) {
 			// Not looking at changes - reconciliations are stored as created
 			_changeTypeNotRequired = true;
 			initialiseAuditReport(json);
@@ -284,12 +277,11 @@ namespace AccountServer {
 		}
 
 		public void AuditTransactions(int id) {
-			Record = AuditTransactionsPost(getJson(id, "Transactions Audit Report"));
+			Record = AuditTransactionsSave(getJson(id, "Transactions Audit Report"));
 			Method = "transactions";
 		}
 
-		[Auth(AccessLevel.ReadOnly, Hide = true)]
-		public object AuditTransactionsPost(JObject json) {
+		public object AuditTransactionsSave(JObject json) {
 			initialiseAuditReport(json);
 			addTable("Extended_Document", "idDocument", "DocumentDate", "DocumentIdentifier", "DocumentName", "DocumentAddress", "DocumentAmount", "DocumentOutstanding", "DocType", "DocumentTypeId", "DocumentMemo");
 			fieldFor("idDocument")["heading"] = "Trans no";
@@ -317,12 +309,11 @@ namespace AccountServer {
 		}
 
 		public void AuditVatCodes(int id) {
-			Record = AuditVatCodesPost(getJson(id, "VAT Codes Audit Report"));
+			Record = AuditVatCodesSave(getJson(id, "VAT Codes Audit Report"));
 			Method = "vatcodes";
 		}
 
-		[Auth(AccessLevel.ReadOnly, Hide = true)]
-		public object AuditVatCodesPost(JObject json) {
+		public object AuditVatCodesSave(JObject json) {
 			initialiseAuditReport(json);
 			vatCodeSetup();
 			return auditReportData(json, "Code", "VatDescription", "Rate");
@@ -332,11 +323,10 @@ namespace AccountServer {
 		/// Ageing report splits outstdanding debt by date
 		/// </summary>
 		public void Ageing(int id) {
-			Record = AgeingPost(getJson(id, "Ageing Report"));
+			Record = AgeingSave(getJson(id, "Ageing Report"));
 		}
 
-		[Auth(AccessLevel.ReadOnly, Hide = true)]
-		public object AgeingPost(JObject json) {
+		public object AgeingSave(JObject json) {
 			initialiseReport(json);
 			// Can select Sales or Purchases
 			JObject [] accountSelect = new JObject[] {
@@ -376,11 +366,10 @@ AND Outstanding <> 0
 		}
 
 		public void BalanceSheet(int id) {
-			Record = BalanceSheetPost(getJson(id, "Balance Sheet"));
+			Record = BalanceSheetSave(getJson(id, "Balance Sheet"));
 		}
 
-		[Auth(AccessLevel.ReadOnly, Hide = true)]
-		public object BalanceSheetPost(JObject json) {
+		public object BalanceSheetSave(JObject json) {
 			_total = false;
 			initialiseReport(json);
 			addTable("!AccountType");
@@ -431,12 +420,11 @@ ORDER BY " + string.Join(",", sort.Select(s => s + (_sortDescending ? " DESC" : 
 		}
 
 		public void Documents(int id) {
-			Record = DocumentsPost(getJson(id, "Documents Report"));
+			Record = DocumentsSave(getJson(id, "Documents Report"));
 			Method = "transactions";
 		}
 
-		[Auth(AccessLevel.ReadOnly, Hide = true)]
-		public object DocumentsPost(JObject json) {
+		public object DocumentsSave(JObject json) {
 			initialiseReport(json);
 			addTable("Extended_Document");
 			fieldFor("idDocument")["heading"] = "Trans no";
@@ -463,11 +451,10 @@ ORDER BY " + string.Join(",", sort.Select(s => s + (_sortDescending ? " DESC" : 
 		}
 
 		public void Journals(int id) {
-			Record = JournalsPost(getJson(id, "Journals Report"));
+			Record = JournalsSave(getJson(id, "Journals Report"));
 		}
 
-		[Auth(AccessLevel.ReadOnly, Hide = true)]
-		public object JournalsPost(JObject json) {
+		public object JournalsSave(JObject json) {
 			initialiseReport(json);
 			addTable("AccountType");
 			fieldFor("idAccountType").Hide().Essential = false;
@@ -540,11 +527,10 @@ LEFT JOIN DocumentType ON DocumentType.idDocumentType = rDocType
 		}
 
 		public void Names(int id) {
-			Record = NamesPost(getJson(id, "Names List"));
+			Record = NamesSave(getJson(id, "Names List"));
 		}
 
-		[Auth(AccessLevel.ReadOnly, Hide = true)]
-		public object NamesPost(JObject json) {
+		public object NamesSave(JObject json) {
 			initialiseReport(json);
 			namesSetup();
 			makeSortable("Name", "Type");
@@ -564,11 +550,10 @@ LEFT JOIN DocumentType ON DocumentType.idDocumentType = rDocType
 		}
 
 		public void Members(int id) {
-			Record = MembersPost(getJson(id, "Members List"));
+			Record = MembersSave(getJson(id, "Members List"));
 		}
 
-		[Auth(AccessLevel.ReadOnly, Hide = true)]
-		public object MembersPost(JObject json) {
+		public object MembersSave(JObject json) {
 			initialiseReport(json);
 			membersSetup();
 			makeSortable("LastName", "FirstName", "MemberTypeName,LastName=MemberType");
@@ -587,11 +572,10 @@ LEFT JOIN DocumentType ON DocumentType.idDocumentType = rDocType
 		}
 
 		public void Products(int id) {
-			Record = ProductsPost(getJson(id, "Products List"));
+			Record = ProductsSave(getJson(id, "Products List"));
 		}
 
-		[Auth(AccessLevel.ReadOnly, Hide = true)]
-		public object ProductsPost(JObject json) {
+		public object ProductsSave(JObject json) {
 			initialiseReport(json);
 			addTable("Product");
 			addTable("Account", "AccountCode", "AccountName", "AccountDescription");
@@ -610,11 +594,10 @@ LEFT JOIN VatCode ON idVatCode = VatCodeId
 		}
 
 		public void ProfitAndLoss(int id) {
-			Record = ProfitAndLossPost(getJson(id, "Profit and Loss"));
+			Record = ProfitAndLossSave(getJson(id, "Profit and Loss"));
 		}
 
-		[Auth(AccessLevel.ReadOnly, Hide = true)]
-		public object ProfitAndLossPost(JObject json) {
+		public object ProfitAndLossSave(JObject json) {
 			_total = false;
 			initialiseReport(json);
 			addTable("!AccountType");
@@ -662,11 +645,10 @@ LEFT JOIN Document ON Document.idDocument = Journal.DocumentId
 		}
 
 		public void Securities(int id) {
-			Record = SecuritiesPost(getJson(id, "Securities List"));
+			Record = SecuritiesSave(getJson(id, "Securities List"));
 		}
 
-		[Auth(AccessLevel.ReadOnly, Hide = true)]
-		public object SecuritiesPost(JObject json) {
+		public object SecuritiesSave(JObject json) {
 			initialiseReport(json);
 			addTable("Security");
 			addTable("StockPrice");
@@ -677,12 +659,12 @@ LEFT JOIN Document ON Document.idDocument = Journal.DocumentId
 			return finishReport(json, "Security", "SecurityName, Date", "JOIN StockPrice ON SecurityId = idSecurity", "Security");
 		}
 
+		[Auth(AccessLevel.Admin, Hide = true)]
 		public void Users(int id) {
-			Record = UsersPost(getJson(id, "Users List"));
+			Record = UsersSave(getJson(id, "Users List"));
 		}
 
-		[Auth(AccessLevel.Admin, Hide = true)]
-		public object UsersPost(JObject json) {
+		public object UsersSave(JObject json) {
 			initialiseReport(json);
 			addTable("User");
 			addTable("Permission");
@@ -703,11 +685,10 @@ LEFT JOIN Document ON Document.idDocument = Journal.DocumentId
 		}
 
 		public void Transactions(int id) {
-			Record = TransactionsPost(getJson(id, "Transactions Report"));
+			Record = TransactionsSave(getJson(id, "Transactions Report"));
 		}
 
-		[Auth(AccessLevel.ReadOnly, Hide = true)]
-		public object TransactionsPost(JObject json) {
+		public object TransactionsSave(JObject json) {
 			initialiseReport(json);
 			addTable("Extended_Document", "idDocument", "DocumentDate", "DocumentIdentifier", "DocumentName", "DocumentAddress", "DocumentAmount", "DocumentOutstanding", "DocType", "DocumentTypeId");
 			fieldFor("idDocument")["heading"] = "Trans no";
@@ -749,11 +730,10 @@ LEFT JOIN Product ON Product.idProduct = Line.ProductId
 		}
 
 		public void TrialBalance(int id) {
-			Record = TrialBalancePost(getJson(id, "Trial Balance"));
+			Record = TrialBalanceSave(getJson(id, "Trial Balance"));
 		}
 
-		[Auth(AccessLevel.ReadOnly, Hide = true)]
-		public object TrialBalancePost(JObject json) {
+		public object TrialBalanceSave(JObject json) {
 			_total = false;
 			initialiseReport(json);
 			addTable("!AccountType", "Heading", "AcctType");
@@ -792,11 +772,10 @@ ORDER BY " + string.Join(",", sort.Select(s => s + (_sortDescending ? " DESC" : 
 		}
 
 		public void VatCodes(int id) {
-			Record = VatCodesPost(getJson(id, "VAT Codes List"));
+			Record = VatCodesSave(getJson(id, "VAT Codes List"));
 		}
 
-		[Auth(AccessLevel.ReadOnly, Hide = true)]
-		public object VatCodesPost(JObject json) {
+		public object VatCodesSave(JObject json) {
 			initialiseReport(json);
 			vatCodeSetup();
 			makeSortable("Code", "VatDescription");
@@ -812,11 +791,10 @@ ORDER BY " + string.Join(",", sort.Select(s => s + (_sortDescending ? " DESC" : 
 		}
 
 		public void VatDetail(int id) {
-			Record = VatDetailPost(getJson(id, "VAT Detail Report"));
+			Record = VatDetailSave(getJson(id, "VAT Detail Report"));
 		}
 
-		[Auth(AccessLevel.ReadOnly, Hide = true)]
-		public object VatDetailPost(JObject json) {
+		public object VatDetailSave(JObject json) {
 			initialiseReport(json);
 			_total = true;
 			_grandTotal = false;
@@ -1090,7 +1068,7 @@ WHERE TableName = "
 		/// </summary>
 		/// <param name="json">The posted report parameters</param>
 		void initialiseReport(JObject json) {
-			string reportType = OriginalMethod.ToLower().Replace("post", "");
+			string reportType = OriginalMethod.ToLower().Replace("save", "");
 			Utils.Check(json.AsString("ReportType").ToLower() == reportType, "Invalid report type");
 			dynamic r = SessionData.Report;
 			if(r == null)

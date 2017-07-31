@@ -1747,7 +1747,7 @@ function makeForm(selector, options) {
 	var submitUrl = myOption('submit', options);
 	var deleteButton;
 	if(submitUrl === undefined) {
-		submitUrl = defaultUrl('Post');
+		submitUrl = defaultUrl('Save');
 	}
 	if(typeof(submitUrl) == 'string') {
 		// Turn url into a function that validates and posts
@@ -1873,7 +1873,7 @@ function makeForm(selector, options) {
 		});
 		addJQueryUiControls();
 		if(options.readonly)
-			result.find('input,select,textarea').attr('disabled', true);
+			result.find('input,select,textarea,button.ui-multiselect').attr('disabled', true);
 	}
 	var drawn = false;
 
@@ -1994,7 +1994,7 @@ function makeHeaderDetailForm(headerSelector, detailSelector, options) {
 	var submitUrl = options.submit;
 	var tableName = options.header.table;
 	if(submitUrl === undefined) {
-		submitUrl = defaultUrl('Post');
+		submitUrl = defaultUrl('Save');
 	}
 	if(typeof(submitUrl) == 'string') {
 		var submitHref = submitUrl;
@@ -2098,7 +2098,7 @@ function makeListForm(selector, options) {
 	var submitUrl = myOption('submit', options);
 	var selectUrl = myOption('select', options);
 	if(selectUrl === undefined && submitUrl === undefined) {
-		submitUrl = defaultUrl('Post');
+		submitUrl = defaultUrl('Save');
 	}
 	if(selectUrl === undefined && typeof(submitUrl) == 'string') {
 		var s = submitUrl;
@@ -2295,7 +2295,7 @@ function makeListForm(selector, options) {
 		}
 		addJQueryUiControls();
 		if(options.readonly)
-			table.find('input,select,textarea').attr('disabled', true);
+			table.find('input,select,textarea,button.ui-multiselect').attr('disabled', true);
 	}
 	var drawn = false;
 	function dataReady(d) {
