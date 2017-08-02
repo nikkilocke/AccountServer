@@ -26,7 +26,7 @@ You can also Buy and Sell securities from the account. When entering a buy or se
 
 |Field|Comment|
 |-----|-------|
-|Security Name|Type the name of the security you are buting or selling. As you type, a drop down of existing securities with similar names appears, which you can click on to choose one. If you type a new security name in, when you leave the field you will be asked if you want to create a new one - when you save the transaction, a new security will be created with the price set to that in the transaction.|
+|Security Name|Type the name of the security you are buying or selling. As you type, a drop down of existing securities with similar names appears, which you can click on to choose one. If you type a new security name in, when you leave the field you will be asked if you want to create a new one - when you save the transaction, a new security will be created with the price set to that in the transaction.|
 |Quantity|How many of the shares you are buying or selling.|
 |Price|The price per share. Note - if this is a new buy/sell, a price will automatically be added to the security for the date of the transaction.|
 |Fee account|The general ledger account to which to post any fees.|

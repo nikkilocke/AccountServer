@@ -225,8 +225,8 @@ function initialiseReport(record, select, update) {
 				id: 'Ok',
 				text: 'Ok',
 				click: function() {
-					submitUrl(this);
 					$(this).dialog("close");
+					refresh();
 				}
 			},
 			Cancel: {

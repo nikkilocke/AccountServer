@@ -23,7 +23,7 @@ after the standard css and js files, and may change the appearance however requi
 ## Users
 
 If there are no users on file, there is no login security. Once you add a user, some or all functionality will 
-require loging in as a user. The first user you create will be the Admin user, who has access to everything. 
+require logging in as a user. The first user you create will be the Admin user, who has access to everything. 
 You cannot delete this user until all the other users have been deleted (and deleting this user will turn off 
 login security).
 
