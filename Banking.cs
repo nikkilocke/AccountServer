@@ -128,6 +128,10 @@ namespace AccountServer {
 			decimal net = 0;
 			bool lineVat = false;		// Flag to indicate this is a cheque to pay the VAT to HMRC
 			foreach (InvoiceLine detail in json.detail) {
+				if (detail.AccountId == 0 || detail.AccountId == null) {
+					Utils.Check(detail.LineAmount == 0 && detail.VatAmount == 0, "All lines must be allocated to an account");
+					continue;
+				}
 				net += detail.LineAmount;
 				vat += detail.VatAmount;
 			}

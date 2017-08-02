@@ -179,6 +179,8 @@ ORDER BY JournalNum")
 			foreach (SubscriptionPayment detail in json.detail) {
 				if (detail.NameAddressId > 0 && detail.Amount != 0)
 					total += detail.Amount;
+				else
+					Utils.Check(detail.Amount == 0, "All lines must be allocated to a member");
 			}
 			Utils.Check(json.header.DocumentAmount == total, "Document does not balance");
 			var lineNum = 1;

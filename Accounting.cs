@@ -199,7 +199,10 @@ ORDER BY DocumentDate DESC, idDocument DESC");
 			if (vatJournal.idJournal != null)
 				Database.Delete("Journal", (int)vatJournal.idJournal, false);
 			foreach (JournalDetail detail in json.detail) {
-				if (detail.AccountId == 0) continue;
+				if (detail.AccountId == 0) {
+					Utils.Check(detail.Amount == 0, "All lines must be allocated to an account");
+					continue;
+				}
 				total += detail.Amount;
 				if (detail.AccountId == (int)Acct.VATControl) {
 					// Vat has to all be posted on the last line

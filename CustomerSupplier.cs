@@ -144,8 +144,10 @@ WHERE idNameAddress = " + id
 				allocateDocumentIdentifier(document);
 			foreach (InvoiceLine detail in json.detail) {
 				if ((detail.ProductId == 0 || detail.ProductId == null)
-						&& (detail.AccountId == 0 || detail.AccountId == null))
+						&& (detail.AccountId == 0 || detail.AccountId == null)) {
+					Utils.Check(detail.LineAmount == 0 && detail.VatAmount == 0, "All lines must be allocated to an account");
 					continue;
+				}
 				net += detail.LineAmount;
 				vat += detail.VatAmount;
 			}
