@@ -31,8 +31,8 @@
 						&& !confirm('Amount is not zero - are you sure?'))
 					return false;
 				if(fixedAmount) {
-					form.data.header.Allocated -= data.Amount;
-					form.header.Remaining = form.header.DocumentAmount -  form.header.Allocated;
+					form.header.data.Allocated -= data.Amount;
+					form.header.data.Remaining = form.header.data.DocumentAmount -  form.header.data.Allocated;
 				} else
 					form.header.data.DocumentAmount -= data.Amount;
 				form.header.draw();
@@ -48,7 +48,7 @@
 					formOptions
 			);
 			function checkForNewRow() {
-				if(form.data.detail[form.data.detail.length - 1].NameAddressId) {
+				if(form.detail.data[form.detail.data.length - 1].NameAddressId) {
 					form.detail.find('tbody tr.noDeleteButton').removeClass('noDeleteButton');
 					form.detail.addRow(_.clone(emptyRow));
 					return true;
@@ -59,7 +59,7 @@
 				//noinspection FallThroughInSwitchStatementJS
 				switch(col.name) {
 					case 'Member':
-						if(newValue == rowData.Name)
+						if(newValue == rowData.Member)
 							return;
 						var member = _.find(form.detail.fields.Member.selectOptions, function(v) { return v.value == newValue});
 						if(member && member.id) {

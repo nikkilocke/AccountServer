@@ -167,6 +167,7 @@ ORDER BY JournalNum")
 		}
 
 		public AjaxReturn DocumentSave(SubscriptionDocument json) {
+			Database.Logging = CodeFirstWebFramework.LogLevel.Writes;
 			AjaxReturn result = new AjaxReturn();
 			Database.BeginTransaction();
 			JObject oldDoc = null;
@@ -211,20 +212,19 @@ ORDER BY JournalNum")
 						DocumentId = (int)document.idDocument,
 						JournalNum = lineNum
 					});
-					if (lineNum > 1) {
-						if (journal.idJournal > 0) {
-							// Existing payment
-							if (journal.NameAddressId != detail.NameAddressId) {
-								// Changed member
-								Database.Execute("UPDATE Member SET AmountDue = AmountDue - " + journal.Amount + " WHERE NameAddressId = " + journal.NameAddressId);
-								Database.Execute("UPDATE Member SET AmountDue = AmountDue + " + journal.Amount + " WHERE NameAddressId = " + detail.NameAddressId);
-							} else if (journal.Amount != detail.Amount) {
-								// Just changed amount
-								Database.Execute("UPDATE Member SET AmountDue = AmountDue + " + (detail.Amount - journal.Amount) + " WHERE NameAddressId = " + detail.NameAddressId);
-							}
-						} else {
-							Database.Execute("UPDATE Member SET AmountDue = AmountDue + " + detail.Amount + " WHERE NameAddressId = " + detail.NameAddressId);
+					if (journal.idJournal > 0) {
+						decimal amount = -journal.Amount;
+						// Existing payment
+						if (journal.NameAddressId != detail.NameAddressId) {
+							// Changed member
+							Database.Execute("UPDATE Member SET AmountDue = AmountDue + " + amount + " WHERE NameAddressId = " + journal.NameAddressId);
+							Database.Execute("UPDATE Member SET AmountDue = AmountDue - " + detail.Amount + " WHERE NameAddressId = " + detail.NameAddressId);
+						} else if (amount != detail.Amount) {
+							// Just changed amount
+							Database.Execute("UPDATE Member SET AmountDue = AmountDue - " + (detail.Amount - amount) + " WHERE NameAddressId = " + detail.NameAddressId);
 						}
+					} else {
+						Database.Execute("UPDATE Member SET AmountDue = AmountDue - " + detail.Amount + " WHERE NameAddressId = " + detail.NameAddressId);
 					}
 					journal.DocumentId = (int)document.idDocument;
 					journal.JournalNum = lineNum;
@@ -235,23 +235,22 @@ ORDER BY JournalNum")
 					journal.Outstanding = -detail.Amount;
 					journal.Amount = -detail.Amount;
 					Database.Update(journal);
-					if (lineNum > 1) {
-						// Create a dummy line record
-						Line line = new Line() {
-							idLine = journal.idJournal,
-							Qty = 0,
-							LineAmount = detail.Amount,
-							VatCodeId = null,
-							VatRate = 0,
-							VatAmount = 0
-						};
-						Database.Update(line);
-					}
+					// Create a dummy line record
+					Line line = new Line() {
+						idLine = journal.idJournal,
+						Qty = 0,
+						LineAmount = detail.Amount,
+						VatCodeId = null,
+						VatRate = 0,
+						VatAmount = 0
+					};
+					Database.Update(line);
 					lineNum++;
 				}
 			}
 			foreach(Journal j in Database.Query<Journal>("SELECT * FROM Journal WHERE DocumentId = " + document.idDocument + " AND JournalNum >= " + lineNum)) {
-				Database.Execute("UPDATE Member SET AmountDue = AmountDue - " + j.Amount + " WHERE NameAddressId = " + j.NameAddressId);
+				decimal amount = -j.Amount;
+				Database.Execute("UPDATE Member SET AmountDue = AmountDue + " + amount + " WHERE NameAddressId = " + j.NameAddressId);
 			}
 			Database.Execute("DELETE FROM Line WHERE idLine IN (SELECT idJournal FROM Journal WHERE DocumentId = " + document.idDocument + " AND JournalNum >= " + lineNum + ")");
 			Database.Execute("DELETE FROM Journal WHERE DocumentId = " + document.idDocument + " AND JournalNum >= " + lineNum);
