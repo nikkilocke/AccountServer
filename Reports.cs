@@ -547,6 +547,7 @@ LEFT JOIN DocumentType ON DocumentType.idDocumentType = rDocType
 			_filters.Add(new SelectFilter("Type", "NameAddress.Type", SelectNameTypes()));
 			_filters.Add(new StringFilter("Name", "NameAddress.Name"));
 			_filters.Add(new StringFilter("PostCode", "NameAddress.PostCode"));
+			_filters.Add(new BooleanFilter("Hidden", "Hidden", false));
 		}
 
 		public void Members(int id) {
@@ -568,6 +569,7 @@ LEFT JOIN DocumentType ON DocumentType.idDocumentType = rDocType
 			_filters.Add(new StringFilter("Name", "Full_Member.Name"));
 			_filters.Add(new StringFilter("PostCode", "Full_Member.PostCode"));
 			_filters.Add(new DecimalFilter("Amount Due", "AmountDue"));
+			_filters.Add(new BooleanFilter("Left", "Hidden", false));
 			_filters.Add(new SelectFilter("Type", "Member.MemberTypeId", SelectMemberTypes()));
 		}
 
