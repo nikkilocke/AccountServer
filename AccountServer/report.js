@@ -94,12 +94,7 @@ function initialiseReport(record, select, update) {
 		var sortOptions = record.sortOrders;
 		if(sortOptions && sortOptions.length > 1) {
 			// Sort options
-			report.sortForm = makeForm('#sorting', {
-				data: record.settings.sorting,
-				table: 'Report',
-				submit: null,
-				readonly: record.readonly,
-				columns: [
+			var sortColumns = [
 					{
 						data: 'sort',
 						heading: 'Sort By',
@@ -121,7 +116,19 @@ function initialiseReport(record, select, update) {
 						heading: 'Compact to save paper',
 						type: 'checkboxInput'
 					}
-				]
+				];
+			if(record.settings.sorting.reverseSign !== undefined)
+				sortColumns.push({
+					data: 'reverseSign',
+					heading: 'Reverse sign of amounts',
+					type: 'checkboxInput'
+					});
+			report.sortForm = makeForm('#sorting', {
+				data: record.settings.sorting,
+				table: 'Report',
+				submit: null,
+				readonly: record.readonly,
+				columns: sortColumns
 			});
 		} else {
 			$('#sorting').prev().hide()

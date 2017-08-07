@@ -66,6 +66,10 @@ namespace AccountServer {
 		/// </summary>
 		bool _changeTypeNotRequired;
 		/// <summary>
+		/// Reverse sign in journal reports
+		/// </summary>
+		bool _reverseSign;
+		/// <summary>
 		/// All reports have a date filter
 		/// </summary>
 		DateFilter _dates;
@@ -1612,6 +1616,8 @@ JOIN Security ON idSecurity = SecurityId")) {
 				return t;
 			};
 			foreach (JObject r in data) {
+				if (_reverseSign && r["Amount"] != null)
+					r["Amount"] = -r.AsDecimal("Amount");
 				JObject record = new JObject(r);
 				JObject id = null;
 				if (essentialFields.Count > 0) {
@@ -1710,11 +1716,14 @@ JOIN Security ON idSecurity = SecurityId")) {
 			}
 			json["fields"] = _fields.Where(f => !f.Hidden).ToJToken();
 			json["filters"] = getFilters().ToJToken();
-			json["sorting"] = new JObject().AddRange(
+			JObject sorting = new JObject().AddRange(
 						"sort", _sortOrder,
 						"desc", _sortDescending,
 						"total", _total,
 						"split", _split);
+			if (json.AsString("ReportType").ToLower() == "journals")
+				sorting["reverseSign"] = _reverseSign;
+			json["sorting"] = sorting;
 			return new JObject().AddRange(
 				"settings", json,
 				"filters", new JArray(_filters),
@@ -1761,6 +1770,8 @@ JOIN Security ON idSecurity = SecurityId")) {
 					_sortDescending = sdata.AsBool("desc");
 					_total = sdata.AsBool("total");
 					_split = sdata.AsBool("split");
+					if (json.AsString("ReportType").ToLower() == "journals")
+						_reverseSign = sdata.AsBool("reverseSign");
 				}
 			}
 			if (!string.IsNullOrWhiteSpace(_sortOrder))
