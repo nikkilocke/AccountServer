@@ -67,10 +67,7 @@ namespace AccountServer {
 			Form form = new CodeFirstWebFramework.Form(this, typeof(Full_Member), true);
 			form.Remove("NameAddressId");
 			form.Remove("MemberTypeName");
-			SelectAttribute memberType = new SelectAttribute(SelectMemberTypes()) {
-				Data = "MemberTypeId"
-			};
-			form.Replace(form.IndexOf("MemberTypeId"), memberType);
+			form["MemberTypeId"].MakeSelectable(SelectMemberTypes());
 			Form = form;
 			form.Data = record.ToJToken();
 		}
@@ -149,19 +146,14 @@ ORDER BY JournalNum")
 			}
 			JObject record = getSubscriptionJournal(header);
 			HeaderDetailForm form = new HeaderDetailForm(this, typeof(SubscriptionJournal), typeof(SubscriptionPayment));
-			SelectAttribute account = new SelectAttribute(SelectBankAccounts()) {
-				Data = "DocumentAccountId"
-			};
 			form.Header.Options["table"] = "Document";
 			form.Header.Options["canDelete"] = string.IsNullOrEmpty(header.Clr);
 			// Following fields will be auto-generated as readonly - we want to edit them
-			form.Header.Replace(form.Header.IndexOf("DocumentAccountId"), account);
-			SelectAttribute member = new SelectAttribute(SelectMembers()) {
-				Data = "Member",
-				Type = "autoComplete"
-			};
+			form.Header["DocumentAccountId"].MakeSelectable(SelectBankAccounts());
+			FieldAttribute member = form.Detail["Member"];
+			member.MakeSelectable(SelectMembers());
+			member.Type = "autoComplete";
 			member.Options["mustExist"] = true;
-			form.Detail.Replace(form.Detail.IndexOf("Member"), member);
 			Form = form;
 			Record = record;
 		}
