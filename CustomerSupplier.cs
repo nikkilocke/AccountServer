@@ -42,6 +42,7 @@ namespace AccountServer {
 		}
 
 		protected override void Init() {
+			base.Init();
 			insertMenuOptions(
 				new MenuOption("Listing", _module + "default.html"),
 				new MenuOption("VAT codes", _module + "vatcodes.html")

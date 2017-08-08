@@ -8,6 +8,7 @@ namespace AccountServer {
 	public class Members : AppModule {
 
 		protected override void Init() {
+			base.Init();
 			insertMenuOptions(
 				new MenuOption("Listing", "/members/default.html"),
 				new MenuOption("Subscription Payments", "/members/subscriptions.html"),

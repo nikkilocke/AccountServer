@@ -183,6 +183,7 @@
     <None Include="contentFiles\CodeFirstWebFramework\admin\restore.tmpl" />
     <None Include="contentFiles\CodeFirstWebFramework\datatable.tmpl" />
     <None Include="contentFiles\CodeFirstWebFramework\default.tmpl" />
+    <None Include="contentFiles\CodeFirstWebFramework\dumbform.tmpl" />
     <None Include="contentFiles\CodeFirstWebFramework\exception.tmpl" />
     <None Include="contentFiles\CodeFirstWebFramework\form.tmpl" />
     <None Include="contentFiles\CodeFirstWebFramework\headerdetailform.tmpl" />

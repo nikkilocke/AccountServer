@@ -25,6 +25,7 @@ namespace AccountServer {
 	public class Home : AppModule {
 
 		protected override void Init() {
+			base.Init();
 			insertMenuOptions(
 				new MenuOption("Summary", "/home/default.html"),
 				new MenuOption("To Do", "/home/schedule.html")

@@ -13,6 +13,7 @@ namespace AccountServer {
 	/// </summary>
 	public class Accounting : BankingAccounting {
 		protected override void Init() {
+			base.Init();
 			insertMenuOptions(
 				new MenuOption("List Accounts", "/accounting/default.html"),
 				new MenuOption("List Journals", "/accounting/journals.html"),

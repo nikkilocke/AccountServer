@@ -14,6 +14,7 @@ namespace AccountServer {
 	public class Banking : BankingAccounting {
 
 		protected override void Init() {
+			base.Init();
 			insertMenuOptions(
 				new MenuOption("Listing", "/banking/default.html"),
 				new MenuOption("Names", "/banking/names.html")

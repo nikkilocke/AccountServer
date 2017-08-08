@@ -14,6 +14,7 @@ namespace AccountServer {
 	public class AdminModule : AppModule {
 
 		protected override void Init() {
+			base.Init();
 			insertMenuOptions(
 				new MenuOption("Settings", "/admin/editsettings.html"),
 				new MenuOption("Users", "/admin/users"),

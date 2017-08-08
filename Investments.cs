@@ -10,6 +10,7 @@ using CodeFirstWebFramework;
 namespace AccountServer {
 	public class Investments : BankingAccounting {
 		protected override void Init() {
+			base.Init();
 			insertMenuOptions(
 				new MenuOption("Listing", "/investments/default.html"),
 				new MenuOption("Securities", "/investments/securities.html")
