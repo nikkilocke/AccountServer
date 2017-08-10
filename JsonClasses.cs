@@ -98,6 +98,7 @@ namespace AccountServer {
 	public class AuditTrail : JsonObject {
 		[Primary]
 		public int? idAuditTrail;
+		[Field(Type = "dateTime")]
 		public DateTime DateChanged;
 		public string TableName;
 		public int? UserId;
@@ -123,6 +124,7 @@ namespace AccountServer {
 	[Table]
 	public class Document : JsonObject {
 		[Primary]
+		[Field(Heading = "Trans no")]
 		public int? idDocument;
 		[Length(0)]
 		public string DocumentMemo;
@@ -134,12 +136,15 @@ namespace AccountServer {
 		[Length(0)]
 		public string DocumentAddress;
 		public DateTime DocumentDate;
+		[Field(Heading = "Doc Id")]
 		public string DocumentIdentifier;
+		[Field(Type = "checkbox")]
 		[ForeignKey("User")]
 		public int? Authorised;
 		/// <summary>
 		/// Record of payment to HM which paid the vat in this document
 		/// </summary>
+		[Field(Type = "checkbox")]
 		public int? VatPaid;
 		public override int? Id {
 			get { return idDocument; }
@@ -273,7 +278,7 @@ namespace AccountServer {
 JOIN MemberType ON idMemberType = MemberTypeId
 JOIN NameAddress ON idNameAddress = NameAddressId")]
 	public class Full_Member : Member {
-		[Field(Type = "string", Heading = "Member Type")]
+		[Field(Type = "string", Heading = "Type")]
 		public string MemberTypeName;
 		[Field(Type = "decimal")]
 		public decimal AnnualSubscription;
@@ -289,6 +294,7 @@ JOIN NameAddress ON idNameAddress = NameAddressId")]
 		public string Telephone;
 		[Length(50)]
 		[Writeable]
+		[Field(Types = "email,textInput")]
 		public string Email;
 		[Writeable]
 		public string Contact;
@@ -317,6 +323,7 @@ JOIN NameAddress ON idNameAddress = NameAddressId")]
 		public string PostCode;
 		public string Telephone;
 		[Length(50)]
+		[Field(Types = "email,textInput")]
 		public string Email;
 		public string Contact;
 		public bool Hidden;
@@ -478,6 +485,7 @@ JOIN NameAddress ON idNameAddress = NameAddressId")]
 		public string CompanyAddress;
 		public string CompanyPhone;
 		[Length(50)]
+		[Field(Types = "email,textInput")]
 		public string CompanyEmail;
 		public string WebSite;
 		[Length(25)]

@@ -255,12 +255,8 @@ namespace AccountServer {
 			addTable("Permission");
 			RemoveField("Password");
 			var levelSelect = Server.NamespaceDef.GetAccessLevel().Select();
-			ReportField level = fieldFor("AccessLevel");
-			level["type"] = "select";
-			level["selectOptions"] = new JArray(levelSelect);
-			level = fieldFor("FunctionAccessLevel");
-			level["type"] = "select";
-			level["selectOptions"] = new JArray(levelSelect);
+			fieldFor("AccessLevel").MakeSelectable(levelSelect);
+			fieldFor("FunctionAccessLevel").MakeSelectable(levelSelect);
 			_filters.Add(new StringFilter("Login", "User.Login"));
 			_filters.Add(new StringFilter("Email", "User.Email"));
 			_filters.Add(new SelectFilter("AccessLevel", "User.AccessLevel", levelSelect));
@@ -280,8 +276,6 @@ namespace AccountServer {
 			_fields.Add(new ReportField("OpeningBalance", "decimal", "Opening Balance") { Table = "Account" });
 			_fields.Add(new ReportField("ClearedBalance", "decimal", "Cleared Balance") { Table = "Account" });
 			addTable("Extended_Document", "idDocument", "DocumentDate", "DocumentIdentifier", "DocumentName", "DocumentAddress", "DocumentAmount", "DocumentOutstanding", "DocType", "DocumentTypeId");
-			fieldFor("idDocument")["heading"] = "Trans no";
-			fieldFor("DocumentIdentifier")["heading"] = "Doc Id";
 			fieldFor("DocumentTypeId").MakeEssential().Hide();
 			addTable("Journal", "Amount", "Cleared");
 			fieldFor("Cleared")["type"] = "checkbox";
@@ -298,8 +292,6 @@ namespace AccountServer {
 		public object AuditTransactionsSave(JObject json) {
 			initialiseAuditReport(json);
 			addTable("Extended_Document", "idDocument", "DocumentDate", "DocumentIdentifier", "DocumentName", "DocumentAddress", "DocumentAmount", "DocumentOutstanding", "DocType", "DocumentTypeId", "DocumentMemo");
-			fieldFor("idDocument")["heading"] = "Trans no";
-			fieldFor("DocumentIdentifier")["heading"] = "Doc Id";
 			fieldFor("DocumentTypeId").MakeEssential().Hide();
 			addTable("Journal");
 			addTable("Account", "AccountName");
@@ -374,6 +366,7 @@ FROM Journal
 JOIN Document ON idDocument = DocumentId
 JOIN NameAddress ON idNameAddress = NameAddressId
 WHERE " + where + @"
+AND Type IN('S', 'C')
 AND Outstanding <> 0
 ) AS DaysDue", "AccountId,Name", 
 			 "GROUP BY AccountId, Name");
@@ -441,16 +434,11 @@ ORDER BY " + string.Join(",", sort.Select(s => s + (_sortDescending ? " DESC" : 
 		public object DocumentsSave(JObject json) {
 			initialiseReport(json);
 			addTable("Extended_Document");
-			fieldFor("idDocument")["heading"] = "Trans no";
-			fieldFor("DocumentIdentifier")["heading"] = "Doc Id";
 			fieldFor("DocumentTypeId").MakeEssential().Hide();
 			fieldFor("DocumentNameAddressId").Hide();
 			fieldFor("DocumentAccountId").Hide();
-			fieldFor("VatPaid")["type"] = "checkbox";
 			addTable("NameAddress", "Type", "Telephone", "Email", "Contact");
-			fieldFor("Type")["type"] = "select";
-			fieldFor("Type")["selectOptions"] = new JArray(SelectNameTypes());
-			fieldFor("Email")["type"] = "email";
+			fieldFor("Type").MakeSelectable(SelectNameTypes());
 			_filters.Add(new DateFilter(Settings, "DocumentDate", DateRange.ThisMonth));
 			_filters.Add(new StringFilter("Id", "DocumentIdentifier"));
 			_filters.Add(new DecimalFilter("DocumentAmount", "Extended_Document.DocumentAmount"));
@@ -476,9 +464,8 @@ ORDER BY " + string.Join(",", sort.Select(s => s + (_sortDescending ? " DESC" : 
 			addTable("!Journal");
 			addTable("!NameAddress");
 			addTable("Document", "idDocument", "DocumentDate", "DocumentIdentifier", "DocumentTypeId", "DocumentMemo");
-			fieldFor("idDocument").MakeEssential()["heading"] = "Trans no";
+			fieldFor("idDocument").MakeEssential();
 			addTable("DocumentType", "DocType");
-			fieldFor("DocumentIdentifier")["heading"] = "Doc Id";
 			fieldFor("DocumentDate").FullFieldName = "rDocDate AS DocumentDate";
 			fieldFor("DocumentTypeId").MakeEssential().Hide().FullFieldName = "rDocType AS DocumentTypeId";
 			fieldFor("Amount").FullFieldName = "Result.Amount";
@@ -555,9 +542,7 @@ LEFT JOIN DocumentType ON DocumentType.idDocumentType = rDocType
 		void namesSetup() {
 			addTable("NameAddress");
 			fieldFor("Type").MakeEssential();
-			fieldFor("Type")["type"] = "select";
-			fieldFor("Type")["selectOptions"] = new JArray(SelectNameTypes());
-			fieldFor("Email")["type"] = "email";
+			fieldFor("Type").MakeSelectable(SelectNameTypes());
 			_filters.Add(new SelectFilter("Type", "NameAddress.Type", SelectNameTypes()));
 			_filters.Add(new StringFilter("Name", "NameAddress.Name"));
 			_filters.Add(new StringFilter("PostCode", "NameAddress.PostCode"));
@@ -578,8 +563,6 @@ LEFT JOIN DocumentType ON DocumentType.idDocumentType = rDocType
 
 		void membersSetup() {
 			addTable("Full_Member");
-			fieldFor("MemberTypeName")["heading"] = "Type";
-			fieldFor("Email")["type"] = "email";
 			_filters.Add(new StringFilter("Name", "Full_Member.Name"));
 			_filters.Add(new StringFilter("PostCode", "Full_Member.PostCode"));
 			_filters.Add(new DecimalFilter("Amount Due", "AmountDue"));
@@ -686,12 +669,8 @@ LEFT JOIN Document ON Document.idDocument = Journal.DocumentId
 			addTable("Permission");
 			RemoveField("Password");
 			var levelSelect = Server.NamespaceDef.GetAccessLevel().Select();
-			ReportField level = fieldFor("AccessLevel");
-			level["type"] = "select";
-			level["selectOptions"] = new JArray(levelSelect);
-			level = fieldFor("FunctionAccessLevel");
-			level["type"] = "select";
-			level["selectOptions"] = new JArray(levelSelect);
+			fieldFor("AccessLevel").MakeSelectable(levelSelect);
+			fieldFor("FunctionAccessLevel").MakeSelectable(levelSelect);
 			_filters.Add(new StringFilter("Login", "User.Login"));
 			_filters.Add(new StringFilter("Email", "User.Email"));
 			_filters.Add(new SelectFilter("AccessLevel", "User.AccessLevel", levelSelect));
@@ -707,16 +686,12 @@ LEFT JOIN Document ON Document.idDocument = Journal.DocumentId
 		public object TransactionsSave(JObject json) {
 			initialiseReport(json);
 			addTable("Extended_Document", "idDocument", "DocumentDate", "DocumentIdentifier", "DocumentName", "DocumentAddress", "DocumentAmount", "DocumentOutstanding", "DocType", "DocumentTypeId");
-			fieldFor("idDocument")["heading"] = "Trans no";
-			fieldFor("DocumentIdentifier")["heading"] = "Doc Id";
 			fieldFor("DocumentTypeId").MakeEssential().Hide();
 			addTable("Journal");
 			addTable("Account", "AccountCode", "AccountName", "AccountDescription");
 			addTable("AccountType");
 			addTable("NameAddress");
-			fieldFor("Type")["type"] = "select";
-			fieldFor("Type")["selectOptions"] = new JArray(SelectNameTypes());
-			fieldFor("Email")["type"] = "email";
+			fieldFor("Type").MakeSelectable(SelectNameTypes());
 			addTable("Line");
 			addTable("Product", "ProductName", "ProductDescription", "UnitPrice");
 			fieldFor("UnitPrice")["heading"] = "List Price";
@@ -815,13 +790,10 @@ ORDER BY " + string.Join(",", sort.Select(s => s + (_sortDescending ? " DESC" : 
 			_total = true;
 			_grandTotal = false;
 			addTable("Vat_Journal");
-			fieldFor("idDocument")["heading"] = "Trans no";
-			fieldFor("DocumentIdentifier")["heading"] = "Doc Id";
 			fieldFor("DocumentTypeId").MakeEssential().Hide();
 			fieldFor("DocumentAmount").FullFieldName = "DocumentAmount * Sign * VatType AS DocumentAmount";
 			fieldFor("DocumentOutstanding").FullFieldName = "DocumentOutstanding * Sign * VatType AS DocumentOutstanding";
-			fieldFor("VatType")["type"] = "select";
-			fieldFor("VatType")["selectOptions"] = SelectVatTypes().ToJToken();
+			fieldFor("VatType").MakeSelectable(SelectVatTypes());
 			fieldFor("LineAmount").FullFieldName = "LineAmount * Sign * VatType AS LineAmount";
 			fieldFor("VatAmount").FullFieldName = "VatAmount * Sign * VatType AS VatAmount";
 			addTable("VatCode");
@@ -879,6 +851,13 @@ LEFT JOIN (SELECT idDocument AS idVatPaid, DocumentDate AS VatPaidDate FROM Docu
 			Table t = Database.TableFor(table);
 			foreach (Field f in fields.Length == 0 ? t.Fields.Where(f => (essential || f != t.PrimaryKey) && f.ForeignKey == null) : fields.Select(f => t.FieldFor(f))) {
 				ReportField r = new ReportField(t.Name, f);
+				FieldInfo fld = t.Type.GetField(f.Name);
+				if (fld != null) {
+					FieldAttribute fa = FieldAttribute.FieldFor(Database, fld, false);
+					if(!string.IsNullOrEmpty(fa.Heading))
+						r["heading"] = fa.Heading;
+					r["type"] = fa.Type;
+				}
 				if (essential) {
 					r.Essential = true;
 					if(Array.IndexOf(fields, f.Name) < 0)
@@ -1067,11 +1046,9 @@ WHERE TableName = "
 				addTable("!AuditTrail", "idAuditTrail", "DateChanged");
 			} else {
 				addTable("!AuditTrail", "idAuditTrail", "DateChanged", "ChangeType");
-				fieldFor("ChangeType")["type"] = "select";
-				fieldFor("ChangeType")["selectOptions"] = new JArray(SelectAuditTypes());
+				fieldFor("ChangeType").MakeSelectable(SelectAuditTypes());
 			}
 			_fields.Add(new ReportField("User.Login", "string", "User"));
-			fieldFor("DateChanged")["type"] = "dateTime";
 			fieldFor("idAuditTrail").Hide();
 			_dates = new DateFilter(Settings, "DateChanged", DateRange.ThisMonth);
 			_filters.Add(_dates);
@@ -1900,6 +1877,16 @@ JOIN Security ON idSecurity = SecurityId")) {
 			/// Don't include on field list in UI
 			/// </summary>
 			public bool Hidden;
+
+			public ReportField MakeSelectable(IEnumerable<JObject> values) {
+				return MakeSelectable(new JObjectEnumerable(values));
+			}
+
+			public ReportField MakeSelectable(JObjectEnumerable values) {
+				this["selectOptions"] = (JArray)values;
+				FieldType = "select";
+				return this;
+			}
 
 			public override string ToString() {
 				return FullFieldName + "/" + base.ToString();

@@ -47,6 +47,8 @@ namespace AccountServer {
 		}
 
 		public AjaxReturn EditSettingsSave(JObject json) {
+			if (!SecurityOn)
+				json["RequireAuthorisation"] = false;
 			return new AdminHelper(this).EditSettingsSave(json);
 		}
 
