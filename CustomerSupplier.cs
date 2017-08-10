@@ -43,10 +43,9 @@ namespace AccountServer {
 
 		protected override void Init() {
 			base.Init();
-			insertMenuOptions(
-				new MenuOption("Listing", _module + "default.html"),
-				new MenuOption("VAT codes", _module + "vatcodes.html")
-				);
+			insertMenuOptions(new MenuOption("Listing", _module + "default.html"));
+			if(Settings.RecordVat)
+				insertMenuOptions(new MenuOption("VAT codes", _module + "vatcodes.html"));
 			if (!SecurityOn || UserAccessLevel >= AccessLevel.ReadWrite)
 				insertMenuOptions(
 					new MenuOption("New " + Name, _module + "detail.html?id=0"),
@@ -156,6 +155,15 @@ WHERE idNameAddress = " + id
 			decimal changeInDocumentAmount = -sign * (document.DocumentAmount - original.DocumentAmount);
 			var lineNum = 1;
 			fixNameAddress(document, NameType);
+			if(SecurityOn && Settings.RequireAuthorisation && NameType == "S") {
+				if (Admin && document.Authorised == 0) {
+					document.Authorised = null;
+				} else if (original.Authorised == null || original.Authorised == Session.User.idUser) {
+					document.Authorised = document.Authorised > 0 ? Session.User.idUser : null;
+				} else {
+					document.Authorised = original.Authorised;
+				}
+			}
 			Database.Update(document);
 			// Find any existing VAT record
 			Journal vatJournal = Database.QueryOne<Journal>("SELECT * FROM Journal WHERE DocumentId = " + document.idDocument
@@ -302,7 +310,8 @@ JOIN DocumentType ON idDocumentType = DocumentTypeId
 LEFT JOIN Payments ON idPaid = idDocument AND idPayment = " + id + @"
 WHERE NameAddressId = " + name + @"
 AND DocumentTypeId " + Database.In(InvoiceDoc, CreditDoc) + @"
-AND (Outstanding <> 0 OR PaymentAmount IS NOT NULL)
+AND ((Outstanding <> 0" + ((SecurityOn && Settings.RequireAuthorisation && !Authorise && NameType == "S") ? " AND Authorised > 0" : "")
++ @") OR PaymentAmount IS NOT NULL)
 ORDER BY DocumentDate");
 			}
 			return new List<PaymentLine>();
@@ -321,6 +330,8 @@ ORDER BY DocumentDate");
 			int sign = -SignFor(PaymentDoc);
 			// Update the outstanding on the paid documents
 			foreach (PaymentLine payment in json.detail) {
+				Utils.Check(!SecurityOn || !Settings.RequireAuthorisation || Authorise || NameType != "S" || payment.Authorised > 0,
+					"Cannot pay unauthorised document");
 				decimal a = payment.AmountPaid;
 				PaymentLine old = oldDoc.PaymentFor(payment.idDocument);
 				if (old != null)

@@ -15,9 +15,9 @@ namespace AccountServer {
 		}
 
 		public object DetailListing(int id) {
-			return Database.Query("Document.*, DocType, -Amount AS Amount, -Outstanding AS Outstanding",
+			return Database.Query("Document.*, DocType, -Amount AS Amount, -Outstanding AS Outstanding, Login AS AuthorisedBy",
 				"WHERE AccountId = " + (int)LedgerAccount + " AND NameAddressId = " + id + " ORDER BY DocumentDate DESC, idDocument",
-				"Document", "Journal");
+				"Document", "Journal", "User");
 		}
 
 		public void Document(int id, DocType type) {

@@ -34,6 +34,14 @@ namespace AccountServer {
 		}
 
 		/// <summary>
+		/// True if user does have Authorise
+		/// </summary>
+		public bool Authorise
+		{
+			get { return UserAccessLevel >= AccessLevel.Authorise; }
+		}
+
+		/// <summary>
 		/// Generic object for templates to use - usually contains data from the database
 		/// </summary>
 		public object Record;
@@ -464,6 +472,12 @@ ORDER BY MemberTypeName");
 
 		public JObjectEnumerable SelectSuppliers() {
 			return SelectNames("S");
+		}
+
+		public JObjectEnumerable SelectUsers() {
+			return Database.Query(@"idUser AS id, Login AS value",
+				"ORDER BY Login",
+				"User");
 		}
 
 		public IEnumerable<JObject> SelectVatCodes() {

@@ -81,7 +81,9 @@
 				<tr><th>Phone:</th><td>{{{Settings.CompanyPhone}}}</td></tr>
 				<tr><th>Email:</th><td><a href="mailto:{{{Settings.CompanyEmail}}}">{{{Settings.CompanyEmail}}}</a></td></tr>
 				<tr><th>WebSite:</th><td><a href="http://{{{Settings.WebSite}}}">{{{Settings.WebSite}}}</a></td></tr>
+// {{#if Settings.RecordVat}}
 				<tr><th>VAT Reg no:</th><td>{{{Settings.VatRegistration}}}</td></tr>
+// {{/if}}
 				<tr><th>Company no:</th><td>{{{Settings.CompanyNumber}}}</td></tr>
 				<tr><th>{{{Record.header.DocType}}} no:</th><td><b>{{{Record.header.DocumentIdentifier}}}</b></td></tr>
 				<tr><th>Tax Date:</th><td><b>{{{Record.header.DocumentDate:D}}}</b></td></tr>
@@ -96,9 +98,11 @@
 		<th class="ni">Qty</th>
 		<th>Memo</th>
 		<th class="n">Unit Price</th>
+// {{#if Settings.RecordVat}}
 		<th class="n">Vat Code</th>
 		<th class="n">Vat</th>
 		<th class="n">Vat Rate</th>
+// {{/if}}
 		<th class="n">Net</th>
 	</tr>
 	</thead>
@@ -116,6 +120,7 @@
 	{{/each}}
 	</tbody>
 	<tfoot>
+// {{#if Settings.RecordVat}}
 	<tr>
 		<th colspan="6">Total Net</td>
 		<th id="net" class="n">{{{Record.TotalNet:0.00}}}</td>
@@ -124,6 +129,7 @@
 		<td colspan="6">Total Vat</td>
 		<td id="vat" class="n">{{{Record.TotalVat:0.00}}}</td>
 	</tr>
+// {{/if}}
 	<tr>
 		<th colspan="6">{{{Record.header.DocType}}} Total</td>
 		<th id="gross" class="n">{{{Record.Total:0.00}}}</td>

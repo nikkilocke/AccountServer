@@ -19,12 +19,14 @@ namespace AccountServer {
 				new MenuOption("List Journals", "/accounting/journals.html"),
 				new MenuOption("Names", "/accounting/names.html")
 				);
-			if(!SecurityOn || UserAccessLevel >= AccessLevel.ReadWrite)
+			if (!SecurityOn || UserAccessLevel >= AccessLevel.ReadWrite) {
+				if (Settings.RecordVat)
+					insertMenuOptions(new MenuOption("VAT Return", "/accounting/vatreturn.html?id=0"));
 				insertMenuOptions(
-					new MenuOption("VAT Return", "/accounting/vatreturn.html?id=0"),
 					new MenuOption("New Account", "/accounting/detail.html?id=0"),
 					new MenuOption("New Journal", "/accounting/document.html?id=0")
 				);
+			}
 		}
 
 		/// <summary>

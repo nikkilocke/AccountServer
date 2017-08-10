@@ -27,12 +27,12 @@
 <div id="heading">{{Config.Filename}} - {{{Settings.CompanyName}}} - {{{Title}}}</div>
 <div id="menu1">&nbsp;
 	<button id="home" href="/home/default.html">Home</button>
-	<button id="customer" href="/customer/default.html">Customers</button>
-	<button id="supplier" href="/supplier/default.html">Suppliers</button>
+	{{#if Settings.Customers}}<button id="customer" href="/customer/default.html">Customers</button>{{/if}}
+	{{#if Settings.Suppliers}}<button id="supplier" href="/supplier/default.html">Suppliers</button>{{/if}}
 	<button id="banking" href="/banking/default.html">Banking</button>
-	<button id="investments" href="/investments/default.html">Investments</button>
+	{{#if Settings.Investments}}<button id="investments" href="/investments/default.html">Investments</button>{{/if}}
 	<button id="accounting" href="/accounting/default.html">Accounting</button>
-	<button id="members" href="/members/default.html">Members</button>
+	{{#if Settings.Members}}<button id="members" href="/members/default.html">Members</button>{{/if}}
 	<button id="reports" href="/reports/default.html">Reports</button>
 	<button id="admin" href="/admin/default.html">Admin</button>
 	<button target="help" href="/help/default.md">Help Contents</button>

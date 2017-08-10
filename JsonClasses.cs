@@ -135,6 +135,8 @@ namespace AccountServer {
 		public string DocumentAddress;
 		public DateTime DocumentDate;
 		public string DocumentIdentifier;
+		[ForeignKey("User")]
+		public int? Authorised;
 		/// <summary>
 		/// Record of payment to HM which paid the vat in this document
 		/// </summary>
@@ -485,6 +487,17 @@ JOIN NameAddress ON idNameAddress = NameAddressId")]
 		[DefaultValue("1")]
 		public int YearStartMonth;
 		public int YearStartDay;
+		[DefaultValue("1")]
+		public bool RecordVat;
+		[DefaultValue("1")]
+		public bool Customers;
+		[DefaultValue("1")]
+		public bool Suppliers;
+		public bool RequireAuthorisation;
+		[DefaultValue("1")]
+		public bool Investments;
+		[DefaultValue("1")]
+		public bool Members;
 		[DefaultValue("14")]
 		public int TermsDays;
 		[DefaultValue("1")]
@@ -605,34 +618,26 @@ JOIN NameAddress ON idNameAddress = NameAddressId")]
 		}
 	}
 
-	[View(@"SELECT idDocument, DocumentMemo, DocumentTypeId, DocType, Sign,
+	[View(@"SELECT idDocument, DocumentMemo, DocumentTypeId, DocType, Sign, Authorised,
 DocumentDate, Journal.NameAddressId AS DocumentNameAddressId, Name AS DocumentName, DocumentAddress, DocumentIdentifier, 
 Journal.Amount As AccountingAmount, Journal.Outstanding As AccountingOutstanding,
 -Journal.Amount * DocumentType.Sign As DocumentAmount, -Journal.Outstanding * DocumentType.Sign As DocumentOutstanding,
 Journal.AccountId AS DocumentAccountId, AccountName As DocumentAccountName, Journal.Cleared AS Clr,
-VatJournal.Amount * DocumentType.Sign As DocumentVatAmount, VatPaid
+VatJournal.Amount * DocumentType.Sign As DocumentVatAmount, VatPaid, Login AS AuthorisedBy
 FROM Document
 JOIN DocumentType ON idDocumentType = DocumentTypeId
 JOIN Journal ON Journal.DocumentId = idDocument AND Journal.JournalNum = 1
 JOIN Account ON idAccount = Journal.AccountId
 JOIN NameAddress ON idNameAddress = Journal.NameAddressId
 LEFT JOIN Journal AS VatJournal ON VatJournal.DocumentId = idDocument AND VatJournal.AccountId = 8
+LEFT JOIN User ON idUser = Authorised
 ")]
-	public class Extended_Document : JsonObject {
-		[Primary(AutoIncrement = false)]
-		public int? idDocument;
-		[Length(0)]
-		public string DocumentMemo;
-		public int DocumentTypeId;
+	public class Extended_Document : Document {
 		public string DocType;
 		public int Sign;
-		public DateTime DocumentDate;
 		public int? DocumentNameAddressId;
 		[Length(75)]
 		public string DocumentName;
-		[Length(0)]
-		public string DocumentAddress;
-		public string DocumentIdentifier;
 		public decimal AccountingAmount;
 		public decimal AccountingOutstanding;
 		public decimal DocumentAmount;
@@ -643,11 +648,7 @@ LEFT JOIN Journal AS VatJournal ON VatJournal.DocumentId = idDocument AND VatJou
 		[Length(1)]
 		public string Clr;
 		public decimal? DocumentVatAmount;
-		public int? VatPaid;
-		public override int? Id {
-			get { return idDocument; }
-			set { idDocument = value; }
-		}
+		public string AuthorisedBy;
 	}
 
 	[View(@"SELECT Line.*, Product.ProductName, Product.UnitPrice, VatCode.Code, VatCode.VatDescription, 
@@ -658,15 +659,7 @@ JOIN VatCode ON VatCode.idVatCode = Line.VatCodeId
 JOIN Journal ON Journal.idJournal = Line.idLine
 JOIN Account ON Account.idAccount = Journal.AccountId
 ")]
-	public class Extended_Line : JsonObject {
-		[Primary(AutoIncrement = false)]
-		public int? idLine;
-		public double Qty;
-		public int? ProductId;
-		public decimal LineAmount;
-		public int? VatCodeId;
-		public decimal VatRate;
-		public decimal VatAmount;
+	public class Extended_Line : Line {
 		[Length(75)]
 		public string ProductName;
 		public decimal UnitPrice;
@@ -702,31 +695,7 @@ WHERE DocumentTypeId IN (1, 3, 4, 6)
 OR Line.VatCodeId IS NOT NULL
 GROUP BY idDocument, Line.VatCodeId, Line.VatRate
 ")]
-	public class Vat_Journal : JsonObject {
-		[Primary(AutoIncrement = false)]
-		public int? idDocument;
-		[Length(0)]
-		public string DocumentMemo;
-		public int DocumentTypeId;
-		public string DocType;
-		public int Sign;
-		public DateTime DocumentDate;
-		public int? DocumentNameAddressId;
-		[Length(75)]
-		public string DocumentName;
-		[Length(0)]
-		public string DocumentAddress;
-		public string DocumentIdentifier;
-		public decimal AccountingAmount;
-		public decimal AccountingOutstanding;
-		public decimal DocumentAmount;
-		public decimal DocumentOutstanding;
-		public int DocumentAccountId;
-		public string DocumentAccountName;
-		[Length(1)]
-		public string Clr;
-		public decimal? DocumentVatAmount;
-		public int? VatPaid;
+	public class Vat_Journal : Extended_Document {
 		[Length(2)]
 		public int VatType;
 		[Length(75)]

@@ -90,27 +90,37 @@ namespace AccountServer {
 			addReport(reports, new JObject().AddRange("ReportName", "Profit and Loss", "ReportType", "ProfitAndLoss", "idReport", 0));
 			addReport(reports, new JObject().AddRange("ReportName", "Balance Sheet", "ReportType", "BalanceSheet", "idReport", 0));
 			addReport(reports, new JObject().AddRange("ReportName", "Trial Balance", "ReportType", "TrialBalance", "idReport", 0));
-			addReport(reports, new JObject().AddRange("ReportName", "VAT Detail Report", "ReportType", "VatDetail", "idReport", 0));
-			addReport(reports, new JObject().AddRange("ReportName", "Ageing Report", "ReportType", "Ageing", "idReport", 0));
+			if(Settings.RecordVat)
+				addReport(reports, new JObject().AddRange("ReportName", "VAT Detail Report", "ReportType", "VatDetail", "idReport", 0));
+			if(Settings.Customers || Settings.Suppliers)
+				addReport(reports, new JObject().AddRange("ReportName", "Ageing Report", "ReportType", "Ageing", "idReport", 0));
 			groups["Standard Reports"] = reports;
 			reports = new List<JObject>();
 			addReport(reports, new JObject().AddRange("ReportName", "Accounts List", "ReportType", "Accounts", "idReport", 0));
 			addReport(reports, new JObject().AddRange("ReportName", "Names List", "ReportType", "Names", "idReport", 0));
-			addReport(reports, new JObject().AddRange("ReportName", "Members List", "ReportType", "Members", "idReport", 0));
+			if(Settings.Members)
+				addReport(reports, new JObject().AddRange("ReportName", "Members List", "ReportType", "Members", "idReport", 0));
 			addReport(reports, new JObject().AddRange("ReportName", "Products List", "ReportType", "Products", "idReport", 0));
-			addReport(reports, new JObject().AddRange("ReportName", "VAT Codes List", "ReportType", "VatCodes", "idReport", 0));
-			addReport(reports, new JObject().AddRange("ReportName", "Securities List", "ReportType", "Securities", "idReport", 0));
-			addReport(reports, new JObject().AddRange("ReportName", "Users List", "ReportType", "Users", "idReport", 0));
+			if (Settings.RecordVat)
+				addReport(reports, new JObject().AddRange("ReportName", "VAT Codes List", "ReportType", "VatCodes", "idReport", 0));
+			if (Settings.Investments)
+				addReport(reports, new JObject().AddRange("ReportName", "Securities List", "ReportType", "Securities", "idReport", 0));
+			if (SecurityOn)
+				addReport(reports, new JObject().AddRange("ReportName", "Users List", "ReportType", "Users", "idReport", 0));
 			groups["Lists"] = reports;
 			reports = new List<JObject>();
 			addReport(reports, new JObject().AddRange("ReportName", "Audit Transactions Report", "ReportType", "AuditTransactions", "idReport", 0));
 			addReport(reports, new JObject().AddRange("ReportName", "Audit Accounts Report", "ReportType", "AuditAccounts", "idReport", 0));
 			addReport(reports, new JObject().AddRange("ReportName", "Audit Names Report", "ReportType", "AuditNames", "idReport", 0));
-			addReport(reports, new JObject().AddRange("ReportName", "Audit Members Report", "ReportType", "AuditMembers", "idReport", 0));
+			if (Settings.Members)
+				addReport(reports, new JObject().AddRange("ReportName", "Audit Members Report", "ReportType", "AuditMembers", "idReport", 0));
 			addReport(reports, new JObject().AddRange("ReportName", "Audit Products Report", "ReportType", "AuditProducts", "idReport", 0));
-			addReport(reports, new JObject().AddRange("ReportName", "Audit VAT Codes Report", "ReportType", "AuditVatCodes", "idReport", 0));
-			addReport(reports, new JObject().AddRange("ReportName", "Audit Securities Report", "ReportType", "AuditSecurities", "idReport", 0));
-			addReport(reports, new JObject().AddRange("ReportName", "Audit Users", "ReportType", "AuditUsers", "idReport", 0));
+			if (Settings.RecordVat)
+				addReport(reports, new JObject().AddRange("ReportName", "Audit VAT Codes Report", "ReportType", "AuditVatCodes", "idReport", 0));
+			if (Settings.Investments)
+				addReport(reports, new JObject().AddRange("ReportName", "Audit Securities Report", "ReportType", "AuditSecurities", "idReport", 0));
+			if (SecurityOn)
+				addReport(reports, new JObject().AddRange("ReportName", "Audit Users", "ReportType", "AuditUsers", "idReport", 0));
 			addReport(reports, new JObject().AddRange("ReportName", "Reconciliation Report", "ReportType", "AuditReconciliation", "idReport", 0));
 			groups["Audit Reports"] = reports;
 			foreach (JObject report in Database.Query("SELECT idReport, ReportGroup, ReportName, ReportType FROM Report ORDER BY ReportGroup, ReportName").ToList()) {

@@ -64,7 +64,7 @@ namespace AccountServer {
 		}
 
 		public void Users() {
-			insertMenuOption(new MenuOption("New User", "/admin/EditUser?id=0&from=http%3A%2F%2Fadmin%2Fusers"));
+			insertMenuOption(new MenuOption("New User", "/admin/EditUser?id=0&from=%2Fadmin%2Fusers"));
 			new AdminHelper(this).Users();
 		}
 
@@ -232,4 +232,14 @@ AND idMember IS NULL"))
 		}
 
 	}
+
+	/// <summary>
+	/// Additional access level.
+	/// </summary>
+	public class AccessLevel : CodeFirstWebFramework.AccessLevel {
+		public const int Authorise = 30;
+
+	}
+
+
 }

@@ -26,11 +26,13 @@
 						data: 'UnitPrice',
 						type: 'decimalInput'
 					},
+// {{#if Settings.RecordVat}}
 					{
 						data: 'VatCodeId',
 						type: 'selectInput',
 						selectOptions: record.VatCodes
 					},
+// {{/if}}
 					{
 						data: 'AccountId',
 						type: 'selectInput',

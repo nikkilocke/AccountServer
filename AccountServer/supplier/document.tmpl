@@ -69,6 +69,7 @@ $(function() {
 					colspan: 5
 				},
 				'Telephone',
+// {{#if Settings.RecordVat}}
 				{
 					data: 'Net',
 					type: 'decimalField'
@@ -78,6 +79,7 @@ $(function() {
 					data: 'Vat',
 					type: 'decimalField'
 				},
+// {{/if}}
 				{
 					sameRow: true,
 					data: 'DocumentAmount',
@@ -88,6 +90,24 @@ $(function() {
 					data: 'DocumentDate',
 					type: 'dateInput'
 				},
+// {{#if Settings.RequireAuthorisation}}
+// {{#if Authorise}}
+				{
+					sameRow: true,
+// {{#if Admin}}
+					type: readonly ? 'checkbox' : 'checkboxInput',
+// {{#else}}
+					type: readonly || (record.header.Authorised > 0 && record.header.Authorised != '!{{Session.User.idUser}}') ? 'checkbox' : 'checkboxInput',
+// {{/if}}
+					data: 'Authorised'
+				},
+// {{/if}}
+				{
+					sameRow: true,
+					type: 'string',
+					data: 'AuthorisedBy'
+				},
+// {{/if}}
 				{
 					data: 'DocumentIdentifier',
 					heading: 'Invoice No',
@@ -116,11 +136,13 @@ $(function() {
 					type: 'selectInput',
 					selectOptions: record.Accounts
 				},
+// {{#if Settings.RecordVat}}
 				{
 					data: 'VatCodeId',
 					type: 'selectInput',
 					selectOptions: vatCodes
 				},
+// {{/if}}
 				{
 					data: 'LineAmount',
 					type: 'decimalInput'

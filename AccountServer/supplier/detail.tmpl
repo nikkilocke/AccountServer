@@ -62,6 +62,9 @@ $(function() {
 						nonZeroText: 'Show all'
 					}
 				}
+// {{#if Settings.RequireAuthorisation}}
+				,'AuthorisedBy'
+// {{/if}}
 			]
 		});
 		if(record.idNameAddress) {
