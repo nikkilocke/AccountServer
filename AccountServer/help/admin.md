@@ -11,6 +11,17 @@ tax year, which (in the UK) starts on the first Monday in April.
 Once you have set up one or more bank accounts, you should set the default bank account here (which is filled in
 as a default when creating transactions which will affect a bank account).
 
+You can also control which modules and facilities are shown on the screens:
+
+|Field|Effect|
+|-----|------|
+|Record Vat|If you untick this, no VAT fields will be shown, and VAT will not be recorded.|
+|Customers|Untick this if you do not want to send out sales invoices.|
+|Suppliers|Untick this if you do not receive supplier invoices (or if you pay all invoices immediately on receipt).|
+|Require Authorisation|If you tick this, you cannot pay supplier invoices until they have been authorised by someone with Authorise permission. Note that you must first have users set up for this to work.|
+|Investments|Untick this if you have no investments.|
+|Members|Untick this if you do not have members.|
+
 If you want the system to be able to send email (e.g. automatically emailing out customer invoices) you need
 to set your ISP mail server details correctly here. You should be able to find the information on your mail
 provider's web site.
