@@ -33,12 +33,12 @@ after the standard css and js files, and may change the appearance however requi
 
 ## Users
 
-If there are no users on file, there is no login security. Once you add a user, some or all functionality will 
+If there are no users on file, there is no login security. Once you add a user, all functionality will 
 require logging in as a user. The first user you create will be the Admin user, who has access to everything. 
 You cannot delete this user until all the other users have been deleted (and deleting this user will turn off 
 login security).
 
-All other users have an Access Level, which can be set to None, Read Only, Read Write or Admin. All usage of the system 
+All other users have an Access Level, which can be set to None, Read Only, Read Write, Authorise or Admin. All usage of the system 
 requires one of these access levels.
 
 You can also gain finer control over who has access to what by ticking Module Permissions. This will show a list of

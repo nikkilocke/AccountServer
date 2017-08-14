@@ -74,7 +74,7 @@ namespace AccountServer {
 		[Primary]
 		public int? idAccountType;
 		/// <summary>
-		/// P&L or Balance sheet report heading
+		/// P&amp;L or Balance sheet report heading
 		/// </summary>
 		[DefaultValue("Other")]
 		public string Heading;

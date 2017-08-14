@@ -11,6 +11,8 @@
     <AssemblyName>AccountServer</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -35,13 +37,14 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <UseVSHostingProcess>false</UseVSHostingProcess>
+    <DocumentationFile>bin\Release\AccountServer.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CodeFirstWebFramework, Version=1.0.10.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\CodeFirstWebFramework.1.0.10\lib\net45\CodeFirstWebFramework.dll</HintPath>
+    <Reference Include="CodeFirstWebFramework, Version=1.0.12.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\CodeFirstWebFramework.1.0.12\lib\net45\CodeFirstWebFramework.dll</HintPath>
     </Reference>
-    <Reference Include="Markdig, Version=0.12.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\Markdig.0.12.1\lib\net40\Markdig.dll</HintPath>
+    <Reference Include="Markdig, Version=0.13.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Markdig.0.13.0\lib\net40\Markdig.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Data.Sqlite, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
       <HintPath>packages\Mono.Data.Sqlite.Portable.1.0.3.5\lib\net4\Mono.Data.Sqlite.dll</HintPath>
@@ -53,7 +56,7 @@
       <HintPath>packages\MySql.Data.6.9.9\lib\net45\MySql.Data.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -176,6 +179,7 @@
     <Content Include="AccountServer\help\navigation.md" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="contentFiles\Api.md" />
     <None Include="contentFiles\CodeFirstWebFramework\admin\batch.tmpl" />
     <None Include="contentFiles\CodeFirstWebFramework\admin\default.tmpl" />
     <None Include="contentFiles\CodeFirstWebFramework\admin\edituser.tmpl" />
@@ -204,6 +208,13 @@
 xcopy /E /I /Y "$(SolutionDir)AccountServer" "$(TargetDir)AccountServer"
 </PostBuildEvent>
   </PropertyGroup>
+  <Import Project="packages\Vsxmd.1.2.0\build\Vsxmd.targets" Condition="Exists('packages\Vsxmd.1.2.0\build\Vsxmd.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('packages\Vsxmd.1.2.0\build\Vsxmd.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Vsxmd.1.2.0\build\Vsxmd.targets'))" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

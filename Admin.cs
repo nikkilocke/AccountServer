@@ -23,8 +23,11 @@ namespace AccountServer {
 				new MenuOption("Backup", "/admin/backup.html"),
 				new MenuOption("Restore", "/admin/restore.html")
 			);
-			if (SecurityOn)
+			if (SecurityOn) {
+				if (Session.User != null)
+					insertMenuOption(new MenuOption("Change password", "/admin/changepassword"));
 				insertMenuOption(new MenuOption(Session.User == null ? "Login" : "Logout", "/admin/login"));
+			}
 		}
 
 		[Auth(AccessLevel.Any)]
@@ -104,6 +107,16 @@ namespace AccountServer {
 
 		public AjaxReturn EditUserDelete(int id) {
 			return new AdminHelper(this).EditUserDelete(id);
+		}
+
+		[Auth(AccessLevel.Any)]
+		public void ChangePassword() {
+			new AdminHelper(this).ChangePassword();
+		}
+
+		[Auth(AccessLevel.Any)]
+		public AjaxReturn ChangePasswordSave(JObject json) {
+			return new AdminHelper(this).ChangePasswordSave(json);
 		}
 
 		[Auth(AccessLevel.Any)]
