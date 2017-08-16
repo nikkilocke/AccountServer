@@ -130,6 +130,7 @@
 				switch(col.name) {
 					case 'New':
 					case 'Same':
+						$(input).prop('checked', false);
 						postJson('statementmatchingsave.html', {
 							id: id,
 							type: col.name,
@@ -143,31 +144,33 @@
 			imp.bind('changed.field', function(e, newValue, rowData, col, input) {
 				switch(col.name) {
 					case 'New':
+						$(input).prop('checked', false);
+						current = rowData;
+						var currentIndex = _.indexOf(record.import, current);
 						var menu = $('ul.menu');
 						if(menu.length)	{
 							menu.remove();
-							return;
+							if (menu[0].id == 'menu_' + currentIndex)
+								return false;
 						}
 						var opts = rowData.Amount < 0 ? record.minus : record.plus;
-						menu = $('<ul class="menu">' + _.map(opts, function(opt) {
-									return '<li id="' + opt.replace(/ /g, '') + '">' + opt + '</li>';
+						menu = $('<ul class="menu" id="menu_' + currentIndex + '">' + _.map(opts, function(opt) {
+									return '<li id="' + opt.text.replace(/ /g, '') + '">' + opt.text + '</li>';
 								}).join("\r\n") + '</ul>');
 						var p = $(input).offset();
 						menu.css('left', (p.left - 100) + 'px').css('top', (p.top + $(input).height()) + 'px');
 						menu.appendTo(body);
 						var mnu = menu.menu({
 							select: function (e, ui) {
-								current = rowData;
 								postJson('statementmatchingsave.html', {
 									id: id,
 									type: ui.item[0].id,
-									current: _.indexOf(record.import, current),
+									current: currentIndex,
 									transaction: -1
 								});
 								menu.remove();
 							}
 						});
-
 				}
 				return false;
 			});

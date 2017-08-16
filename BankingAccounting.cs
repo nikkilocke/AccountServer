@@ -58,6 +58,8 @@ namespace AccountServer {
 				header.DocumentMemo = "Money Transfer";
 				if (acct != null)
 					header.DocumentAccountId = (int)acct;
+				if (GetParameters["acct2"].IsInteger())
+					header.TransferAccountId = int.Parse(GetParameters["acct2"]);
 			} else {
 				checkDocType(header.DocumentTypeId, DocType.Transfer);
 				header.TransferAccountId = Database.QueryOne("SELECT AccountId FROM Journal WHERE DocumentId = " + id + " AND JournalNum = 2").AsInt("AccountId");

@@ -190,7 +190,7 @@ $(function() {
  * @returns {*|jQuery} Button
  */
 function addButton(text, url) {
-	return $('<button id="' + text.replace(/ /g, '') + '" data-goto="' + url + '"></button>')
+	return $('<button id="' + text.replace(/ /g, '') + (url ? '" data-goto="' + url : '') + '"></button>')
 		.text(text)
 		.appendTo($('#menu2'));
 }

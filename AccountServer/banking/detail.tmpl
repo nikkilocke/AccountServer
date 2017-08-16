@@ -1,5 +1,33 @@
 <head>{{#with Record}}
 	<script>
+		function buttonMenu(caption, opts) {
+			var input = addButton(caption);
+			var id = input[0].id;
+			input.click(function() {
+				var menu = $('ul.menu');
+				if (menu.length) {
+					menu.remove();
+					if (menu[0].id == 'menu_' + id)
+						return;
+				}
+				if(opts.length == 1) {
+					goto(opts[0].href);
+					return;
+				}
+				menu = $('<ul id="menu_' + id + '" class="menu">' + _.map(opts, function (opt) {
+							return '<li id="' + opt.text.replace(/ /g, '') + '" data-goto="' + opt.href + '">' + opt.text + '</li>';
+						}).join("\r\n") + '</ul>');
+				var p = $(input).offset();
+				menu.css('left', p.left + 'px').css('top', (p.top + $(input).height() + 5) + 'px');
+				menu.appendTo(body);
+				var mnu = menu.menu({
+					select: function (e, ui) {
+						goto(ui.item.attr('data-goto'));
+						menu.remove();
+					}
+				});
+			});
+		}
 		$(function() {
 			var record = '!{{Record}}';
 			var today = new Date().toYMD() + "T00:00:00Z";
@@ -98,14 +126,8 @@
 				});
 				//{{#if ReadWrite}}
 				addButton('Import statement', 'statementimport.html?id=' + record.idAccount);
-				if (record.AccountTypeId == AcctType.Bank) {
-					addButton('New cheque', 'document.html?id=0&type=' + DocType.Cheque + '&acct=' + record.idAccount);
-					addButton('New deposit', 'document.html?id=0&type=' + DocType.Deposit + '&acct=' + record.idAccount);
-				} else {
-					addButton('New charge', 'document.html?id=0&type=' + DocType.CreditCardCharge + '&acct=' + record.idAccount);
-					addButton('New credit', 'document.html?id=0&type=' + DocType.CreditCardCredit + '&acct=' + record.idAccount);
-				}
-				addButton('New transfer', 'transfer.html?id=0&acct=' + record.idAccount);
+				buttonMenu('Pay Out', record.minus);
+				buttonMenu('Pay In', record.plus);
 				addButton('Reconcile', 'reconcile.html?id=' + record.idAccount);
 				//{{/if}}
 				actionButton('Audit').click(function () {

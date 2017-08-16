@@ -135,7 +135,9 @@ ORDER BY JournalNum")
 				header.DocType = "Subscriptions";
 				header.DocumentDate = Utils.Today;
 				header.DocumentName = "";
-				if (Settings.DefaultBankAccount > 0) {
+				if (GetParameters["acct"].IsInteger()) {
+					header.DocumentAccountId = int.Parse(GetParameters["acct"]);
+				} else if (Settings.DefaultBankAccount > 0) {
 					Account acc = Database.QueryOne<Account>("*", "WHERE idAccount = " + Settings.DefaultBankAccount, "Account");
 					if (acc.idAccount != null) {
 						header.DocumentAccountId = (int)acc.idAccount;

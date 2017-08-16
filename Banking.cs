@@ -49,7 +49,9 @@ namespace AccountServer {
 				checkAcctType(record.AccountTypeId, AcctType.Bank, AcctType.CreditCard);
 				Title += " - " + record.AccountName;
 			}
-			Record = record;
+			JObject r = record.ToJObject();
+			addMenuOptionstoRecord(r, record);
+			Record = r;
 		}
 
 		/// <summary>
@@ -65,6 +67,39 @@ namespace AccountServer {
 		public AjaxReturn DetailSave(Account json) {
 			checkAcctType(json.AccountTypeId, AcctType.Bank, AcctType.CreditCard);
 			return SaveRecord(json, true);
+		}
+
+		void addMenuOptionstoRecord(JObject record, Account account) {
+			List<JObject> plus = new List<JObject>();
+			List<JObject> minus = new List<JObject>();
+			if (account.AccountTypeId == (int)AcctType.Bank) {
+				plus.Add(new JObject().AddRange("text", "Deposit",
+					"href", "document?id=0&type=" + (int)DocType.Cheque + "&acct=" + account.idAccount));
+				minus.Add(new JObject().AddRange("text", "Cheque",
+					"href", "document?id=0&type=" + (int)DocType.Deposit + "&acct=" + account.idAccount));
+			} else {
+				plus.Add(new JObject().AddRange("text", "Card Credit",
+					"href", "document?id=0&type=" + (int)DocType.CreditCardCharge + "&acct=" + account.idAccount));
+				minus.Add(new JObject().AddRange("text", "Card Charge",
+					"href", "document?id=0&type=" + (int)DocType.CreditCardCharge + "&acct=" + account.idAccount));
+			}
+			JObject c = Database.Query("SELECT COUNT(*) AS numAccounts FROM Account WHERE AccountTypeId " + Database.In((int)AcctType.Bank, (int)AcctType.CreditCard)).FirstOrDefault();
+			if (c != null && c.AsInt("numAccounts") > 1) {
+				plus.Add(new JObject().AddRange("text", "Transfer",
+					"href", "transfer?id=0&acct2=" + account.idAccount));
+				minus.Add(new JObject().AddRange("text", "Transfer",
+					"href", "transfer?id=0&acct=" + account.idAccount));
+			}
+			if (Settings.Customers)
+				plus.Add(new JObject().AddRange("text", "Customer Payment",
+				"href", "/customer/payment?id=0&acct=" + account.idAccount));
+			if (Settings.Suppliers)
+				minus.Add(new JObject().AddRange("text", "Bill Payment",
+				"href", "/supplier/payment?id=0&acct=" + account.idAccount));
+			if (Settings.Members)
+				plus.Add(new JObject().AddRange("text", "Subscriptions",
+				"href", "/members/document?id=0&acct=" + account.idAccount));
+			record.AddRange("plus", plus, "minus", minus);
 		}
 
 		/// <summary>
@@ -480,24 +515,11 @@ ORDER BY DocumentDate, idDocument"));
 					Database.Update(account);
 				}
 			}
-			List<string> plus = new List<string>();
-			List<string> minus = new List<string>();
-			plus.Add(account.AccountTypeId == (int)AcctType.Bank ? "Deposit" : "Card Credit");
-			minus.Add(account.AccountTypeId == (int)AcctType.Bank ? "Cheque" : "Card Charge");
-			plus.Add("Transfer");
-			minus.Add("Transfer");
-			if (Database.QueryOne("SELECT idNameAddress FROM NameAddress WHERE Type = 'C'") != null)
-				plus.Add("Customer Payment");
-			if (Database.QueryOne("SELECT idNameAddress FROM NameAddress WHERE Type = 'S'") != null)
-				minus.Add("Bill Payment");
-			if (Database.QueryOne("SELECT idNameAddress FROM NameAddress WHERE Type = 'M'") != null)
-				plus.Add("Subscriptions");
 			JObject record = new JObject().AddRange(
 					"import", result,
-					"transactions", potentialMatches(id, minDate),
-					"plus", plus,
-					"minus", minus
+					"transactions", potentialMatches(id, minDate)
 				);
+			addMenuOptionstoRecord(record, account);
 			// Save data to session
 			SessionData.StatementImport = record;
 			SessionData.Remove("StatementMatch");

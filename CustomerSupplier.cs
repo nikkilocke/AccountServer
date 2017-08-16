@@ -255,7 +255,9 @@ WHERE idNameAddress = " + id
 				header.DocumentDate = Utils.Today;
 				header.DocumentName = "";
 				header.DocumentIdentifier = "Payment";
-				if(Settings.DefaultBankAccount != null)
+				if (GetParameters["acct"].IsInteger()) {
+					header.DocumentAccountId = int.Parse(GetParameters["acct"]);
+				} else if (Settings.DefaultBankAccount > 0)
 					header.DocumentAccountId = (int)Settings.DefaultBankAccount;
 				if (GetParameters["name"].IsInteger()) {
 					JObject name = Database.QueryOne("*", "WHERE idNameAddress = " + GetParameters["name"], "NameAddress");
