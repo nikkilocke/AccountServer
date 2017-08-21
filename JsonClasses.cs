@@ -497,6 +497,8 @@ JOIN NameAddress ON idNameAddress = NameAddressId")]
 		public int YearStartDay;
 		[DefaultValue("1")]
 		public bool RecordVat;
+		[DefaultValue("0")]
+		public bool EnterGrossAmounts;
 		[DefaultValue("1")]
 		public bool Customers;
 		[DefaultValue("1")]

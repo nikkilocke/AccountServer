@@ -10,7 +10,7 @@ When you have clicked on a customer, you see the Customer Detail screen. This sh
 
 ## Invoices and Credit Memos
 
-Click New Invoice or New Credit Memo to create a new one. Or choose an existing one from the customer listing.
+Click New Invoice or New Credit Memo to create a new one. Or choose an existing one from the customer listing to edit it.
 
 Type the customer name in the customer field. As you type, a drop down of existing customers with similar names appears, which you can click on to choose one. If you type a new customer name in, when you leave the field you will be asked if you want to create a new customer, and then you can type in their address. If you choose an existing customer, the invoice address field will automatically be filled from the customer record, although you can overwrite it if the invoice is to go to a different address (but that won't update the customer record).
 

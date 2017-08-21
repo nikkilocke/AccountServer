@@ -10,9 +10,9 @@
 
 ## [Home screen](home.md)
 
-## [Customers](customers.md)
+## [Customers](customer.md)
 
-## [Suppliers](suppliers.md)
+## [Suppliers](supplier.md)
 
 ## [Banking](banking.md)
 

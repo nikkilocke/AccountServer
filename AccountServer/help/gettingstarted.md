@@ -1,12 +1,18 @@
 # Getting Started
 
-The first thing is to go to *Admin* *Settings* and fill in all the details there. It is particularly important to get your year start correct - this should be set to your own financial year - the government tax year, it starts on the first Monday on April, but only use this if you don't have your own accounting year.
+The first thing is to go to *Admin* *Settings* and fill in all the details there. It is particularly important to get your year start correct - this should be set to your own financial year - if you want to use the UK the government tax year, it starts on the first Monday on April, but only use this if you don't have your own accounting year.
 
 For AccountServer to be able to send emails (e.g. invoices to your customers), you must fill in the details of your mail server - you should be able to get them from your ISP. The defaults are suitable for use with GMail (once you have entered your GMail user name and password).
 
 You need to come back here to set your default bank account, once you have created your bank accounts.
 
+There is a series of check boxes which configure which modules you wish to user. See the [Admin help](admin.md) for details.
+
 If you want to import data from an existing system, do that next, otherwise set up your bank accounts, customers, suppliers and members as detailed below.
+
+## Set up Users
+
+If you want login security, set up your users. If there are no users on file, there is no login security. Once you add a user, all functionality will require logging in as a user. The first user you create will be the Admin user, who has access to everything. See the [Admin help](admin.md) for details.
 
 ## Importing data
 
@@ -22,11 +28,11 @@ Go to *Banking* *New Account* to set up each account. Each account must have a u
 
 Account codes are necessary to analyse income, expenditure, assets and liabilities, so you can produce a profit and loss account, balance sheet, etc.
 
-The system comes with a minimal set of fixed account codes (such as Purchase Ledger, Sales Ledger, VAT Control, etc.). You need to set up other accounts to analyse income and expenditure and, for a business, assets and liabilities. Got to *Accounting* *New Account* to set up new accounts. Each account has a type, which determines where in the Profit and Loss account or Balance sheet it comes. You can optionally add a Code to each account, to determine the sort order within accoun ttype (otherwise accounts are sorted alphabetically by Name within Type).
+The system comes with a minimal set of fixed account codes (such as Purchase Ledger, Sales Ledger, VAT Control, etc.). You need to set up other accounts to analyse income and expenditure and, for a business, assets and liabilities. Got to *Accounting* *New Account* to set up new accounts. Each account has a type, which determines where in the Profit and Loss account or Balance sheet it comes. You can optionally add a Code to each account, to determine the sort order within account type (otherwise accounts are sorted alphabetically by _Name_ within _Type_).
 
 ## Set up VAT codes, Products, Customers and Suppliers
 
-If you are registered for VAT, you need to set up VAT codes in *Customers* *VAT codes*. Click *New VAT code*, and enter the details. The code can be any unique code you like, and the rate is a percentage (e.g. 20 for 20%).
+If you are registered for VAT, you need to set up VAT codes in *Customers*/*VAT codes*. Click *New VAT code*, and enter the details. The code can be any unique code you like, and the rate is a percentage (e.g. 20 for 20%).
 
 If you send out invoices to customers, you need to set up Products next. For a business selling stock, the products are the stock you sell, each with a unit price, VAT code (if VAT registered), and account code (when you sell a product, the sale is posted to that account code, so you can analyse sales by account code). For a business selling time by the hour or day, you need to set up a product code for each hourly or daily rate. Product codes can have a Unit, which can be decimal (e.g. for product sold by weight), days (for time sold by the day), hours (time sold by the hour), units (for items which are sold in whole numbers), or a specific number of decimal places.
 

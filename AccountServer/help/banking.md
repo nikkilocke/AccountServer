@@ -2,7 +2,7 @@
 
 ## Listing
 
-The Banking Listing lists all the bank and credit card accounts which aren't hidden by default - you can view the hidden ones as well if you click the *Show all* button. Click on one to see the detail.
+The _Banking_/_Listing_ lists all the bank and credit card accounts which aren't hidden by default - you can view the hidden ones as well if you click the *Show all* button. Click on one to see the detail.
 
 ## Bank Detail
 
@@ -20,9 +20,21 @@ Each account must have a unique name. Choose the type (Bank or Credit Card). The
 
 ## Adding Transactions
 
-Click on *New cheque*, *New deposit* or *New transfer* to create a new transaction. 
+Click on *Pay Out* or *Pay In* to create a new transaction. Usually a drop-down menu will appear so you can choose what kind of transaction to create - the options are:
 
-**NOTE Payments from customers and to suppliers should not be entered here**, but in *Customer* *Add Payment* and *Supplier* *Add Bill Payment* respectively. 
+|  |Option|Description|
+|--|------|-----------|
+|Pay Out|Cheque|A direct payment from your bank account. Use this also for direct debits, standing orders, BACS payments, etc. Only appears for Bank accounts.|
+||Card Charge|A payment from your credit card. Only appears for Credit Cards.|
+||Transfer|A transfer to another account (bank, credit card or investment account). Only appears if you have other accounts.|
+||Bill Payment|A payment of a bill you have already entered into Suppliers. Only appears if you have Suppliers. See [Suppliers](supplier.md)|
+|Pay In|Deposit|A direct payment into your bank account. Use this also for incoming standing orders, BACS payments, etc. Only appears for Bank accounts.|
+||Card Credit|A payment into your credit card, including refunds of card charges, cash back payments, etc. Only appears for Credit Cards.|
+||Transfer|A transfer from another account (bank, credit card or investment account). Only appears if you have other accounts.|
+||Customer Payment|A payment of an invoice you have already entered into Customers. Only appears if you have Customers. See [Customers](customer.md)|
+||Subscriptions|A subscription payment from one or more Members. Only appears if you have Members. See [Members](members.md)|
+
+If there is only one of the above options available, you will be taken straight to it without having to choose it from a menu.
 
 ### Cheques and deposits
 
@@ -40,7 +52,7 @@ Note that the Total (and Net and VAT total if applicable) are updated automatica
 
 ### Transfers
 
-Transfers are used to transfer money between accounts - e.g. between a current and deposit account, or to a stockbroker account. Just choose the account from the drop-down list, and enter the date and amount.
+Transfers are used to transfer money between accounts - e.g. between a current and deposit account, or to an investment account. Just choose the account from the drop-down list, and enter the date and amount.
 
 ## Importing statements
 
@@ -69,7 +81,9 @@ The fields you can use are:
 
 You can also add *Optional:* in front of a field if the bank provides it for some transactions and not others.
 
-I am hoping to provde example formats for a few different banks and credit card companies on our website - if you have any that work well, feel free to send them to me using the [contact form](http://www.trumphurst.com/contact.php) on my website.
+[Click here for examples](bankimport.md).
+
+I am hoping to provde example formats for a more banks and credit card companies - if you have any that work well, feel free to send them to me using the [contact form](http://www.trumphurst.com/contact.php) on my website.
 
 ### Statement Matching
 

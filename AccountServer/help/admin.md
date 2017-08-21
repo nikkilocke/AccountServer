@@ -15,7 +15,7 @@ You can also control which modules and facilities are shown on the screens:
 
 |Field|Effect|
 |-----|------|
-|Record Vat|If you untick this, no VAT fields will be shown, and VAT will not be recorded.|
+|Record Vat|If you are VAT registered, leave this checkbox checked, and you will be asked to enter VAT codes and amounts in transactions, and the system will prepare your VAT return for you. If you are not registered for VAT, uncheck the box, and you will not be bothered with unnecessary prompts for VAT.|
 |Enter Gross Amounts|If you are recording VAT, you can choose to enter amounts in cheques and deposits including, or excluding VAT. If you tick this, the default will be to enter amounts including VAT (Gross). If you leave it unticked, the default will be to enter amounts excluding VAT (Net). You can override this setting for individual documents as you enter them.|
 |Customers|Untick this if you do not want to send out sales invoices.|
 |Suppliers|Untick this if you do not receive supplier invoices (or if you pay all invoices immediately on receipt).|
@@ -34,16 +34,12 @@ after the standard css and js files, and may change the appearance however requi
 
 ## Users
 
-If there are no users on file, there is no login security. Once you add a user, all functionality will 
-require logging in as a user. The first user you create will be the Admin user, who has access to everything. 
-You cannot delete this user until all the other users have been deleted (and deleting this user will turn off 
-login security).
+If there are no users on file, there is no login security. Once you add a user, all functionality will require logging in as a user. The first user you create will be the Admin user, who has access to everything. 
+You cannot delete this user until all the other users have been deleted (and deleting this user will turn off login security).
 
-All other users have an Access Level, which can be set to None, Read Only, Read Write, Authorise or Admin. All usage of the system 
-requires one of these access levels.
+All other users have an Access Level, which can be set to None, Read Only, Read Write, Authorise or Admin. All usage of the system requires one of these access levels.
 
-You can also gain finer control over who has access to what by ticking Module Permissions. This will show a list of
-all the modules and/or methods which require an access level, and you can set the user's level for each one individually.
+You can also gain finer control over who has access to what by ticking Module Permissions. This will show a list of all the modules and/or methods which require an access level, and you can set the user's level for each one individually.
 
 ## Integrity Check
 

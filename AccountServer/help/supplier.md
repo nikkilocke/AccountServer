@@ -6,11 +6,11 @@ The Suppliers Listing lists all customers who have an outstanding balance by def
 
 ## Supplier Detail
 
-When you have clicked on a supplier, you see the Supplier Detail screen. This shows all outstanding invoices (and credit notes and payments)- documents - for the supplier. You can change it to list all documents by clicking *Show All*. Click on a document to display it.
+When you have clicked on a supplier, you see the Supplier Detail screen. This shows all outstanding invoices (and credit notes and payments) - documents - for the supplier. You can change it to list all documents by clicking *Show All*. Click on a document to display it.
 
 ## Bills & Credits
 
-Click New Bill or New Credit to create a new one. Or choose an existing one from the supplier listing.
+Click _New Bill_ or _New Credit_ to create a new one. Or choose an existing one from the supplier listing to edit it.
 
 Type the supplier name in the supplier field. As you type, a drop down of existing suppliers with similar names appears, which you can click on to choose one. If you type a new supplier name in, when you leave the field you will be asked if you want to create a new supplier, and then you can type in their address. If you choose an existing supplier, the address field will automatically be filled from the supplier record, although you can overwrite it if the invoice is from a different address (but that won't update the supplier record). Also, the lines from the last invoice from that supplier will be copied in, which you can amend or delete as appropriate.
 
@@ -24,7 +24,7 @@ Note that the total and VAT total are updated automatically as you amend the lin
 
 ## Bill Payments
 
-To pay one or more supplier invoices, use the *Suppliers* *New Bill Payment* screen. Select the required supplier from the dropdown. The supplier address and phone number will be filled in, and a list of all outstanding invoices and credit notes will appear.
+To pay one or more supplier invoices, use the *Suppliers*/*New Bill Payment* screen. Select the required supplier from the dropdown. The supplier address and phone number will be filled in, and a list of all outstanding invoices and credit notes will appear.
 
 Then enter the bank account from which to make the payment. Check the date is correct. 
 

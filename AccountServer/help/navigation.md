@@ -8,7 +8,7 @@ Input forms will show one or more of the following buttons
 
 |Button|Function|
 |------|--------|
-|Save|Saves the data in the current form, but remains on the same page. If crteating a new invoice (say), clicking this will save the data and reveal new buttons to (e.g.) print the invoice.|
+|Save|Saves the data in the current form, but remains on the same page. If creating a new invoice (say), clicking this will save the data and reveal new buttons to (e.g.) print the invoice.|
 |Save and Close|Saves the data in the current form, and returns to the previous screen.|
 |Save and New|Saves the data in the current form, and opens a new blank form to create another record.|
 |Reset|Throws away any changes you have made to the current form. This will ask you to confirm before doing so.|
