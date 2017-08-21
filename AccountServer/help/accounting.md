@@ -26,9 +26,9 @@ Examples of typical types of journals appear below.
 
 A prepayment is where you have paid something in one financial year all or part of which relates to the following year.
 
-For example, your phone bill may include a line rental amount which is paid every 3 months on advance. If 2 of those months are in the next financial year, you will need to create Prepayment journals. 
+For example, your phone bill may include a line rental amount which is paid every 3 months in advance. If 2 of those months are in the next financial year, you will need to create Prepayment journals. 
 
-To create prepayments, you first need to set up one or more prepayments accounts, whose *Type* should be *Current Asset*.
+To create prepayments, you first need to set up one or more Prepayments accounts, whose *Type* should be *Current Asset*.
 
 Then create a journal, usually dated on the last day of the year, which transfers 2 month's rental out of the expense account concerned (e.g. Telephone), and into a Prepayments account. The journal will Credit Telephone and Debit Prepayments. On the first day of the next year, create a reversing journal, which moves the money back again, by Debiting Telephone and Crediting Prepayments.
 
@@ -40,7 +40,7 @@ An accrual is where you have not been billed by the end of the year for some exp
 
 For example, your phone bill may include a call cost amount, which is paid every 3 months in arrears. Unless the phone bill arrives on the last day of your financial year, there will be some amount of call costs that have not been billed, but which you should account for in this year. 
 
-To create accruals, you first need to set up one or more accruals accounts, whose *Type* should be *Current Liability*.
+To create accruals, you first need to set up one or more Accruals accounts, whose *Type* should be *Current Liability*.
 
 Then create a journal, usually dated on the last day of the year, which transfers the estimated rental between an Accruals account and the expense account concerned (e.g. Telephone). The journal will Debit Telephone and Credit Accruals. On the first day of the next year, create a reversing journal, which moves the money back again, by Crediting Telephone and Debiting Accruals.
 
@@ -50,7 +50,7 @@ This way, the Profit and Loss for each year will only show the expense that rela
 
 These are dealt with by setting up *Fixed Assets* accounts for the cost and depreciation of fixed assets, and setting up a corresponding *Expense* account for the depreciation. When you buy an asset, if you have posted the cost to an expense account, you create a journal to move the expense into the fixed assets account (Credit the expense account, and Debit the Current Assets cost account). This way, the expense of buying the asset will not appear in your Profit and Loss account, but on your Balance Sheet.
 
-At the end of each year, you create a journal to move the amount of depreciation for that year from the Fixed Assets depreciation account into the expense depreciation account. The journal will Credit the Current Assets depreciation account, and Debit the Expense depreciation account. This way the cost of the depreciation will appear in your Profit and Loss account, and reduce the value of Current Assets on your Balance Sheet.
+At the end of each year, you create a journal to move the amount of depreciation for that year from the Fixed Assets depreciation account into the Expense depreciation account. The journal will Credit the Current Assets depreciation account, and Debit the Expense depreciation account. This way the cost of the depreciation will appear in your Profit and Loss account, and reduce the value of Current Assets on your Balance Sheet.
 
 ## List Journals
 
@@ -58,11 +58,15 @@ This shows all the journals posted to the system, most recent first. Click on on
 
 ## Adding journals
 
-Enter the journaL date, and a Memo describing the purpose of the journal.
+Enter the journal date, and a Memo describing the purpose of the journal.
 
-For each line of the journal, select the account and the amount to credit or debit that account. You can also fill in a memo describing that line. The amount needed to balance the journal will be shown at the top.
+For each line of the journal, optionally enter a Name, select the account and the amount to credit or debit that account. You can also fill in a memo describing that line. The amount needed to balance the journal will be shown at the top.
 
 As you enter each line, a new line will be created, with a Credit or Debit amount to make the journal balance (but no account, until you fill it in). You can delete an existing line by pressing the red ![x](../images/close.png). 
+
+It is unusual to use Names in journals, but if the journal relates, for example, to a particular supplier or customer, you may wish to do so. As you type, a drop down of existing similar names appears, which you can click on to choose one. If you type a new name in, when you leave the field you will be asked if you want to create a new name.
+
+You cannot save a journal until it balances (i.e. the *Amount To Balance* is zero).
 
 ## Names
 
