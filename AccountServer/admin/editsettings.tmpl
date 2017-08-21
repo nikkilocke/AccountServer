@@ -81,6 +81,10 @@
 						type: 'checkboxInput'
 					},
 					{
+						data: 'EnterGrossAmounts',
+						type: 'checkboxInput'
+					},
+					{
 						data: 'Customers',
 						type: 'checkboxInput'
 					},
@@ -142,6 +146,12 @@
 					'DbVersion',
 					'AppVersion'
 				]
+			});
+			form.fields.EnterGrossAmounts.cell.closest('tr').toggle(!!record.header.RecordVat);
+			form.bind('changed.field', function(e, newValue, rowData, col, input) {
+				if(col.name == 'RecordVat') {
+					form.fields.EnterGrossAmounts.cell.closest('tr').toggle(!!newValue);
+				}
 			});
 		});
 	</script>

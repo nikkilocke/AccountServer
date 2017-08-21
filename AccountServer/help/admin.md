@@ -16,6 +16,7 @@ You can also control which modules and facilities are shown on the screens:
 |Field|Effect|
 |-----|------|
 |Record Vat|If you untick this, no VAT fields will be shown, and VAT will not be recorded.|
+|Enter Gross Amounts|If you are recording VAT, you can choose to enter amounts in cheques and deposits including, or excluding VAT. If you tick this, the default will be to enter amounts including VAT (Gross). If you leave it unticked, the default will be to enter amounts excluding VAT (Net). You can override this setting for individual documents as you enter them.|
 |Customers|Untick this if you do not want to send out sales invoices.|
 |Suppliers|Untick this if you do not receive supplier invoices (or if you pay all invoices immediately on receipt).|
 |Require Authorisation|If you tick this, you cannot pay supplier invoices until they have been authorised by someone with Authorise permission. Note that you must first have users set up for this to work.|

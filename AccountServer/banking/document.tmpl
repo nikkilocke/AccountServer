@@ -26,10 +26,19 @@ $(function() {
 		VatCodeId: null,
 		VatRate: 0.00,
 		VatAmount: 0.00,
-		LineAmount: 0.00
+		LineAmount: 0.00,
+		Gross: 0.00
 	};
 	var readonly = record.header.DocumentOutstanding != record.header.DocumentAmount || '!{{ReadOnly}}';
 	var dataEntered = readonly || record.detail.length > 0;
+// {{#if Settings.RecordVat}}
+	record.header.EnterGrossAmounts = '!{{Settings.EnterGrossAmounts}}';
+// {{#else}}
+	record.header.EnterGrossAmounts = true;
+// {{/if}}
+	_.each(record.detail, function (line) {
+		line.Gross = round(line.LineAmount + line.VatAmount);
+	});
 	record.header.StatementAmount = record.header.DocumentAmount;
 	function calculateDocument() {
 		record.header.Net = record.header.Vat = 0;
@@ -68,6 +77,13 @@ $(function() {
 			heading: 'Total',
 			type: 'decimalField'
 		}
+// {{#if Settings.RecordVat}}
+		,{
+			sameRow: true,
+			data: 'EnterGrossAmounts',
+			type: 'checkboxInput'
+		}
+// {{/if}}
 	];
 	if(matchingStatement())
 		headerColumns.push({
@@ -83,11 +99,13 @@ $(function() {
 		{
 			data: 'DocumentIdentifier',
 			heading: 'Cheque No',
+			colspan: 3,
 			type: 'docIdInput'
 		},
 		{
 			data: 'DocumentMemo',
 			type: 'textInput',
+			colspan: 3,
 			attributes: 'size="50"'
 		});
 	var form = makeHeaderDetailForm('#form', '#docs', {
@@ -138,7 +156,14 @@ $(function() {
 				},
 //{{/if}}
 				{
-					data: 'LineAmount',
+					name: 'Amount',
+					data: record.header.EnterGrossAmounts ? 'Gross' : 'LineAmount',
+// {{#if Settings.RecordVat}}
+					heading: record.header.EnterGrossAmounts ? 'Gross' : 'Net',
+					sClass: 'ni amt',
+//{{/else}}
+					heading: 'Amount',
+//{{/if}}
 					type: 'decimalInput'
 				},
 // {{#if Settings.RecordVat}}
@@ -157,11 +182,25 @@ $(function() {
 		}
 	});
 	function calculateLine(line, newValues) {
+		if(record.header.EnterGrossAmounts) {
+			if(newValues.Gross !== undefined)
+				newValues.LineAmount = round(newValues.Gross - newValues.Vat);
+		}
 		var originalNet = line.LineAmount;
 		var originalVat = line.VatAmount;
 		_.extend(line, newValues);
-		if(newValues.VatAmount === undefined)
-			line.VatAmount = round(line.LineAmount * line.VatRate / 100);
+		if (record.header.EnterGrossAmounts) {
+			if(newValues.VatAmount === undefined) {
+				line.LineAmount = round(line.Gross * 100 / (100 + line.VatRate));
+				line.VatAmount = line.Gross - line.LineAmount;
+			} else {
+				line.LineAmount = round(line.Gross - line.VatAmount);
+			}
+		} else {
+			if (newValues.VatAmount === undefined)
+				line.VatAmount = round(line.LineAmount * line.VatRate / 100);
+			line.Gross = round(line.LineAmount + line.VatAmount);
+		}
 		form.data.header.Net = round(form.data.header.Net + line.LineAmount - originalNet);
 		form.data.header.Vat = round(form.data.header.Vat + line.VatAmount - originalVat);
 		form.data.header.DocumentAmount = round(form.data.header.Net + form.data.header.Vat);
@@ -209,19 +248,27 @@ $(function() {
 					}
 				});
 			}
+// {{#if Settings.RecordVat}}
+		} else if(col.name == 'EnterGrossAmounts') {
+			var amountCol = form.detail.fields.Amount;
+			amountCol.data = newValue ? 'Gross' : 'LineAmount';
+			amountCol.heading = newValue ? 'Gross' : 'Net';
+			form.detail.find('thead tr th.amt').text(amountCol.heading);
+			form.detail.draw();
+// {{/if}}
 		}
 	});
 	form.detail.bind('changed.field', function(e, newValue, rowData, col, input) {
 		dataEntered = true;
 		var newValues = {};
-		newValues[col.name] = newValue;
+		newValues[col.data] = newValue;
 		//noinspection FallThroughInSwitchStatementJS
 		switch(col.name) {
 			case 'VatCodeId':
 				var vatCode = vatCodesHash[newValue] || { Rate: 0.00 };
 				newValues.VatRate = vatCode.Rate;
 				$('#docs input#r' + form.detail.rowIndex(input) + 'cVatAmount').prop('disabled', !newValue);
-			case 'LineAmount':
+			case 'Amount':
 			case 'VatAmount':
 				break;
 			default:

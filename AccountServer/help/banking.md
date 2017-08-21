@@ -28,9 +28,15 @@ Click on *New cheque*, *New deposit* or *New transfer* to create a new transacti
 
 Type the name of the payee or payer - as you type, a drop down of existing people with similar names appears, which you can click on to choose one. If you type a new name in, when you leave the field you will be asked if you want to create a new name. If you choose an existing name, the lines from the last cheque to or deposit from that name will be copied in, which you can amend or delete as appropriate.
 
-Now add the invoice lines - for each line, choose an account. Enter the Vat Code and Amount. Note that you can overwrite the calculated VAT if the other party has calculated the VAT differently (perhaps they use a different rounding method). You can add a note to the line in the Memo field if you like. As you enter each new line, a new blank line will appear below. You can delete an existing line by pressing the red ![x](../images/close.png).
+Now add the invoice lines - for each line, choose an account. 
 
-Note that the total and VAT total are updated automatically as you amend the lines.
+If you are recording VAT, you can choose to enter amounts in cheques and deposits including, or excluding VAT. If you tick _Enter Gross Amounts_, you can enter amounts including VAT (Gross). If you leave it unticked, you can enter amounts excluding VAT (Net). The initial state of the checkbox is set from _Enter Gross Amounts_ in _Admin/Settings_. Enter the Vat Code and Amount, and the system will calculate the VAT for you. Note that you can overwrite the calculated VAT if the other party has calculated the VAT differently (perhaps they use a different rounding method). 
+
+Otherwise simply enter the amount. 
+
+You can add a note to the line in the Memo field if you like. As you enter each new line, a new blank line will appear below. You can delete an existing line by pressing the red ![x](../images/close.png).
+
+Note that the Total (and Net and VAT total if applicable) are updated automatically as you amend the lines.
 
 ### Transfers
 
