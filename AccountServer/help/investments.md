@@ -4,7 +4,7 @@ Investments include pensions, loans to other people, and stocks and shares accou
 
 ## Listing
 
-This lists all the investment accounts you have. Each account has a cash balance, and a value, which is the value of the any secutities held at today's price.
+This lists all the investment accounts you have. Each account has a cash balance, and a value, which is the value of any secutities held at today's price.
 
 To add a new one, click *New Account*.
 

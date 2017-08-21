@@ -83,7 +83,7 @@ You can also add *Optional:* in front of a field if the bank provides it for som
 
 [Click here for examples](bankimport.md).
 
-I am hoping to provde example formats for a more banks and credit card companies - if you have any that work well, feel free to send them to me using the [contact form](http://www.trumphurst.com/contact.php) on my website.
+I am hoping to provide example formats for a more banks and credit card companies - if you have any that work well, feel free to send them to me using the [contact form](http://www.trumphurst.com/contact.php) on my website.
 
 ### Statement Matching
 
@@ -103,7 +103,7 @@ When you recieve an official bank statement (either by post, or printed from the
 
 As you tick off each transaction, the cleared balance and difference is updated automatically. For the statement to reconcile, the difference should be zero.
 
-If you are unable to reconcile (perhaps because there are some transactions missong, or with the wrong value), you can press the *Leave* button to save your work so far, enter or edit the incorrect transactions, and return.
+If you are unable to reconcile (perhaps because there are some transactions missing, or with the wrong value), you can press the *Leave* button to save your work so far, enter or edit the incorrect transactions, and return.
 
 If the reconciliation balances, you can save it - this will mark all the ticked transactions as reconciled (The *Clr* column will show an 'X' on the bank detail screen).
 

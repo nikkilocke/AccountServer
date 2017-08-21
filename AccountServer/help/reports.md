@@ -9,7 +9,7 @@ Reports are divided into 4 headings.
 
 ## Modifying a report
 
-Initially a report displays with default settings. Click *Modify report* to change these - you can change the title of the report, which fields are included, filter which records are included, and set sorting and totalling.
+Initially a report displays with default settings. Click *Modify report* to change these - you can change the title of the report, which fields are included, the date range, filter which records are included, and set sorting and totalling.
 
 If you change any of this information, and then close the report, you will be warned that your changes will be lost unless you memorise the report.
 

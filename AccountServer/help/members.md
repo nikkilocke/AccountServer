@@ -16,7 +16,7 @@ Each member must have a unique membership number, and type (see *Membership Type
 
 These are used to receive subscription payments from one or more members. 
 
-Click *New Subscription Payment" to create a new one. Or choose an existing one from the *Subscription Payments* listing.
+Click *New Subscription Payment* to create a new one. Or choose an existing one from the *Subscription Payments* listing.
 
 Choose the bank account into which the money has been paid.
 
