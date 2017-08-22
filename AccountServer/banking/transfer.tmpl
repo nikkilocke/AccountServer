@@ -5,7 +5,7 @@
 $(function() {
 	var record = '!{{Record}}';
 	var readonly = record.header.DocumentOutstanding != record.header.DocumentAmount || '!{{ReadOnly}}';
-	var form = makeForm('#form', {
+	var form = makeForm('#form', checkForStatementMatching({
 		data: record.header,
 		table: 'Document',
 		validate: function() {
@@ -51,7 +51,7 @@ $(function() {
 				attributes: 'size="50"'
 			}
 		]
-	});
+	}));
 	if(matchingStatement()) {
 		form.find('#r0cDocumentAmount').prop('disabled', true);
 		if(record.StatementAccount == record.header.DocumentAccountId)

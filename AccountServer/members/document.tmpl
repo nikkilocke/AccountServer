@@ -1,7 +1,7 @@
 <head>
 	<script>
 		$(function() {
-			var formOptions = {{Form.Options}};
+			var formOptions = '!{{Form.Options}}';
 			var record = '!{{Record}}';
 			var fixedAmount = matchingStatement();
 			if(fixedAmount) {
@@ -45,7 +45,7 @@
 			};
 			record.detail.push(_.clone(emptyRow));
 			var form = makeHeaderDetailForm('#docs', '#detail',
-					formOptions
+					checkForStatementMatching(formOptions)
 			);
 			function checkForNewRow() {
 				if(form.detail.data[form.detail.data.length - 1].NameAddressId) {

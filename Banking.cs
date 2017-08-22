@@ -516,6 +516,7 @@ ORDER BY DocumentDate, idDocument"));
 				}
 			}
 			JObject record = new JObject().AddRange(
+					"id", id,
 					"import", result,
 					"transactions", potentialMatches(id, minDate)
 				);
@@ -523,7 +524,7 @@ ORDER BY DocumentDate, idDocument"));
 			// Save data to session
 			SessionData.StatementImport = record;
 			SessionData.Remove("StatementMatch");
-			Redirect("/banking/statementmatching.html?id=" + id);
+			Redirect("/banking/statementmatching.html?from=%2Fbanking%2Fdetail%3Fid%3D" + id);
 		}
 
 		/// <summary>
@@ -576,7 +577,8 @@ ORDER BY DocumentDate, idDocument"));
 		/// Update 1 matched transaction
 		/// </summary>
 		public AjaxReturn StatementMatchingSave(MatchInfo json) {
-			checkAccountIsAcctType(json.id, AcctType.Bank, AcctType.CreditCard);
+			int acct = SessionData.StatementImport.id;
+			checkAccountIsAcctType(acct, AcctType.Bank, AcctType.CreditCard);
 			JObject current = SessionData.StatementImport.import[json.current];
 			Utils.Check(current != null, "Current not found");
 			if (json.transaction >= 0) {
@@ -593,8 +595,8 @@ ORDER BY DocumentDate, idDocument"));
 			}
 			// Save json to session
 			SessionData.StatementMatch = json.ToJToken();
-			return new AjaxReturn() { redirect = "statementmatch.html?id=" + json.id };
-		}
+			return new AjaxReturn() { redirect = "statementmatch.html?from=%2Fbanking%2Fstatementmatching.html" };
+			}
 
 		/// <summary>
 		/// Update a matched transaction
@@ -603,7 +605,8 @@ ORDER BY DocumentDate, idDocument"));
 		public void StatementMatch() {
 			Utils.Check(SessionData.StatementMatch != null, "Invalid call to StatementMatch");
 			MatchInfo match = SessionData.StatementMatch.ToObject<MatchInfo>();
-			Account account = Database.Get<Account>(match.id);
+			int acct = SessionData.StatementImport.id;
+			Account account = Database.Get<Account>(acct);
 			// The existing transaction to match (or empty record if none)
 			Extended_Document transaction = match.transaction < 0 ? Database.EmptyRecord<Extended_Document>() : 
 				SessionData.StatementImport.transactions[match.transaction].ToObject<Extended_Document>();
@@ -650,7 +653,8 @@ ORDER BY DocumentDate, idDocument"));
 					default:
 						throw new CheckException("Unknown match type {0}", match.type);
 				}
-			GetParameters["acct"] = match.id.ToString();	// This bank account
+			GetParameters["acct"] = acct.ToString();    // This bank account
+			string nameType = "O";
 			// Call appropriate method to get Record, and therefore transaction
 			// Also set Module and Method, so appropriate template is used to display transaction before posting
 			switch (type) {
@@ -664,6 +668,7 @@ ORDER BY DocumentDate, idDocument"));
 					this.Record = cust.Record;
 					this.Form = cust.Form;
 					payment = true;
+					nameType = "C";
 					break;
 				case DocType.BillPayment:
 					Module = "supplier";
@@ -675,6 +680,7 @@ ORDER BY DocumentDate, idDocument"));
 					this.Record = supp.Record;
 					this.Form = supp.Form;
 					payment = true;
+					nameType = "S";
 					break;
 				case DocType.Cheque:
 				case DocType.Deposit:
@@ -697,6 +703,7 @@ ORDER BY DocumentDate, idDocument"));
 					member.Document(id);
 					this.Record = member.Record;
 					this.Form = member.Form;
+					nameType = "M";
 					break;
 				default:
 					throw new CheckException("Unexpected document type:{0}", type.UnCamel());
@@ -705,7 +712,7 @@ ORDER BY DocumentDate, idDocument"));
 			dynamic doc = record.header;
 			if (id == 0 && type == DocType.Transfer && cAmount > 0) {
 				// New transfer in
-				doc.TransferAccountId = match.id;
+				doc.TransferAccountId = acct;
 				doc.DocumentAccountId = 0;
 				doc.DocumentAccountName = "";
 			}
@@ -719,7 +726,7 @@ ORDER BY DocumentDate, idDocument"));
 					memo = name + " " + memo;
 				doc.DocumentMemo = memo;
 			}
-			if (!same) {
+			if (!same && type != DocType.Subscriptions) {
 				// They want to create a new document - try to guess the DocumentName
 				string name = doc.DocumentName;
 				string currentName = current.Name;
@@ -727,12 +734,15 @@ ORDER BY DocumentDate, idDocument"));
 				if (string.IsNullOrWhiteSpace(name) || (!payment && name.SimilarTo(currentName) < 0.5)) {
 					doc.DocumentName = currentName;
 					doc.DocumentNameAddressId = 0;
-					foreach (NameAddress n in Database.Query<NameAddress>("SELECT * FROM NameAddress WHERE Type = 'O' AND Name <= "
-						+ Database.Quote(currentName) + " AND Name LIKE " + Database.Quote(currentName.Substring(0, 5) + "%"))) {
-							if (n.Name.SimilarTo(currentName) >= 0.5) {
+					float maxsimilarity = 0.4999f;
+					foreach (NameAddress n in Database.Query<NameAddress>("SELECT * FROM NameAddress WHERE Type = " + Database.Quote(nameType) 
+							+ " AND Name <= " + Database.Quote(currentName) 
+							+ " AND Name LIKE " + Database.Quote(currentName.Substring(0, 5) + "%"))) {
+						float similarity = n.Name.SimilarTo(currentName);
+							if (similarity > maxsimilarity) {
 								doc.DocumentName = n.Name;
 								doc.DocumentNameAddressId = n.idNameAddress;
-								break;
+								maxsimilarity = similarity;
 							}
 					}
 				}
@@ -774,7 +784,7 @@ ORDER BY DocumentDate, idDocument"));
 			}
 			if (payment && !same)
 				removePayments(record);
-			record.StatementAccount = match.id;
+			record.StatementAccount = acct;
 			if (same) {
 				// Just post the new information
 				if (type == DocType.Transfer)
@@ -857,16 +867,13 @@ ORDER BY DocumentDate, idDocument"));
 					transaction.Matched = 1;
 				JArray items = SessionData.StatementImport.import;
 				items.RemoveAt(match.current);
-				result.redirect = "/banking/" + (items.Count == 0 ? "detail" : "statementmatching") + ".html?id=" + match.id;
+				int acct = SessionData.StatementImport.id;
+				result.redirect = "/banking/" + (items.Count == 0 ? "detail.html?id=" + acct : "statementmatching.html");
 			}
 			return result;
 		}
 
 		public class MatchInfo : JsonObject {
-			/// <summary>
-			/// Bank account id
-			/// </summary>
-			public int id;
 			/// <summary>
 			/// New, Transfer or Same
 			/// </summary>

@@ -109,7 +109,7 @@ $(function() {
 			colspan: 3,
 			attributes: 'size="50"'
 		});
-	var form = makeHeaderDetailForm('#form', '#docs', {
+	var form = makeHeaderDetailForm('#form', '#docs', checkForStatementMatching({
 		validate: function() {
 			for(var i = 0; i < form.data.detail.length - 1; i++) {
 				var row = form.data.detail[i];
@@ -181,7 +181,7 @@ $(function() {
 				}
 			]
 		}
-	});
+	}));
 	function calculateLine(line, newValues) {
 		if(record.header.EnterGrossAmounts) {
 			if(newValues.Gross !== undefined)

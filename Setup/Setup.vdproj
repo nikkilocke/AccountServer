@@ -33,6 +33,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_01CDC3BDAF6C4294BD474E58AB70F460"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_031C08785B774A81831219214A72C125"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -316,7 +322,7 @@
         "Entry"
         {
         "MsmKey" = "8:_49AA568D2FB126367C9FF945AFE997DF"
-        "OwnerKey" = "8:_F904310BC67262C60C4228430422BDD0"
+        "OwnerKey" = "8:_75466F23534F8C0F47F2179DE9226A1F"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -388,7 +394,7 @@
         "Entry"
         {
         "MsmKey" = "8:_5CB9FD66650FBEFDE578FCBAB5DE3484"
-        "OwnerKey" = "8:_F904310BC67262C60C4228430422BDD0"
+        "OwnerKey" = "8:_75466F23534F8C0F47F2179DE9226A1F"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -400,6 +406,12 @@
         "Entry"
         {
         "MsmKey" = "8:_5F29C37C537341AEA8D35B814EFE8F55"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_5F49D522E61E4388AA88F6618B045D6F"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -429,13 +441,13 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_67C45C207C344CE989F56A41F7AD69D2"
+        "MsmKey" = "8:_68C92753531A456E88AB8F097A175772"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_68C92753531A456E88AB8F097A175772"
+        "MsmKey" = "8:_6923CD6D83F342009A990B78D57D996B"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -501,6 +513,18 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_75466F23534F8C0F47F2179DE9226A1F"
+        "OwnerKey" = "8:_5FF57C894648470A84448BA0923CC924"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_756B163585214D9CBED07A5AB7E11A1A"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_760DF50CA95F4EA6AF1EAB32D6DCE077"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -514,7 +538,7 @@
         "Entry"
         {
         "MsmKey" = "8:_79D692CCB8FE5E09017EFAB053325C6A"
-        "OwnerKey" = "8:_F904310BC67262C60C4228430422BDD0"
+        "OwnerKey" = "8:_75466F23534F8C0F47F2179DE9226A1F"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -556,12 +580,6 @@
         "Entry"
         {
         "MsmKey" = "8:_81353964C55E4739A5384A8E6F9DD2DB"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_828C6ECAB3AB4D678BCF3A8A56533045"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -687,6 +705,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_94DF76D9F6894950BAB8AB7182D65386"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_9574D7F9A4264BF68F4E28ADADA9BCF3"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -760,12 +784,6 @@
         "Entry"
         {
         "MsmKey" = "8:_9F60828408AF413E93E8F3A93DFA8E40"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_9F95330E9F394A398A7AD1DCF2F3BE2A"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -850,6 +868,12 @@
         "Entry"
         {
         "MsmKey" = "8:_B4EEA9990C8B40D98C4048FF53F35FDC"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_B637C2512F5C430C8796A573A5E68D3E"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -993,6 +1017,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_D9C52395A4C7475F980E5A8119CDFC05"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_DB9E8BC3FBA04DE582232D0DEC5BD2A6"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -1012,7 +1042,7 @@
         "Entry"
         {
         "MsmKey" = "8:_E0965FE1AE48ED51FBF9DA2C00F8818C"
-        "OwnerKey" = "8:_F904310BC67262C60C4228430422BDD0"
+        "OwnerKey" = "8:_75466F23534F8C0F47F2179DE9226A1F"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -1113,12 +1143,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_F904310BC67262C60C4228430422BDD0"
-        "OwnerKey" = "8:_5FF57C894648470A84448BA0923CC924"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_F9760572D5E048EA81C7B426512A02DB"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -1126,19 +1150,13 @@
         "Entry"
         {
         "MsmKey" = "8:_F9E79D797D1D98E9F6DDD5090F4E81A7"
-        "OwnerKey" = "8:_F904310BC67262C60C4228430422BDD0"
+        "OwnerKey" = "8:_75466F23534F8C0F47F2179DE9226A1F"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_F9E79D797D1D98E9F6DDD5090F4E81A7"
         "OwnerKey" = "8:_5FF57C894648470A84448BA0923CC924"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_FC55CAC72C6F4F71B00473630DF3DEEF"
-        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -1204,7 +1222,7 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_F904310BC67262C60C4228430422BDD0"
+        "OwnerKey" = "8:_75466F23534F8C0F47F2179DE9226A1F"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -1372,6 +1390,26 @@
             "TargetName" = "8:z.png"
             "Tag" = "8:"
             "Folder" = "8:_0751DA76B62B44858332E6324D145E6F"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_01CDC3BDAF6C4294BD474E58AB70F460"
+            {
+            "SourcePath" = "8:..\\AccountServer\\help\\admin.md"
+            "TargetName" = "8:admin.md"
+            "Tag" = "8:"
+            "Folder" = "8:_595ED58D68A240A489A946CA340A4541"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -2508,6 +2546,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_5F49D522E61E4388AA88F6618B045D6F"
+            {
+            "SourcePath" = "8:..\\AccountServer\\help\\supplier.md"
+            "TargetName" = "8:supplier.md"
+            "Tag" = "8:"
+            "Folder" = "8:_595ED58D68A240A489A946CA340A4541"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_608408BDE5BB4C66B342D7576250D850"
             {
             "SourcePath" = "8:..\\AccountServer\\help\\admin_import.tmpl"
@@ -2568,12 +2626,12 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_67C45C207C344CE989F56A41F7AD69D2"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_68C92753531A456E88AB8F097A175772"
             {
-            "SourcePath" = "8:..\\AccountServer\\help\\suppliers.md"
-            "TargetName" = "8:suppliers.md"
+            "SourcePath" = "8:..\\contentFiles\\CodeFirstWebFramework\\libs\\bowser.min.js"
+            "TargetName" = "8:bowser.min.js"
             "Tag" = "8:"
-            "Folder" = "8:_595ED58D68A240A489A946CA340A4541"
+            "Folder" = "8:_9DF2B037563A4FE7AC0CA94CDE489512"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -2588,12 +2646,12 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_68C92753531A456E88AB8F097A175772"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_6923CD6D83F342009A990B78D57D996B"
             {
-            "SourcePath" = "8:..\\contentFiles\\CodeFirstWebFramework\\libs\\bowser.min.js"
-            "TargetName" = "8:bowser.min.js"
+            "SourcePath" = "8:..\\AccountServer\\images\\menu.png"
+            "TargetName" = "8:menu.png"
             "Tag" = "8:"
-            "Folder" = "8:_9DF2B037563A4FE7AC0CA94CDE489512"
+            "Folder" = "8:_EC6A5ACF0D3948A0BA87EF9D1659C03C"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -2819,6 +2877,57 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_75466F23534F8C0F47F2179DE9226A1F"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:CodeFirstWebFramework, Version=1.0.13.0, Culture=neutral, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_75466F23534F8C0F47F2179DE9226A1F"
+                    {
+                    "Name" = "8:CodeFirstWebFramework.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:CodeFirstWebFramework.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_72DF1EB2093A4D19B31910B932256C43"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_756B163585214D9CBED07A5AB7E11A1A"
+            {
+            "SourcePath" = "8:..\\AccountServer\\accounts.js"
+            "TargetName" = "8:accounts.js"
+            "Tag" = "8:"
+            "Folder" = "8:_A0DBEA8D7AFA435EA5913330551CDCAD"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_760DF50CA95F4EA6AF1EAB32D6DCE077"
             {
             "SourcePath" = "8:..\\contentFiles\\CodeFirstWebFramework\\default.css"
@@ -2956,26 +3065,6 @@
             "TargetName" = "8:email.txt"
             "Tag" = "8:"
             "Folder" = "8:_D9BCDF245351414EAC1E1A3F08840617"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_828C6ECAB3AB4D678BCF3A8A56533045"
-            {
-            "SourcePath" = "8:..\\AccountServer\\default.js"
-            "TargetName" = "8:default.js"
-            "Tag" = "8:"
-            "Folder" = "8:_A0DBEA8D7AFA435EA5913330551CDCAD"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -3341,6 +3430,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_94DF76D9F6894950BAB8AB7182D65386"
+            {
+            "SourcePath" = "8:..\\AccountServer\\images\\close.png"
+            "TargetName" = "8:close.png"
+            "Tag" = "8:"
+            "Folder" = "8:_EC6A5ACF0D3948A0BA87EF9D1659C03C"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_9574D7F9A4264BF68F4E28ADADA9BCF3"
             {
             "SourcePath" = "8:..\\contentFiles\\CodeFirstWebFramework\\images\\sort_both.png"
@@ -3527,26 +3636,6 @@
             "TargetName" = "8:ui-icons_f9bd01_256x240.png"
             "Tag" = "8:"
             "Folder" = "8:_E2033E1B56A94709B133D15F7B0CC27D"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_9F95330E9F394A398A7AD1DCF2F3BE2A"
-            {
-            "SourcePath" = "8:..\\contentFiles\\CodeFirstWebFramework\\help\\admin.md"
-            "TargetName" = "8:admin.md"
-            "Tag" = "8:"
-            "Folder" = "8:_1FFB8C12F2F0412DA4190ECC68988511"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -3807,6 +3896,26 @@
             "TargetName" = "8:names.tmpl"
             "Tag" = "8:"
             "Folder" = "8:_00AB83D328DD417CAB761D6B540897F4"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_B637C2512F5C430C8796A573A5E68D3E"
+            {
+            "SourcePath" = "8:..\\AccountServer\\help\\bankimport.md"
+            "TargetName" = "8:bankimport.md"
+            "Tag" = "8:"
+            "Folder" = "8:_595ED58D68A240A489A946CA340A4541"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -4252,6 +4361,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_D9C52395A4C7475F980E5A8119CDFC05"
+            {
+            "SourcePath" = "8:..\\AccountServer\\help\\customer.md"
+            "TargetName" = "8:customer.md"
+            "Tag" = "8:"
+            "Folder" = "8:_595ED58D68A240A489A946CA340A4541"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_DB9E8BC3FBA04DE582232D0DEC5BD2A6"
             {
             "SourcePath" = "8:..\\AccountServer\\favicon.ico"
@@ -4654,37 +4783,6 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_F904310BC67262C60C4228430422BDD0"
-            {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:CodeFirstWebFramework, Version=1.0.12.0, Culture=neutral, processorArchitecture=MSIL"
-                "ScatterAssemblies"
-                {
-                    "_F904310BC67262C60C4228430422BDD0"
-                    {
-                    "Name" = "8:CodeFirstWebFramework.dll"
-                    "Attributes" = "3:512"
-                    }
-                }
-            "SourcePath" = "8:CodeFirstWebFramework.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_72DF1EB2093A4D19B31910B932256C43"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_F9760572D5E048EA81C7B426512A02DB"
             {
             "SourcePath" = "8:..\\AccountServer\\reports\\products.tmpl"
@@ -4734,26 +4832,6 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_FC55CAC72C6F4F71B00473630DF3DEEF"
-            {
-            "SourcePath" = "8:..\\AccountServer\\help\\customers.md"
-            "TargetName" = "8:customers.md"
-            "Tag" = "8:"
-            "Folder" = "8:_595ED58D68A240A489A946CA340A4541"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_FC92ADF4C4B74A9191A1F9AE8F51683C"
@@ -5112,15 +5190,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:AccountServer"
-        "ProductCode" = "8:{D95D86C3-6085-41F2-A935-2F216A0FC4BB}"
-        "PackageCode" = "8:{48F11131-5185-4514-9534-EE0F6295D9C8}"
+        "ProductCode" = "8:{7628FD2A-4DA5-4916-9DC6-2E5F0DB045CF}"
+        "PackageCode" = "8:{4A10F26F-5199-450E-8095-3E415E7DD875}"
         "UpgradeCode" = "8:{5F4B0E7A-A2BC-47D9-A428-075DF0BD7449}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.4.9"
+        "ProductVersion" = "8:1.4.10"
         "Manufacturer" = "8:Trumphurst Ltd."
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:http://www.trumphurst.com/contact.php"
@@ -5690,7 +5768,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_5FF57C894648470A84448BA0923CC924"
             {
-            "SourcePath" = "8:..\\obj\\Debug\\AccountServer.exe"
+            "SourcePath" = "8:..\\obj\\Release\\AccountServer.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_72DF1EB2093A4D19B31910B932256C43"
@@ -5746,7 +5824,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_65DF9F1D17274ACD9BCA1651B5F5924C"
             {
-            "SourcePath" = "8:..\\bin\\Debug\\AccountServer.xml"
+            "SourcePath" = "8:..\\bin\\Release\\AccountServer.xml"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_72DF1EB2093A4D19B31910B932256C43"
@@ -5774,7 +5852,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_7CBDF3876A24493A91FA7A2A44D75CDA"
             {
-            "SourcePath" = "8:..\\RegisterAccountServer\\obj\\Debug\\RegisterAccountServer.exe"
+            "SourcePath" = "8:..\\RegisterAccountServer\\obj\\Release\\RegisterAccountServer.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_72DF1EB2093A4D19B31910B932256C43"

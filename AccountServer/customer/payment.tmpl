@@ -9,7 +9,7 @@ $(function() {
 	var customerHash = hashFromArray(customers);
 	record.header.Remaining = record.header.DocumentOutstanding;
 	record.header.Allocated = record.header.DocumentAmount - record.header.Remaining;
-	var form = makeHeaderDetailForm('#form', '#docs', {
+	var form = makeHeaderDetailForm('#form', '#docs', checkForStatementMatching({
 		validate: function() {
 			if(form.data.header.Remaining < 0) {
 				return 'You have allocated more than the payment - you must cancel some allocations before saving';
@@ -84,7 +84,7 @@ $(function() {
 				}
 			]
 		}
-	});
+	}));
 	function checkAmount() {
 		form.data.header.Remaining = form.data.header.DocumentAmount - form.data.header.Allocated;
 		message(form.data.header.Remaining < 0 ? "You have allocated more than the payment" : "");
