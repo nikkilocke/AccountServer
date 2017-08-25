@@ -186,8 +186,10 @@ namespace AccountServer {
 		/// Get next line, split it into tag and value
 		/// </summary>
 		bool getLine() {
-			_line = _reader.ReadLine();
-			Line++;
+			do {
+				_line = _reader.ReadLine();
+				Line++;
+			} while (_line == "");
 			_eof = _line == null;
 			if (!_eof) {
 				_tag = _line.Substring(0, 1);

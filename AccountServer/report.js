@@ -109,7 +109,12 @@ function initialiseReport(record, select, update) {
 					{
 						data: 'total',
 						heading: 'Show totals',
-						type: 'checkboxInput'
+						type: 'selectInput',
+						selectOptions: [
+							{ id: 0, value: "Data but no totals" },
+							{ id: 1, value: "Data and totals" },
+							{ id: 0, value: "Totals only" }
+							]
 					},
 					{
 						data: 'split',
@@ -131,7 +136,13 @@ function initialiseReport(record, select, update) {
 				columns: sortColumns
 			});
 		} else {
-			$('#sorting').prev().hide()
+			if(record.parameters) {
+				record.parameters.data = record.settings.parameters;
+				record.parameters.submit = null;
+				record.parameters.readonly = record.readonly;
+				report.sortForm = makeForm('#sorting', record.parameters);
+			} else
+				$('#sorting').prev().hide()
 		}
 		if(/audit/i.test(window.location.pathname)) {
 			// For audit reports, highlight changes
@@ -324,7 +335,7 @@ function postReportSettings(reportType, settings, extraFilters) {
 		ReportType: reportType,
 		ReportName: settings.ReportName + " (drilldown)",
 		filters: _.defaults(extraFilters || {}, settings.filters),
-		sorting: { total: true }
+		sorting: { total: 1 }
 	};
 	$('#reportForm').remove();
 	var form = $('<form id="reportForm" method="POST" action="' + url + '"><input name="json" type="hidden" value="" />');

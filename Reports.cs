@@ -41,38 +41,55 @@ namespace AccountServer {
 		/// </summary>
 		JArray _sortOrders;
 		/// <summary>
-		/// Sort order to use
-		/// </summary>
-		string _sortOrder;
-		/// <summary>
 		/// Sort order split into fields
 		/// </summary>
 		string[] _sortFields;
-		bool _sortDescending;
-		/// <summary>
-		///  Whether to total
-		/// </summary>
-		bool _total;
-		/// <summary>
-		/// Whether to show a grand total (not, e.g., for the VAT detail report!)
-		/// </summary>
-		bool _grandTotal = true;
-		/// <summary>
-		/// Whether to split lines
-		/// </summary>
-		bool _split;
 		/// <summary>
 		/// Whether change type required in Audit reports
 		/// </summary>
 		bool _changeTypeNotRequired;
 		/// <summary>
-		/// Reverse sign in journal reports
-		/// </summary>
-		bool _reverseSign;
-		/// <summary>
 		/// All reports have a date filter
 		/// </summary>
 		DateFilter _dates;
+
+		public class ReportSettings : JsonObject {
+			/// <summary>
+			/// Sort order to use
+			/// </summary>
+			[Writeable]
+			public string SortBy;
+			[Writeable]
+			public bool DescendingOrder;
+			/// <summary>
+			///  How/whether to total (0 = none, 1 = data & totals, 2 = totals only)
+			/// </summary>
+			[Writeable]
+			public int Totalling;
+			/// <summary>
+			/// Whether to show a grand total (not, e.g., for the VAT detail report!)
+			/// </summary>
+			[Writeable]
+			public bool GrandTotal = true;
+			/// <summary>
+			/// Whether to split lines
+			/// </summary>
+			[Writeable]
+			[Field(Heading = "Compact to save paper")]
+			public bool Split;
+			/// <summary>
+			/// Reverse sign in journal reports
+			/// </summary>
+			[Writeable]
+			[Field(Heading = "Reverse sign of amounts")]
+			public bool ReverseSign;
+			[Writeable]
+			public int PeriodLength = 1;
+		}
+
+		ReportSettings _settings = new ReportSettings();
+
+		string _settingsRequired = "SortBy,DescendingOrder,Totalling,GrandTotal,Split";
 
 		public object ReportList;
 
@@ -94,6 +111,7 @@ namespace AccountServer {
 				addReport(reports, new JObject().AddRange("ReportName", "VAT Detail Report", "ReportType", "VatDetail", "idReport", 0));
 			if(Settings.Customers || Settings.Suppliers)
 				addReport(reports, new JObject().AddRange("ReportName", "Ageing Report", "ReportType", "Ageing", "idReport", 0));
+			addReport(reports, new JObject().AddRange("ReportName", "Cashflow Report", "ReportType", "Cashflow", "idReport", 0));
 			groups["Standard Reports"] = reports;
 			reports = new List<JObject>();
 			addReport(reports, new JObject().AddRange("ReportName", "Accounts List", "ReportType", "Accounts", "idReport", 0));
@@ -280,7 +298,8 @@ namespace AccountServer {
 			addTable("Journal", "Amount", "Cleared");
 			fieldFor("Cleared")["type"] = "checkbox";
 			_filters.Add(new RecordFilter("Account", "idAccount", SelectBankAccounts()));
-			_split = true;
+			_filters.Add(new StringFilter("AccountCode", "AccountCode"));
+			_settings.Split = true;
 			return auditReportData(json, "Reconciliation", "AccountName", "OpeningBalance", "EndingBalance", "ClearedBalance", "DocumentDate", "DocType", "DocumentIdentifier", "DocumentName", "Cleared", "Amount");
 		}
 
@@ -305,12 +324,13 @@ namespace AccountServer {
 			_filters.Add(new DecimalFilter("DocumentOutstanding", "Extended_Document.DocumentOutstanding"));
 			_filters.Add(new RecordFilter("DocumentType", "DocumentTypeId", SelectDocumentTypes()));
 			_filters.Add(new RecordFilter("Account", "Journal.AccountId", SelectAccounts()));
+			_filters.Add(new StringFilter("AccountCode", "AccountCode"));
 			_filters.Add(new RecordFilter("NameAddress", "Journal.NameAddressId", SelectNames()));
 			_filters.Add(new RecordFilter("VatCode", "Line.VatCodeId", SelectVatCodes()));
 			_filters.Add(new RecordFilter("Product", "Line.ProductId", SelectProducts()));
 			_filters.Add(new DecimalFilter("JournalAmount", "Journal.Amount"));
 			_filters.Add(new StringFilter("Memo", "Journal.Memo"));
-			_split = true;
+			_settings.Split = true;
 			return auditReportData(json, "Document", "idDocument", "DocType", "DocumentDate", "Name", "DocumentIdentifier", "DocumentAmount", "DocumentOutstanding", "AccountName", "Debit", "Credit", "Qty", "Memo", "Code", "VatRate", "VatAmount");
 		}
 
@@ -355,10 +375,11 @@ namespace AccountServer {
 				Apply = false
 			};
 			_filters.Add(account);
-			_sortOrder = "";
-			_total = true;
+			_settingsRequired = "";
+			_settings.SortBy = "";
+			_settings.Totalling = 1;
 			setDefaultFields(json, "AccountId", "Name", "Current", "b1", "b31", "b61", "old", "Total");
-			setFilters(json);	// we account filter value setting now
+			readSettings(json);	// we need account filter value setting now
 			string where = account.Active ? account.Where(Database) : "AccountId IN (1, 2)";
 			return finishReport(json, @"(SELECT AccountId, NameAddressId, Name, Outstanding, 
     DATEDIFF(" + Database.Quote(Utils.Today) + @", DocumentDate) AS age
@@ -377,7 +398,7 @@ AND Outstanding <> 0
 		}
 
 		public object BalanceSheetSave(JObject json) {
-			_total = false;
+			_settings.Totalling = 0;
 			initialiseReport(json);
 			addTable("!AccountType");
 			addTable("Account", "idAccount", "AccountCode", "AccountName", "AccountDescription");
@@ -393,8 +414,9 @@ AND Outstanding <> 0
 			_fields.Add(lp);
 			_filters.Add(date);
 			setDefaultFields(json, "Heading", "AcctType", "AccountName", "CurrentPeriod", "PreviousPeriod");
-			_sortOrder = "AcctType";
-			setFilters(json);
+			_settingsRequired = "";
+			_settings.SortBy = "AcctType";
+			readSettings(json);
 			// Balance sheet needs 2 period buckets for the 2 columns
 			DateTime[] cPeriod = date.CurrentPeriod();
 			cp["heading"] = date.PeriodName(cPeriod);
@@ -416,7 +438,7 @@ LEFT JOIN Document ON Document.idDocument = Journal.DocumentId
 WHERE DocumentDate < " + Database.Quote(cPeriod[1]) + @"
 GROUP BY AccountId
 ) AS Summary ON AccountId = idAccount
-ORDER BY " + string.Join(",", sort.Select(s => s + (_sortDescending ? " DESC" : "")).ToArray())
+ORDER BY " + string.Join(",", sort.Select(s => s + (_settings.DescendingOrder ? " DESC" : "")).ToArray())
 				);
 			_sortFields = new string[] { "Heading", "AcctType", "AccountCode", "AccountName" };
 			// Report now needs further processing to:
@@ -483,10 +505,10 @@ ORDER BY " + string.Join(",", sort.Select(s => s + (_sortDescending ? " DESC" : 
 			_filters.Add(new RecordFilter("NameAddress", "Journal.NameAddressId", SelectNames()));
 			_filters.Add(new DecimalFilter("JournalAmount", "Result.Amount"));
 			_filters.Add(new StringFilter("Memo", "Journal.Memo"));
-			_sortOrder = "idAccountType,AcctType,AccountName";
+			_settingsRequired += ",ReverseSign";
 			makeSortable("idAccountType,AcctType,AccountCode,AccountName=Account Type", "AccountName", "AccountCode,AccountName=AccountCode", "Name", "DocumentDate", "DocumentIdentifier=Doc Id", "DocType");
 			setDefaultFields(json, "AcctType", "AccountName", "Amount", "Memo", "Name", "DocType", "DocumentDate", "DocumentIdentifier");
-			setFilters(json);	// we need account filter now!
+			readSettings(json);	// we need account filter now!
 			string where = account.Active ? "\r\nAND " + account.Where(Database) : "";
 			// Need opening balance before start of period
 			// Journals in period
@@ -516,7 +538,7 @@ SELECT Account.idAccount AS rAccount, Account.AccountTypeId as rAcctType, 0 AS A
 			+ Database.Cast(Database.Quote(date.CurrentPeriod()[1].AddDays(-1)), "DATETIME") + @" AS rDocDate
 FROM Account
 WHERE AccountTypeId = " + (int)AcctType.Security + where.Replace("Journal.AccountId", "idAccount") + @"
-) AS Result", "idAccountType,AccountName,DocumentDate,idDocument,JournalNum", @"
+) AS Result", "idAccountType,AcctType,AccountCode,AccountName,,DocumentDate,idDocument,JournalNum", @"
 LEFT JOIN Account on Account.idAccount = rAccount
 LEFT JOIN AccountType ON AccountType.idAccountType = Account.AccountTypeId
 LEFT JOIN Journal ON Journal.idJournal = rJournal
@@ -525,6 +547,78 @@ LEFT JOIN Document ON Document.idDocument = rDocument
 LEFT JOIN DocumentType ON DocumentType.idDocumentType = rDocType
 ", json).ToList();
 			return reportJson(json, addInvestmentGains(date.CurrentPeriod(), account, report), "Account", "AccountType");
+		}
+
+		string periodFromDate(DateTime date) {
+			switch (_settings.PeriodLength) {
+				case 0: // Weekly
+						// ISO week number is based on a Thursday
+					int increment = 0;
+					switch (date.DayOfWeek) {
+						case DayOfWeek.Monday:
+							increment = 3; break;
+						case DayOfWeek.Tuesday:
+							increment = 2; break;
+						case DayOfWeek.Wednesday:
+							increment = 1; break;
+						case DayOfWeek.Thursday:
+							increment = 0; break;
+						case DayOfWeek.Friday:
+							increment = -1; break;
+						case DayOfWeek.Saturday:
+							increment = -2; break;
+						case DayOfWeek.Sunday:
+							increment = -3; break;
+					}
+					date = date.AddDays(increment);
+					return string.Format("{0:yyyy}-{1:00}", date, System.Globalization.CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(date, System.Globalization.CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday));
+				case 1: // Monthly
+					return date.ToString("yyyy-MM");
+				case 2: // Yearly
+					return date.ToString("yyyy");
+				default:
+					throw new CheckException("Invalid Period Length value {0}", _settings.PeriodLength);
+			}
+		}
+
+		public void Cashflow(int id) {
+			Record = CashflowSave(getJson(id, "Cashflow Report"));
+		}
+
+		public object CashflowSave(JObject json) {
+			initialiseReport(json);
+			ReportField cp = new ReportField("'' AS Period", "string", "Period") { Essential = true };
+			_fields.Add(cp);
+			addTable("Journal");
+			addTable("Account", "idAccount", "AccountCode", "AccountName", "AccountDescription");
+			addTable("!NameAddress");
+			addTable("Document", "idDocument", "DocumentDate", "DocumentIdentifier", "DocumentTypeId", "DocumentMemo");
+			fieldFor("idDocument").MakeEssential();
+			fieldFor("DocumentDate").MakeEssential();
+			addTable("DocumentType", "DocType");
+			fieldFor("DocumentTypeId").Hide().Essential = true;
+			fieldFor("idAccount").Hide().Essential = true;
+			_fields.Add(new ReportField("Line.VatAmount", "decimal", "VatAmount") { Hidden = true, Essential = true });
+			RecordFilter accountTypes = new RecordFilter("AccountType", "Account.AccountTypeId", SelectAccountTypes());
+			accountTypes.Set((int)AcctType.Bank, (int)AcctType.CreditCard);
+			_filters.Add(new DateFilter(Settings, "DocumentDate", DateRange.ThisYear));
+			_filters.Add(new RecordFilter("Account", "Journal.AccountId", SelectAccounts()));
+			_filters.Add(new StringFilter("AccountCode", "AccountCode"));
+			_filters.Add(accountTypes);
+			_settingsRequired = "PeriodLength,Totalling,GrandTotal,ReverseSign";
+			_settings.Totalling = 2;
+			setDefaultFields(json, "Period", "Amount");
+			IEnumerable<JObject> report = finishReport("Journal", "DocumentDate,,idDocument,JournalNum", @"JOIN Document ON idDocument = DocumentId
+JOIN Account ON idAccount = AccountId
+JOIN NameAddress ON idNameAddress = NameAddressId
+JOIN DocumentType ON idDocumentType = DocumentTypeId
+LEFT JOIN Line ON idLine = idJournal", json)
+				.Select(r => r.AddRange("Period", periodFromDate(r.AsDate("DocumentDate")),
+					"Amount", r.AsDecimal("Amount") + r.AsDecimal("VatAmount") * SignFor((DocType)r.AsInt("DocumentTypeId"))
+					));
+			_settings.SortBy = "Period";
+			_sortFields = new string[] { "Period" };
+			return reportJson(json, report);
 		}
 
 		public void Names(int id) {
@@ -597,7 +691,7 @@ LEFT JOIN VatCode ON idVatCode = VatCodeId
 		}
 
 		public object ProfitAndLossSave(JObject json) {
-			_total = false;
+			_settings.Totalling = 0;
 			initialiseReport(json);
 			addTable("!AccountType");
 			addTable("Account", "idAccount", "AccountCode", "AccountName", "AccountDescription");
@@ -613,8 +707,9 @@ LEFT JOIN VatCode ON idVatCode = VatCodeId
 			_fields.Add(lp);
 			_filters.Add(date);
 			setDefaultFields(json, "AcctType", "AccountName", "CurrentPeriod", "PreviousPeriod");
-			_sortOrder = "AcctType";
-			setFilters(json);
+			_settings.SortBy = "AcctType";
+			_settingsRequired = "";
+			readSettings(json);
 			// P & L needs 2 period buckets for the 2 columns
 			DateTime[] cPeriod = date.CurrentPeriod();
 			cp.FullFieldName = "SUM(CASE WHEN DocumentDate >= " + Database.Quote(cPeriod[0]) + " AND DocumentDate < " + Database.Quote(cPeriod[1]) + " THEN Amount ELSE 0 END) AS CurrentPeriod";
@@ -636,7 +731,7 @@ LEFT JOIN Document ON Document.idDocument = Journal.DocumentId
 				+ "\r\nAND DocumentDate < " + Database.Quote(cPeriod[1]) + ")"
 				+ "\r\nOR Account.AccountTypeId = " + (int)AcctType.Security + ")"
 				+ "\r\nGROUP BY idAccount"
-				+ "\r\nORDER BY " + string.Join(",", sort.Select(s => s + (_sortDescending ? " DESC" : "")).ToArray())
+				+ "\r\nORDER BY " + string.Join(",", sort.Select(s => s + (_settings.DescendingOrder ? " DESC" : "")).ToArray())
 				);
 			// Needs further processing to add investment gains
 			// total, etc.
@@ -702,6 +797,7 @@ LEFT JOIN Document ON Document.idDocument = Journal.DocumentId
 			_filters.Add(new DecimalFilter("DocumentOutstanding", "Extended_Document.DocumentOutstanding"));
 			_filters.Add(new RecordFilter("DocumentType", "DocumentTypeId", SelectDocumentTypes()));
 			_filters.Add(new RecordFilter("Account", "Journal.AccountId", SelectAccounts()));
+			_filters.Add(new StringFilter("AccountCode", "AccountCode"));
 			_filters.Add(new RecordFilter("NameAddress", "Journal.NameAddressId", SelectNames()));
 			_filters.Add(new DecimalFilter("JournalAmount", "Journal.Amount"));
 			_filters.Add(new StringFilter("Memo", "Journal.Memo"));
@@ -709,7 +805,7 @@ LEFT JOIN Document ON Document.idDocument = Journal.DocumentId
 			_filters.Add(new RecordFilter("Product", "Line.ProductId", SelectProducts()));
 			makeSortable("idDocument=Trans no", "DocumentDate", "DocumentIdentifier=Doc Id", "Type,DocumentName=Document Name", "DocumentAmount", "DocType");
 			setDefaultFields(json, "idDocument", "DocType", "DocumentDate", "DocumentName", "DocumentIdentifier", "DocumentAmount", "DocumentOutstanding", "AccountName", "Debit", "Credit", "Qty", "Memo", "Code", "VatRate", "VatAmount");
-			return finishReport(json, "Journal", "idDocument,JournalNum", @"
+			return finishReport(json, "Journal", "idDocument,,JournalNum", @"
 LEFT JOIN Line ON Line.idLine = Journal.idJournal
 LEFT JOIN Extended_Document ON Extended_Document.idDocument = Journal.DocumentId
 LEFT JOIN NameAddress ON NameAddress.idNameAddress = Journal.NameAddressId
@@ -725,7 +821,7 @@ LEFT JOIN Product ON Product.idProduct = Line.ProductId
 		}
 
 		public object TrialBalanceSave(JObject json) {
-			_total = false;
+			_settings.Totalling = 0;
 			initialiseReport(json);
 			addTable("!AccountType", "Heading", "AcctType");
 			addTable("Account", "idAccount", "AccountCode", "AccountName", "AccountDescription");
@@ -737,8 +833,9 @@ LEFT JOIN Product ON Product.idProduct = Line.ProductId
 			DateFilter date = new DateFilter(Settings, "DocumentDate", DateRange.LastYear);
 			_filters.Add(date);
 			setDefaultFields(json, "AccountName", "Credit", "Debit");
-			_sortOrder = "AcctType";
-			setFilters(json);
+			_settings.SortBy = "AcctType";
+			_settingsRequired = "";
+			readSettings(json);
 			DateTime[] cPeriod = date.CurrentPeriod();
 			string[] sort = new string[] { "AccountTypeId", "AccountCode", "AccountName" };
 			string[] fields = _fields.Where(f => f.Include || f.Essential || _sortFields.Contains(f.Name)).Select(f => f.FullFieldName).Distinct().ToArray();
@@ -754,7 +851,7 @@ LEFT JOIN Document ON Document.idDocument = Journal.DocumentId
 WHERE DocumentDate < " + Database.Quote(cPeriod[1]) + @"
 GROUP BY AccountId
 ) AS Summary ON AccountId = idAccount
-ORDER BY " + string.Join(",", sort.Select(s => s + (_sortDescending ? " DESC" : "")).ToArray())
+ORDER BY " + string.Join(",", sort.Select(s => s + (_settings.DescendingOrder ? " DESC" : "")).ToArray())
 				);
 			_sortFields = new string[] { "Heading", "AcctType", "AccountCode", "AccountName" };
 			// Need to add investment gains
@@ -787,8 +884,8 @@ ORDER BY " + string.Join(",", sort.Select(s => s + (_sortDescending ? " DESC" : 
 
 		public object VatDetailSave(JObject json) {
 			initialiseReport(json);
-			_total = true;
-			_grandTotal = false;
+			_settings.Totalling = 1;
+			_settings.GrandTotal = false;
 			addTable("Vat_Journal");
 			fieldFor("DocumentTypeId").MakeEssential().Hide();
 			fieldFor("DocumentAmount").FullFieldName = "DocumentAmount * Sign * VatType AS DocumentAmount";
@@ -806,7 +903,7 @@ ORDER BY " + string.Join(",", sort.Select(s => s + (_sortDescending ? " DESC" : 
 			_filters.Add(new SelectFilter("VatType", "VatType", SelectVatTypes()));
 			makeSortable("idDocument=Trans no", "DocumentDate", "DocumentIdentifier=Doc Id", "Type,DocumentName=DocumentName", "DocumentAmount", "DocType", "Code");
 			setDefaultFields(json, "VatType", "DocType", "DocumentDate", "DocumentIdentifier", "DocumentName", "Memo", "Code", "VatRate", "VatAmount", "LineAmount");
-			return finishReport(json, "Vat_Journal", "VatType, DocumentDate", @"JOIN VatCode ON idVatCode = VatCodeId
+			return finishReport(json, "Vat_Journal", "VatType,DocumentDate", @"JOIN VatCode ON idVatCode = VatCodeId
 LEFT JOIN (SELECT idDocument AS idVatPaid, DocumentDate AS VatPaidDate FROM Document) AS Payment ON Payment.idVatPaid = VatPaid", "Vat_Journal");
 		}
 
@@ -937,7 +1034,7 @@ LEFT JOIN (SELECT idDocument AS idVatPaid, DocumentDate AS VatPaidDate FROM Docu
 			if (SecurityOn)
 				fields.Add("Login");
 			setDefaultFields(json, fields.ToArray());
-			setFilters(json);
+			readSettings(json);
 			string where = _dates.Active ? " AND " + _dates.Where(Database) : "";
 			if (json.AsInt("recordId") > 0)
 				where += " AND RecordId = " + json.AsInt("recordId");
@@ -955,7 +1052,7 @@ WHERE TableName = "
 				case "Reconciliation": tables.Add("Account"); break;
 				case "User": tables.Add("User"); break;
 			}
-			_sortOrder = "idAuditTrail";
+			_settings.SortBy = "idAuditTrail";
 			return reportJson(json, auditFilter(auditFlatten(report)), tables.ToArray());
 		}
 
@@ -988,11 +1085,24 @@ WHERE TableName = "
 		/// <summary>
 		/// Actually run the query for an ordinary report, and return the records
 		/// </summary>
+		/// <param name="tableName">Table to query, or or SELECT part of query string</param>
+		/// <param name="defaultSort">Default sort fields, separated by commas. Including ",," indicates a 
+		/// break between sorting display fields, and non-display fields which just ensure the order is consistent.
+		/// If _sortFields is not already set, it will be set to the fields before the ",,"</param>
+		/// <param name="joins">Any joins needed to complete the query</param>
+		/// <param name="json">The report json</param>
+		/// <returns></returns>
 		IEnumerable<JObject> finishReport(string tableName, string defaultSort, string joins, JObject json) {
-			setFilters(json);
+			readSettings(json);
 			List<string> sort = new List<string>(defaultSort.Split(','));
 			if (_sortFields == null || _sortFields.Length == 0) {
-				_sortFields = new string[] { sort[0] };
+				List<string> temp = new List<string>();
+				foreach(string s in sort) {
+					if (string.IsNullOrEmpty(s))
+						break;
+					temp.Add(s);
+				}
+				_sortFields = temp.ToArray();
 			} else {
 				int p = 0;
 				foreach (string s in _sortFields) {
@@ -1004,12 +1114,19 @@ WHERE TableName = "
 			return Database.Query("SELECT " + string.Join(",", fields)
 				+ "\r\nFROM " + tableName + "\r\n" + joins
 				+ getFilterWhere()
-				+ "\r\nORDER BY " + string.Join(",", sort.Select(s => s + (_sortDescending ? " DESC" : "")).ToArray())
+				+ "\r\nORDER BY " + string.Join(",", sort.Where(s => !string.IsNullOrEmpty(s)).Select(s => s + (_settings.DescendingOrder ? " DESC" : "")).ToArray())
 				);
 		}
 
 		/// <summary>
 		/// Run the query for an ordinary report, then package the result into a report display JObject
+		/// <param name="json">The report json</param>
+		/// <param name="tableName">Table to query, or or SELECT part of query string</param>
+		/// <param name="defaultSort">Default sort fields, separated by commas. Including ",," indicates a 
+		/// break between sorting display fields, and non-display fields which just ensure the order is consistent.
+		/// If _sortFields is not already set, it will be set to the fields before the ",,"</param>
+		/// <param name="joins">Any joins needed to complete the query</param>
+		/// <param name="tables">Potentially duplicate tables</param>
 		/// </summary>
 		object finishReport(JObject json, string tableName, string defaultSort, string joins, params string[] tables) {
 			return reportJson(json, finishReport(tableName, defaultSort, joins, json), tables);
@@ -1041,6 +1158,7 @@ WHERE TableName = "
 		/// </summary>
 		/// <param name="json">The posted report parameters</param>
 		void initialiseAuditReport(JObject json) {
+			_settingsRequired = "";
 			initialiseReport(json);
 			if (_changeTypeNotRequired) {
 				addTable("!AuditTrail", "idAuditTrail", "DateChanged");
@@ -1243,7 +1361,7 @@ JOIN Security ON idSecurity = SecurityId")) {
 
 		// TODO: Should use common totalling code
 		IEnumerable<JObject> fixBalanceSheet(IEnumerable<JObject> data) {
-			_total = false;
+			_settings.Totalling = 0;
 			JObject last = null;
 			string lastTotalBreak = null;
 			string lastHeading = null;
@@ -1267,7 +1385,7 @@ JOIN Security ON idSecurity = SecurityId")) {
 				}
 				if (index == 0) {
 					t["Heading"] = lastHeading;
-					t[_sortOrder] = "Total " + lastTotalBreak;
+					t[_settings.SortBy] = "Total " + lastTotalBreak;
 				} else {
 					t["Heading"] = "Total " + lastHeading;
 				}
@@ -1290,7 +1408,7 @@ JOIN Security ON idSecurity = SecurityId")) {
 			}
 			foreach (JObject r in data) {
 				JObject record = new JObject(r);
-				string totalBreak = record.AsString(_sortOrder);
+				string totalBreak = record.AsString(_settings.SortBy);
 				string heading = record.AsString("Heading");
 				if (record.AsInt("BalanceSheet") == 0) {
 					// Accumulate profit and loss postings
@@ -1383,7 +1501,7 @@ JOIN Security ON idSecurity = SecurityId")) {
 
 		// TODO: Should be more like fixBalanceSheet, and use common totalling code
 		IEnumerable<JObject> fixProfitAndLoss(IEnumerable<JObject> data) {
-			_total = false;
+			_settings.Totalling = 0;
 			JObject last = null;
 			string lastTotalBreak = null;
 			string lastHeading = null;
@@ -1405,12 +1523,12 @@ JOIN Security ON idSecurity = SecurityId")) {
 					totals[f][index] = 0;
 				}
 				t["Heading"] = lastHeading;
-				t[_sortOrder] = index == 0 ? "Total " + lastTotalBreak : lastTotalBreak;
+				t[_settings.SortBy] = index == 0 ? "Total " + lastTotalBreak : lastTotalBreak;
 				return t;
 			};
 			foreach (JObject r in data) {
 				JObject record = new JObject(r);
-				string totalBreak = record.AsString(_sortOrder);
+				string totalBreak = record.AsString(_settings.SortBy);
 				string heading = record.AsString("Heading");
 				if (totalBreak != lastTotalBreak) {
 					if (last != null) {
@@ -1457,7 +1575,7 @@ JOIN Security ON idSecurity = SecurityId")) {
 		}
 
 		IEnumerable<JObject> fixTrialBalance(IEnumerable<JObject> data) {
-			_total = false;
+			_settings.Totalling = 0;
 			JObject last = null;
 			decimal retainedProfitOld = 0;
 			Dictionary<string, decimal> totals = new Dictionary<string, decimal>();
@@ -1571,12 +1689,15 @@ JOIN Security ON idSecurity = SecurityId")) {
 				fields.Add(f);	// One of our fields in a potentially repeating table (need to be at front)
 			foreach (string f in flds.Where(f => !fields.Contains(f)))
 				fields.Add(f);  // Rest of potentially repeating fields
-			foreach (string f in sortFields)
+			HashSet<string> displayFields = new HashSet<string>(_fields.Where(f => f.Include).Select(f => f.Name));
+			foreach (string f in sortFields) {
 				fields.Add(f);
+				displayFields.Add(f);
+			}
 			string[] lastTotalBreak = new string[sortFields.Length + 1];
 			Dictionary<string, decimal[]> totals = new Dictionary<string, decimal[]>();
 			string firstStringField = null;
-			if (_total) {
+			if (_settings.Totalling > 0) {
 				// Build list of totalling fields
 				foreach (ReportField f in _fields) {
 					if (!f.Include) continue;
@@ -1590,7 +1711,9 @@ JOIN Security ON idSecurity = SecurityId")) {
 			}
 			// Function to generate total record - index is sort field number (sortFields.length for grand total)
 			Func<int, JObject> totalRecord = delegate(int level) {
-				JObject t = new JObject().AddRange("@class", "total");
+				JObject t = new JObject();
+				if(_settings.Totalling < 2 || level == sortFields.Length)
+					t["@class"] = "total";
 				foreach (string f in totals.Keys.ToList()) {
 					t[f] = totals[f][level];
 					totals[f][level] = 0;
@@ -1603,7 +1726,7 @@ JOIN Security ON idSecurity = SecurityId")) {
 				return t;
 			};
 			foreach (JObject r in data) {
-				if (_reverseSign && r["Amount"] != null)
+				if (_settings.ReverseSign && r["Amount"] != null)
 					r["Amount"] = -r.AsDecimal("Amount");
 				JObject record = new JObject(r);
 				JObject id = null;
@@ -1612,18 +1735,19 @@ JOIN Security ON idSecurity = SecurityId")) {
 					id = new JObject();
 					foreach (string f in essentialFields) {
 						id[f] = record[f];
-						if (!fields.Contains(f))
-							record.Remove(f);		// Don't want essential fields to interfere with checking for duplicates
+						if (!displayFields.Contains(f))
+							record.Remove(f);		// Don't want non-display essential fields to interfere with checking for duplicates
 					}
 				}
 				if (last != null) {
-					if (_total) {
+					if (_settings.Totalling > 0) {
 						for (int level = sortFields.Length; level-- > 0; ) {
 							if (record.AsString(sortFields[level]) != lastTotalBreak[level]) {
 								if (lastTotalBreak[level] != null) {
 									// Output totals for this sort field
 									yield return totalRecord(level);
-									yield return spacer;
+									if (_settings.Totalling < 2)
+										yield return spacer;
 								}
 							}
 						}
@@ -1640,7 +1764,7 @@ JOIN Security ON idSecurity = SecurityId")) {
 				}
 				if(id != null)
 					record["recordId"] = id;
-				if (_total) {
+				if (_settings.Totalling > 0) {
 					// Cache total break values
 					for(int level = 0; level < sortFields.Length; level++)
 						lastTotalBreak[level] = r.AsString(sortFields[level]);
@@ -1659,17 +1783,19 @@ JOIN Security ON idSecurity = SecurityId")) {
 					}
 				}
 				last = r;
-				yield return record;
+				if (_settings.Totalling < 2)
+					yield return record;
 			}
-			if (_total && last != null) {
+			if (_settings.Totalling > 0 && last != null) {
 				// Print any pending sort field totals
 				for (int level = sortFields.Length; level-- > 0; ) {
 					if (lastTotalBreak[level] != null) {
 						yield return totalRecord(level);
-						yield return spacer;
+						if (_settings.Totalling < 2)
+							yield return spacer;
 					}
 				}
-				if(_grandTotal)
+				if(_settings.GrandTotal)
 					yield return totalRecord(sortFields.Length);
 			}
 		}
@@ -1694,30 +1820,45 @@ JOIN Security ON idSecurity = SecurityId")) {
 				int p = 0;
 				foreach(string f in _sortFields)
 					positionField(f, p++);
-				if (_split) {
+				if (_settings.Split) {
 					// Split report shows sort field data on 1 line, and main data on next line
 					ReportField fld = _fields.FirstOrDefault(f => f.Include && !tables.Contains(f.Table));
 					if(fld != null)
 						fld["newRow"] = true;
 				}
 			}
+			json["version"] = 1;
 			json["fields"] = _fields.Where(f => !f.Hidden).ToJToken();
 			json["filters"] = getFilters().ToJToken();
-			JObject sorting = new JObject().AddRange(
-						"sort", _sortOrder,
-						"desc", _sortDescending,
-						"total", _total,
-						"split", _split);
-			if (json.AsString("ReportType").ToLower() == "journals")
-				sorting["reverseSign"] = _reverseSign;
-			json["sorting"] = sorting;
-			return new JObject().AddRange(
-				"settings", json,
+			JObject result = new JObject().AddRange(
 				"filters", new JArray(_filters),
-				"sortOrders", _sortOrders,
 				"readonly", ReadOnly,
 				"report", removeRepeatsAndTotal(report, tables)
 				);
+			if (_settingsRequired != "") {
+				Form frm = new Form(this, typeof(ReportSettings), true, _settingsRequired.Split(','));
+				json["parameters"] = _settings.ToJToken();
+				FieldAttribute f = frm["SortBy"];
+				if (f != null)
+					f.MakeSelectable(_sortOrders.Select(o => (JObject)o));
+				f = frm["Totalling"];
+				if (f != null)
+					f.MakeSelectable(new JObject[] {
+					new JObject().AddRange("id", 0, "value", "Data but no totals"),
+					new JObject().AddRange("id", 1, "value", "Data and totals"),
+					new JObject().AddRange("id", 2, "value", "Totals only")
+				});
+				f = frm["PeriodLength"];
+				if (f != null)
+					f.MakeSelectable(new JObject[] {
+					new JObject().AddRange("id", 0, "value", "Weekly"),
+					new JObject().AddRange("id", 1, "value", "Monthly"),
+					new JObject().AddRange("id", 2, "value", "Yearly")
+				});
+				result["parameters"] = frm.Options;
+			}
+			result["settings"] = json;
+			return result;
 		}
 
 		/// <summary>
@@ -1738,9 +1879,9 @@ JOIN Security ON idSecurity = SecurityId")) {
 		}
 
 		/// <summary>
-		/// Read the filter settings from the posted json
+		/// Read the report settings from the posted json
 		/// </summary>
-		void setFilters(JObject json) {
+		void readSettings(JObject json) {
 			if (json != null && json["filters"] != null) {
 				JObject fdata = (JObject)json["filters"];
 				foreach (Filter f in _filters) {
@@ -1749,20 +1890,28 @@ JOIN Security ON idSecurity = SecurityId")) {
 						continue;
 					f.Parse(data);
 				}
-				JObject sdata = (JObject)json["sorting"];
+				JObject sdata = (JObject)json["parameters"];
 				if (sdata != null) {
-					string s = sdata.AsString("sort");
-					if (!string.IsNullOrWhiteSpace(s))
-						_sortOrder = s;
-					_sortDescending = sdata.AsBool("desc");
-					_total = sdata.AsBool("total");
-					_split = sdata.AsBool("split");
-					if (json.AsString("ReportType").ToLower() == "journals")
-						_reverseSign = sdata.AsBool("reverseSign");
+					string defaultSort = _settings.SortBy;
+					_settings = sdata.To<ReportSettings>();
+					if (string.IsNullOrWhiteSpace(_settings.SortBy))
+						_settings.SortBy = defaultSort;
+				} else if(json.AsInt("version") < 1) {
+					sdata = (JObject)json["sorting"];
+					if (sdata != null) {
+						string s = sdata.AsString("sort");
+						if (!string.IsNullOrWhiteSpace(s))
+							_settings.SortBy = s;
+						_settings.DescendingOrder = sdata.AsBool("desc");
+						_settings.Totalling = sdata.AsInt("total");
+						_settings.Split = sdata.AsBool("split");
+						if (json.AsString("ReportType").ToLower() == "journals")
+							_settings.ReverseSign = sdata.AsBool("reverseSign");
+					}
 				}
 			}
-			if (!string.IsNullOrWhiteSpace(_sortOrder))
-				_sortFields = _sortOrder.Split(',');
+			if (!string.IsNullOrWhiteSpace(_settings.SortBy))
+				_sortFields = _settings.SortBy.Split(',');
 		}
 
 		/// <summary>
@@ -2240,6 +2389,15 @@ JOIN Security ON idSecurity = SecurityId")) {
 				return _ids.ToJToken();
 			}
 
+			public void Set(params int[] values) {
+				Set((IEnumerable<int>)values);
+			}
+
+			public void Set(IEnumerable<int> values) {
+				_ids = new List<int>(values);
+				Active = _ids.Count != 0;
+			}
+
 			public override void Parse(JToken json) {
 				if (json == null)
 					_ids = null;
@@ -2522,4 +2680,5 @@ JOIN Security ON idSecurity = SecurityId")) {
 		}
 
 	}
+
 }
