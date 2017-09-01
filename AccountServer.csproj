@@ -67,8 +67,8 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CodeFirstWebFramework, Version=1.0.13.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\CodeFirstWebFramework.1.0.13\lib\net45\CodeFirstWebFramework.dll</HintPath>
+    <Reference Include="CodeFirstWebFramework, Version=1.0.14.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\CodeFirstWebFramework.1.0.14\lib\net45\CodeFirstWebFramework.dll</HintPath>
     </Reference>
     <Reference Include="Markdig, Version=0.13.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\Markdig.0.13.0\lib\net40\Markdig.dll</HintPath>

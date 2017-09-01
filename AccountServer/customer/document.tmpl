@@ -100,7 +100,9 @@ $(function() {
 				},
 				{
 					data: 'DocumentMemo',
-					type: 'textAreaInput'
+					type: 'textAreaInput',
+					maxlength: 255,
+					size: 50
 				}
 			]
 		},
@@ -136,7 +138,8 @@ $(function() {
 				{
 					data: 'Memo',
 					type: 'textInput',
-					attributes: 'size="50"'
+					maxlength: 255,
+					size: 50
 				},
 				{
 					data: 'UnitPrice',

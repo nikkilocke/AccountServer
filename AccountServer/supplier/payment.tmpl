@@ -53,7 +53,8 @@ $(function() {
 		{
 			data: 'DocumentMemo',
 			type: 'textInput',
-			attributes: 'size="50"'
+			maxlength: 255,
+			size: 50
 		}
 	);
 	var form = makeHeaderDetailForm('#form', '#docs', checkForStatementMatching({

@@ -107,7 +107,8 @@ $(function() {
 			data: 'DocumentMemo',
 			type: 'textInput',
 			colspan: 3,
-			attributes: 'size="50"'
+			maxlength: 255,
+			size: 50
 		});
 	var form = makeHeaderDetailForm('#form', '#docs', checkForStatementMatching({
 		validate: function() {
@@ -177,7 +178,8 @@ $(function() {
 				{
 					data: 'Memo',
 					type: 'textInput',
-					attributes: 'size="50"'
+					maxlength: 255,
+					size: 50
 				}
 			]
 		}
