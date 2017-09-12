@@ -58,7 +58,7 @@ namespace AccountServer {
 				if (Utils.ExtractNumber(header.DocumentIdentifier) > 0)
 					header.DocumentIdentifier = "";
 				result.AddRange("header", header,
-					"detail", Database.Query("idJournal, DocumentId, Line.VatCodeId, VatRate, JournalNum, Journal.AccountId, Memo, LineAmount, VatAmount",
+					"detail", Database.Query("idJournal, DocumentId, Line.VatCodeId, VatRate, JournalNum, Journal.AccountId, Memo, LineAmount, VatAmount, LineAmount + VatAmount AS Gross",
 						"WHERE Journal.DocumentId = " + header.idDocument + " AND idLine IS NOT NULL ORDER BY JournalNum",
 						"Document", "Journal", "Line"));
 			}
