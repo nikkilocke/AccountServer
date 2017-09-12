@@ -74,12 +74,12 @@ namespace AccountServer {
 			List<JObject> minus = new List<JObject>();
 			if (account.AccountTypeId == (int)AcctType.Bank) {
 				plus.Add(new JObject().AddRange("text", "Deposit",
-					"href", "document?id=0&type=" + (int)DocType.Cheque + "&acct=" + account.idAccount));
-				minus.Add(new JObject().AddRange("text", "Cheque",
 					"href", "document?id=0&type=" + (int)DocType.Deposit + "&acct=" + account.idAccount));
+				minus.Add(new JObject().AddRange("text", "Cheque",
+					"href", "document?id=0&type=" + (int)DocType.Cheque + "&acct=" + account.idAccount));
 			} else {
 				plus.Add(new JObject().AddRange("text", "Card Credit",
-					"href", "document?id=0&type=" + (int)DocType.CreditCardCharge + "&acct=" + account.idAccount));
+					"href", "document?id=0&type=" + (int)DocType.CreditCardCredit + "&acct=" + account.idAccount));
 				minus.Add(new JObject().AddRange("text", "Card Charge",
 					"href", "document?id=0&type=" + (int)DocType.CreditCardCharge + "&acct=" + account.idAccount));
 			}

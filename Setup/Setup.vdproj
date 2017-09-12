@@ -634,13 +634,13 @@
         "Entry"
         {
         "MsmKey" = "8:_8B18B8A5C597D13FCDB0712B65FA030B"
-        "OwnerKey" = "8:_F3B4FDB1D59B986D36104E2A4DE364FB"
+        "OwnerKey" = "8:_7CBDF3876A24493A91FA7A2A44D75CDA"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_8B18B8A5C597D13FCDB0712B65FA030B"
-        "OwnerKey" = "8:_7CBDF3876A24493A91FA7A2A44D75CDA"
+        "OwnerKey" = "8:_F3B4FDB1D59B986D36104E2A4DE364FB"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -1192,55 +1192,7 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_E0965FE1AE48ED51FBF9DA2C00F8818C"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_F9E79D797D1D98E9F6DDD5090F4E81A7"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_79D692CCB8FE5E09017EFAB053325C6A"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_5CB9FD66650FBEFDE578FCBAB5DE3484"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_49AA568D2FB126367C9FF945AFE997DF"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_75466F23534F8C0F47F2179DE9226A1F"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_6E626E24ABC4D9A6E50C75785CC6B16C"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_CCA532A20CA8A530881325AD1633010C"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_8B18B8A5C597D13FCDB0712B65FA030B"
+        "OwnerKey" = "8:_5FF57C894648470A84448BA0923CC924"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -1252,7 +1204,55 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_5FF57C894648470A84448BA0923CC924"
+        "OwnerKey" = "8:_8B18B8A5C597D13FCDB0712B65FA030B"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_CCA532A20CA8A530881325AD1633010C"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_6E626E24ABC4D9A6E50C75785CC6B16C"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_75466F23534F8C0F47F2179DE9226A1F"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_49AA568D2FB126367C9FF945AFE997DF"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_5CB9FD66650FBEFDE578FCBAB5DE3484"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_79D692CCB8FE5E09017EFAB053325C6A"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_F9E79D797D1D98E9F6DDD5090F4E81A7"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_E0965FE1AE48ED51FBF9DA2C00F8818C"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -5140,15 +5140,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:AccountServer"
-        "ProductCode" = "8:{332187A9-1E22-4590-A765-647476E917E1}"
-        "PackageCode" = "8:{26A24043-3F8D-4C13-8704-365FF64E3A88}"
+        "ProductCode" = "8:{F66938EC-11FD-4619-99AF-768DEA48DBDD}"
+        "PackageCode" = "8:{F0B4C485-B82B-412D-BD6A-32F4E4D83D94}"
         "UpgradeCode" = "8:{5F4B0E7A-A2BC-47D9-A428-075DF0BD7449}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.4.11"
+        "ProductVersion" = "8:1.4.12"
         "Manufacturer" = "8:Trumphurst Ltd."
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:http://www.trumphurst.com/contact.php"
@@ -5718,7 +5718,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_5FF57C894648470A84448BA0923CC924"
             {
-            "SourcePath" = "8:..\\obj\\Release\\AccountServer.exe"
+            "SourcePath" = "8:..\\obj\\Debug\\AccountServer.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_72DF1EB2093A4D19B31910B932256C43"
@@ -5774,7 +5774,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_65DF9F1D17274ACD9BCA1651B5F5924C"
             {
-            "SourcePath" = "8:..\\bin\\Release\\AccountServer.xml"
+            "SourcePath" = "8:..\\bin\\Debug\\AccountServer.xml"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_72DF1EB2093A4D19B31910B932256C43"
@@ -5802,7 +5802,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_7CBDF3876A24493A91FA7A2A44D75CDA"
             {
-            "SourcePath" = "8:..\\RegisterAccountServer\\obj\\Release\\RegisterAccountServer.exe"
+            "SourcePath" = "8:..\\RegisterAccountServer\\obj\\Debug\\RegisterAccountServer.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_72DF1EB2093A4D19B31910B932256C43"
