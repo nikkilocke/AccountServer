@@ -117,6 +117,10 @@ $(function() {
 </script>
 </head>
 <body>
+{{#if NewVersion}}
+<h3 class="noprint">A new version of AccountServer is available</h3>
+<a href="{{NewVersion}}">Click here to download the new version</a>
+{{/if}}
 <h3 class="noprint">To do</h3>
 <table id="scheduleTable" class="noprint"></table>
 <h3>Banking</h3>

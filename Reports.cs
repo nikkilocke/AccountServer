@@ -399,6 +399,7 @@ AND Outstanding <> 0
 
 		public object BalanceSheetSave(JObject json) {
 			_settings.Totalling = 0;
+			_settings.GrandTotal = false;
 			initialiseReport(json);
 			addTable("!AccountType");
 			addTable("Account", "idAccount", "AccountCode", "AccountName", "AccountDescription");
@@ -484,6 +485,8 @@ ORDER BY " + string.Join(",", sort.Select(s => s + (_settings.DescendingOrder ? 
 			fieldFor("idAccountType").Hide().Essential = false;
 			addTable("Account", "idAccount", "AccountCode", "AccountName", "AccountDescription");
 			addTable("!Journal");
+			_fields.Add(new ReportField("Vat", "decimal", "Vat"));
+			_fields.Add(new ReportField("Result.Amount + Result.Vat AS Gross", "decimal", "Gross"));
 			addTable("!NameAddress");
 			addTable("Document", "idDocument", "DocumentDate", "DocumentIdentifier", "DocumentTypeId", "DocumentMemo");
 			fieldFor("idDocument").MakeEssential();
@@ -500,6 +503,7 @@ ORDER BY " + string.Join(",", sort.Select(s => s + (_settings.DescendingOrder ? 
 			account.Apply = false;
 			_filters.Add(date);
 			_filters.Add(account);
+			_filters.Add(new RecordFilter("AccountType", "Account.AccountTypeId", SelectAccountTypes()));
 			_filters.Add(new StringFilter("Id", "DocumentIdentifier"));
 			_filters.Add(new RecordFilter("DocumentType", "DocumentTypeId", SelectDocumentTypes()));
 			_filters.Add(new RecordFilter("NameAddress", "Journal.NameAddressId", SelectNames()));
@@ -515,7 +519,7 @@ ORDER BY " + string.Join(",", sort.Select(s => s + (_settings.DescendingOrder ? 
 			// Security gains/losses
 			List<JObject> report = finishReport(@"(
 SELECT * FROM 
-(SELECT Account.idAccount AS rAccount, Account.AccountTypeId as rAcctType, SUM(Journal.Amount) AS Amount, " + (int)DocType.OpeningBalance + " AS rDocType, 0 as rJournal, 0 as rDocument, 0 AS rJournalNum, "
+(SELECT Account.idAccount AS rAccount, Account.AccountTypeId as rAcctType, SUM(Journal.Amount) AS Amount, 0 AS Vat, " + (int)DocType.OpeningBalance + " AS rDocType, 0 as rJournal, 0 as rDocument, 0 AS rJournalNum, "
 			+ Database.Cast(Database.Quote(date.CurrentPeriod()[0]), "DATETIME") + @" AS rDocDate
 FROM Account
 LEFT JOIN AccountType ON AccountType.idAccountType = Account.AccountTypeId
@@ -526,15 +530,17 @@ AND BalanceSheet = 1" + where + @"
 GROUP BY AccountName) AS OpeningBalances
 WHERE Amount <> 0 OR rAcctType IN (" + (int)AcctType.Investment + "," + (int)AcctType.Security + @")
 UNION
-SELECT Account.idAccount AS rAccount, Account.AccountTypeId as rAcctType, Journal.Amount, DocumentTypeId As rDocType, idJournal AS rJournal, idDocument as rDocument, 
+SELECT Account.idAccount AS rAccount, Account.AccountTypeId as rAcctType, Journal.Amount, IFNULL(DocumentType.Sign * Line.VatAmount, 0) AS Vat, DocumentTypeId As rDocType, idJournal AS rJournal, idDocument as rDocument, 
 	JournalNum as rJournal, DocumentDate AS rDocDate
 FROM Account
 LEFT JOIN AccountType ON AccountType.idAccountType = Account.AccountTypeId
 LEFT JOIN Journal ON Journal.AccountId = Account.idAccount
+LEFT JOIN Line ON Line.idLine = Journal.idJournal
 LEFT JOIN Document ON Document.idDocument = Journal.DocumentId
+LEFT JOIN DocumentType ON DocumentType.idDocumentType = Document.DocumentTypeId
 WHERE " + date.Where(Database) + where + @"
 UNION
-SELECT Account.idAccount AS rAccount, Account.AccountTypeId as rAcctType, 0 AS Amount, " + (int)DocType.Gain + " AS rDocType, 0 as rJournal, 0 as rDocument, 0 AS rJournalNum, "
+SELECT Account.idAccount AS rAccount, Account.AccountTypeId as rAcctType, 0 AS Amount, 0 AS Vat, " + (int)DocType.Gain + " AS rDocType, 0 as rJournal, 0 as rDocument, 0 AS rJournalNum, "
 			+ Database.Cast(Database.Quote(date.CurrentPeriod()[1].AddDays(-1)), "DATETIME") + @" AS rDocDate
 FROM Account
 WHERE AccountTypeId = " + (int)AcctType.Security + where.Replace("Journal.AccountId", "idAccount") + @"
@@ -589,6 +595,8 @@ LEFT JOIN DocumentType ON DocumentType.idDocumentType = rDocType
 			initialiseReport(json);
 			ReportField cp = new ReportField("'' AS Period", "string", "Period") { Essential = true };
 			_fields.Add(cp);
+			_fields.Add(new ReportField("0 AS BalanceBefore", "decimal", "Balance Before") { Essential = true });
+			_fields.Add(new ReportField("0 AS BalanceAfter", "decimal", "Balance After") { Essential = true });
 			addTable("Journal");
 			addTable("Account", "idAccount", "AccountCode", "AccountName", "AccountDescription");
 			addTable("!NameAddress");
@@ -601,21 +609,40 @@ LEFT JOIN DocumentType ON DocumentType.idDocumentType = rDocType
 			_fields.Add(new ReportField("Line.VatAmount", "decimal", "VatAmount") { Hidden = true, Essential = true });
 			RecordFilter accountTypes = new RecordFilter("AccountType", "Account.AccountTypeId", SelectAccountTypes());
 			accountTypes.Set((int)AcctType.Bank, (int)AcctType.CreditCard);
-			_filters.Add(new DateFilter(Settings, "DocumentDate", DateRange.ThisYear));
+			DateFilter date = new DateFilter(Settings, "DocumentDate", DateRange.ThisYear);
+			_filters.Add(date);
 			_filters.Add(new RecordFilter("Account", "Journal.AccountId", SelectAccounts()));
 			_filters.Add(new StringFilter("AccountCode", "AccountCode"));
 			_filters.Add(accountTypes);
 			_settingsRequired = "PeriodLength,Totalling,GrandTotal,ReverseSign";
 			_settings.Totalling = 2;
 			setDefaultFields(json, "Period", "Amount");
-			IEnumerable<JObject> report = finishReport("Journal", "DocumentDate,,idDocument,JournalNum", @"JOIN Document ON idDocument = DocumentId
+			date.Apply = false;
+			decimal balance = 0;
+			int sign = _settings.ReverseSign ? -1 : 1;
+			readSettings(json);		// Need date filter now
+			if (date.Active) {
+				JObject b = Database.Query(@"SELECT SUM(Amount + IFNULL(DocumentType.Sign * VatAmount, 0)) AS Balance FROM Journal
+LEFT JOIN Line ON idLine = idJournal
+LEFT JOIN Account ON idAccount = AccountId
+LEFT JOIN Document ON idDocument = DocumentId
+LEFT JOIN DocumentType ON idDocumentType = DocumentTypeId
+" + getFilterWhere("DocumentDate < " + Database.Quote(date.CurrentPeriod()[0]))).FirstOrDefault();
+				if (b != null)
+					balance = sign * b.AsDecimal("Balance");
+			}
+			date.Apply = true;
+			IEnumerable<JObject> report = from r in finishReport("Journal", "DocumentDate,,idDocument,JournalNum", @"JOIN Document ON idDocument = DocumentId
 JOIN Account ON idAccount = AccountId
 JOIN NameAddress ON idNameAddress = NameAddressId
 JOIN DocumentType ON idDocumentType = DocumentTypeId
 LEFT JOIN Line ON idLine = idJournal", json)
-				.Select(r => r.AddRange("Period", periodFromDate(r.AsDate("DocumentDate")),
-					"Amount", r.AsDecimal("Amount") + r.AsDecimal("VatAmount") * SignFor((DocType)r.AsInt("DocumentTypeId"))
-					));
+				let amount = r.AsDecimal("Amount") + r.AsDecimal("VatAmount") * SignFor((DocType)r.AsInt("DocumentTypeId"))
+				select r.AddRange("Period", periodFromDate(r.AsDate("DocumentDate")),
+					"Amount", r.AsDecimal("Amount") + r.AsDecimal("VatAmount") * SignFor((DocType)r.AsInt("DocumentTypeId")),
+					"BalanceBefore", balance,
+					"BalanceAfter", balance += sign * amount
+					);
 			_settings.SortBy = "Period";
 			_sortFields = new string[] { "Period" };
 			return reportJson(json, report);
@@ -692,6 +719,7 @@ LEFT JOIN VatCode ON idVatCode = VatCodeId
 
 		public object ProfitAndLossSave(JObject json) {
 			_settings.Totalling = 0;
+			_settings.GrandTotal = false;
 			initialiseReport(json);
 			addTable("!AccountType");
 			addTable("Account", "idAccount", "AccountCode", "AccountName", "AccountDescription");
@@ -822,6 +850,7 @@ LEFT JOIN Product ON Product.idProduct = Line.ProductId
 
 		public object TrialBalanceSave(JObject json) {
 			_settings.Totalling = 0;
+			_settings.GrandTotal = false;
 			initialiseReport(json);
 			addTable("!AccountType", "Heading", "AcctType");
 			addTable("Account", "idAccount", "AccountCode", "AccountName", "AccountDescription");
@@ -1697,7 +1726,7 @@ JOIN Security ON idSecurity = SecurityId")) {
 			string[] lastTotalBreak = new string[sortFields.Length + 1];
 			Dictionary<string, decimal[]> totals = new Dictionary<string, decimal[]>();
 			string firstStringField = null;
-			if (_settings.Totalling > 0) {
+			if (_settings.Totalling > 0 || _settings.GrandTotal) {
 				// Build list of totalling fields
 				foreach (ReportField f in _fields) {
 					if (!f.Include) continue;
@@ -1726,8 +1755,12 @@ JOIN Security ON idSecurity = SecurityId")) {
 				return t;
 			};
 			foreach (JObject r in data) {
-				if (_settings.ReverseSign && r["Amount"] != null)
-					r["Amount"] = -r.AsDecimal("Amount");
+				if (_settings.ReverseSign) {
+					if (r["Amount"] != null)
+						r["Amount"] = -r.AsDecimal("Amount");
+					if (r["Gross"] != null)
+						r["Gross"] = -r.AsDecimal("Gross");
+				}
 				JObject record = new JObject(r);
 				JObject id = null;
 				if (essentialFields.Count > 0) {
@@ -1764,10 +1797,7 @@ JOIN Security ON idSecurity = SecurityId")) {
 				}
 				if(id != null)
 					record["recordId"] = id;
-				if (_settings.Totalling > 0) {
-					// Cache total break values
-					for(int level = 0; level < sortFields.Length; level++)
-						lastTotalBreak[level] = r.AsString(sortFields[level]);
+				if (_settings.Totalling > 0 || _settings.GrandTotal) {
 					// Accumulate totals
 					foreach (string f in totals.Keys.ToList()) {
 						decimal v = record.AsDecimal(f);
@@ -1778,8 +1808,25 @@ JOIN Security ON idSecurity = SecurityId")) {
 							v = r.AsDecimal("Amount");
 							if (v < 0) v = 0;
 						}
-						for(int level = 0; level <= sortFields.Length; level++)
-							totals[f][level] += v;
+						for (int level = 0; level <= sortFields.Length; level++) {
+							switch (f) {
+								case "BalanceAfter":	// "Total" is most recent value
+									totals[f][level] = v;
+									break;
+								case "BalanceBefore":	// "Total" is first value
+									if(lastTotalBreak[level] == null)
+										totals[f][level] = v;
+									break;
+								default:
+									totals[f][level] += v;
+									break;
+							}
+						}
+						// Cache total break values
+						for (int level = 0; level < sortFields.Length; level++)
+							lastTotalBreak[level] = r.AsString(sortFields[level]);
+						if (lastTotalBreak[sortFields.Length] == null)
+							lastTotalBreak[sortFields.Length] = "Grand Total";
 					}
 				}
 				last = r;
@@ -1795,9 +1842,9 @@ JOIN Security ON idSecurity = SecurityId")) {
 							yield return spacer;
 					}
 				}
-				if(_settings.GrandTotal)
-					yield return totalRecord(sortFields.Length);
 			}
+			if (_settings.GrandTotal)
+				yield return totalRecord(sortFields.Length);
 		}
 
 		/// <summary>

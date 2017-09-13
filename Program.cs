@@ -11,6 +11,9 @@ using System.Configuration;
 using System.Globalization;
 using System.Threading;
 using System.Net.Sockets;
+using System.Net;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using CodeFirstWebFramework;
 
 namespace AccountServer {
@@ -59,9 +62,41 @@ namespace AccountServer {
 					System.Diagnostics.Process.Start(startPage);
 			} else {
 				WebServer server = new WebServer();
+				if (windows)
+					new Task(CheckForNewVersion).Start();
 				if (!string.IsNullOrEmpty(startPage))
 					System.Diagnostics.Process.Start(startPage);
 				server.Start();
+			}
+		}
+
+		public static string NewVersion;
+
+		static void CheckForNewVersion() {
+			for( ; ; ) {
+				try {
+					HttpWebRequest req = WebRequest.Create("https://api.github.com/repos/nikkilocke/AccountServer/releases/latest") as HttpWebRequest;
+					req.ServicePoint.Expect100Continue = false;
+					req.UserAgent = "AccountServer (Windows; " + CultureInfo.CurrentCulture.Name + "; AccountServer)";
+					using (WebResponse resp = req.GetResponse()) {
+						using (var stream = resp.GetResponseStream()) {
+							using (var reader = new StreamReader(stream)) {
+								using (var jr = new JsonTextReader(reader)) {
+									JObject d = JObject.Load(jr);
+									string tag = d.AsString("tag_name");
+									if(tag.CompareTo("v" + WebServer.AppVersion) > 0) {
+										JObject asset = ((JArray)d["assets"]).Select(a => (JObject)a).FirstOrDefault(a => a.AsString("name") == "AccountServerSetup.msi");
+										if (asset != null)
+											NewVersion = asset.AsString("browser_download_url");
+									}
+								}
+							}
+						}
+					}
+				} catch(Exception ex) {
+					System.Diagnostics.Trace.WriteLine(ex);
+				}
+				Thread.Sleep(new TimeSpan(24, 0, 0));
 			}
 		}
 

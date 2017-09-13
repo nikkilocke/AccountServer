@@ -33,6 +33,10 @@ namespace AccountServer {
 			get { return (Settings)base.Settings; }
 		}
 
+		public string NewVersion {
+			get { return Program.NewVersion; }
+		}
+
 		/// <summary>
 		/// True if user does have Authorise
 		/// </summary>
