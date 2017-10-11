@@ -143,7 +143,7 @@ ORDER BY Name
 					} else if (method.ReturnType == typeof(AjaxReturn)) {
 						ret = o as AjaxReturn;
 						if (ret.error == null && ret.redirect != null)
-							ret.redirect += "&from=" + HttpUtility.UrlEncode(Parameters.AsString("from"));
+							ret.redirect += "&from=" + HttpUtility.UrlEncode(Parameters.AsString("from")) + "&postjob=1";
 						ret.id = null;
 					} else {
 						throw new CheckException("Unexpected return type {0}", method.ReturnType.Name);

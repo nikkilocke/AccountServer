@@ -191,21 +191,32 @@ function matchingStatement() {
 }
 
 /**
+ *
+ */
+function postingJob() {
+	return getParameter('postjob') == '1';
+}
+
+/**
  * Adjust form options if matching statements (remove deletem next, previous, save and close, save and new buttons)
  * @returns {boolean}
  */
 function checkForStatementMatching(options) {
-	if(matchingStatement()) {
-	if(options.header !== undefined && options.detail !== undefined) {
+	var matching = matchingStatement();
+	var posting = postingJob();
+	if(matching || posting) {
+		if(options.header !== undefined && options.detail !== undefined) {
 			checkForStatementMatching(options.header);
 			checkForStatementMatching(options.detail);
 		}
-		options.canDelete = false;
-		options.saveAndClose = false;
+		if(matching) {
+			options.canDelete = false;
+			options.saveAndClose = false;
+		}
 		options.saveAndNew = false;
 		if(options.data) {
-			options.data.previous = false;
-			options.data.next = false;
+			options.data.previous = null;
+			options.data.next = null;
 		}
 	}
 	return options;
