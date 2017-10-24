@@ -68,9 +68,9 @@ namespace AccountServer {
 			new AdminHelper(this).Restore();
 		}
 
-		public void Users() {
+		public DataTableForm Users() {
 			insertMenuOption(new MenuOption("New User", "/admin/EditUser?id=0&from=%2Fadmin%2Fusers"));
-			new AdminHelper(this).Users();
+			return new AdminHelper(this).Users();
 		}
 
 		public JObjectEnumerable UsersListing() {
@@ -110,8 +110,8 @@ namespace AccountServer {
 		}
 
 		[Auth(AccessLevel.Any)]
-		public void ChangePassword() {
-			new AdminHelper(this).ChangePassword();
+		public Form ChangePassword() {
+			return new AdminHelper(this).ChangePassword();
 		}
 
 		[Auth(AccessLevel.Any)]
