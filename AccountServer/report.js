@@ -64,6 +64,7 @@ function initialiseReport(record, select, update) {
 			data: fields,
 			submit: null,
 			readonly: record.readonly,
+			sortable: true,
 			columns: [
 				'heading/Name',
 				{
@@ -201,7 +202,7 @@ function initialiseReport(record, select, update) {
 	 */
 	function getReportColumns() {
 		return _.filter(fields, function(field) { return field.Include; }).map(function(f) {
-			f = _.clone(f);	// So original isn;t changed
+			f = _.clone(f);	// So original isn't changed
 			if(f.type == 'decimal')
 				f.type = 'bracket';
 			return f;
@@ -213,6 +214,7 @@ function initialiseReport(record, select, update) {
 	 */
 	function refresh() {
 		var modified = unsavedInput;
+		record.settings.fields = report.fieldForm.data;
 		postJson(defaultUrl('Save'), record.settings, function(data) {
 			record = data;
 			$('#report thead,#report tbody,#settings table thead,#settings table tbody').remove();

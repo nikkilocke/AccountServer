@@ -277,7 +277,7 @@ namespace AccountServer {
 			fieldFor("FunctionAccessLevel").MakeSelectable(levelSelect);
 			_filters.Add(new StringFilter("Login", "User.Login"));
 			_filters.Add(new StringFilter("Email", "User.Email"));
-			_filters.Add(new SelectFilter("AccessLevel", "User.AccessLevel", levelSelect));
+			_filters.Add(new RecordFilter("AccessLevel", "User.AccessLevel", levelSelect));
 			return auditReportData(json, "User", "Login", "Email", "AccessLevel", "ModulePermissions");
 		}
 
@@ -688,7 +688,7 @@ LEFT JOIN Line ON idLine = idJournal", json)
 			_filters.Add(new StringFilter("PostCode", "Full_Member.PostCode"));
 			_filters.Add(new DecimalFilter("Amount Due", "AmountDue"));
 			_filters.Add(new BooleanFilter("Left", "Hidden", false));
-			_filters.Add(new SelectFilter("Type", "Member.MemberTypeId", SelectMemberTypes()));
+			_filters.Add(new RecordFilter("Type", "Member.MemberTypeId", SelectMemberTypes()));
 		}
 
 		public void Products(int id) {
@@ -796,7 +796,7 @@ LEFT JOIN Document ON Document.idDocument = Journal.DocumentId
 			fieldFor("FunctionAccessLevel").MakeSelectable(levelSelect);
 			_filters.Add(new StringFilter("Login", "User.Login"));
 			_filters.Add(new StringFilter("Email", "User.Email"));
-			_filters.Add(new SelectFilter("AccessLevel", "User.AccessLevel", levelSelect));
+			_filters.Add(new RecordFilter("AccessLevel", "User.AccessLevel", levelSelect));
 			makeSortable("Login", "Email", "AccessLevel");
 			setDefaultFields(json, "Login", "Email", "AccessLevel", "ModulePermissions");
 			return finishReport(json, "User", "Login", "LEFT JOIN Permission ON UserId = idUser AND ModulePermissions = 1", "User");
@@ -929,7 +929,7 @@ ORDER BY " + string.Join(",", sort.Select(s => s + (_settings.DescendingOrder ? 
 			_filters.Add(new DateFilter(Settings, "DocumentDate", DateRange.All));
 			_filters.Add(new VatPaidFilter("VatPaid", "Vat_Journal.VatPaid", SelectVatPayments()));
 			_filters.Add(new RecordFilter("DocumentType", "DocumentTypeId", SelectDocumentTypes()));
-			_filters.Add(new SelectFilter("VatType", "VatType", SelectVatTypes()));
+			_filters.Add(new RecordFilter("VatType", "VatType", SelectVatTypes()));
 			makeSortable("idDocument=Trans no", "DocumentDate", "DocumentIdentifier=Doc Id", "Type,DocumentName=DocumentName", "DocumentAmount", "DocType", "Code");
 			setDefaultFields(json, "VatType", "DocType", "DocumentDate", "DocumentIdentifier", "DocumentName", "Memo", "Code", "VatRate", "VatAmount", "LineAmount");
 			return finishReport(json, "Vat_Journal", "VatType,DocumentDate", @"JOIN VatCode ON idVatCode = VatCodeId
@@ -984,7 +984,7 @@ LEFT JOIN (SELECT idDocument AS idVatPaid, DocumentDate AS VatPaidDate FROM Docu
 						r["heading"] = fa.Heading;
 					r["type"] = fa.Type;
 				}
-				if (essential) {
+				if (essential && f == t.PrimaryKey) {
 					r.Essential = true;
 					if(Array.IndexOf(fields, f.Name) < 0)
 						r.Hidden = true;
@@ -1916,11 +1916,15 @@ JOIN Security ON idSecurity = SecurityId")) {
 				foreach (string field in fields)
 					fieldFor(field).Include = true;
 			} else {
+				int insertPoint = 0;
 				foreach (JObject f in (JArray)settings["fields"]) {
 					string name = f.AsString("Name");
 					ReportField fld = _fields.FirstOrDefault(x => x.Name == name);
-					if(fld != null)
+					if (fld != null) {
 						fld.Include = f.AsInt("Include") != 0;
+						_fields.Remove(fld);
+						_fields.Insert(insertPoint++, fld);
+					}
 				}
 			}
 		}
