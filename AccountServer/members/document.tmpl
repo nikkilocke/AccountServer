@@ -37,24 +37,18 @@
 					form.header.data.DocumentAmount -= data.Amount;
 				form.header.draw();
 			};
-			var emptyRow = {
-				'@class': 'noDeleteButton',
+			formOptions.detail.addRow = true;
+			formOptions.detail.hasData = function(row) {
+				return row.NameAddressId;
+			};
+			formOptions.detail.emptyRow = {
 				NameAddressId: 0,
 				Member: '',
 				Amount: 0.00
 			};
-			record.detail.push(_.clone(emptyRow));
 			var form = makeHeaderDetailForm('#docs', '#detail',
 					checkForStatementMatching(formOptions)
 			);
-			function checkForNewRow() {
-				if(form.detail.data[form.detail.data.length - 1].NameAddressId) {
-					form.detail.find('tbody tr.noDeleteButton').removeClass('noDeleteButton');
-					form.detail.addRow(_.clone(emptyRow));
-					return true;
-				}
-			}
-			checkForNewRow();
 			form.detail.bind('changed.field', function(e, newValue, rowData, col, input) {
 				//noinspection FallThroughInSwitchStatementJS
 				switch(col.name) {
@@ -81,7 +75,6 @@
 						rowData.Amount = newValue;
 						break;
 					default:
-						setTimeout(checkForNewRow, 10);	// Wait for data to be updated after we return
 						return;
 				}
 				form.detail.drawRow(input);
@@ -90,7 +83,6 @@
 					form.header.data.DocumentAmount = tot;
 					form.header.draw();
 				}
-				checkForNewRow();
 			});
 			if(fixedAmount) {
 				form.header.find('#r0cDocumentAccountId').prop('disabled', true);

@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>AccountServer</RootNamespace>
     <AssemblyName>AccountServer</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
@@ -29,6 +29,7 @@
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -67,8 +68,8 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CodeFirstWebFramework, Version=1.0.14.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\CodeFirstWebFramework.1.0.14\lib\net45\CodeFirstWebFramework.dll</HintPath>
+    <Reference Include="CodeFirstWebFramework, Version=1.0.16.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\CodeFirstWebFramework.1.0.16\lib\net452\CodeFirstWebFramework.dll</HintPath>
     </Reference>
     <Reference Include="Markdig, Version=0.13.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\Markdig.0.13.0\lib\net40\Markdig.dll</HintPath>
@@ -199,6 +200,17 @@
     <Content Include="contentFiles\CodeFirstWebFramework\skin\default.js" />
     <Content Include="contentFiles\CodeFirstWebFramework\skin\styled.css" />
     <Content Include="contentFiles\CodeFirstWebFramework\skin\styled.js" />
+    <Content Include="MySqlCommand.xml" />
+    <Content Include="MySqlCommandBuilder.xml" />
+    <Content Include="MySqlConnection.xml" />
+    <Content Include="MySqlConnectionStringBuilder.xml" />
+    <Content Include="MySqlDataAdapter.xml" />
+    <Content Include="MySqlDataReader.xml" />
+    <Content Include="MySqlException.xml" />
+    <Content Include="MySqlHelper.xml" />
+    <Content Include="MySqlParameter.xml" />
+    <Content Include="MySqlParameterCollection.xml" />
+    <Content Include="MySqlTransaction.xml" />
     <Content Include="packages.config" />
     <Content Include="README.md" />
     <Content Include="AccountServer\help\navigation.md" />
@@ -207,6 +219,7 @@
     <None Include="AccountServer\help\customer.md" />
     <None Include="AccountServer\help\supplier.md" />
     <None Include="AccountServer_TemporaryKey.pfx" />
+    <None Include="app.config" />
     <None Include="contentFiles\Api.md" />
     <None Include="contentFiles\CodeFirstWebFramework\admin\batch.tmpl" />
     <None Include="contentFiles\CodeFirstWebFramework\admin\default.tmpl" />

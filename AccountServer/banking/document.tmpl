@@ -19,16 +19,6 @@ $(function() {
 	var vatCodes = record.VatCodes;
 	var vatCodesHash = hashFromArray(vatCodes);
 	var names = record.Names;
-	var emptyRow = {
-		'@class': 'noDeleteButton',
-		AccountId: null,
-		Memo: '',
-		VatCodeId: null,
-		VatRate: 0.00,
-		VatAmount: 0.00,
-		LineAmount: 0.00,
-		Gross: 0.00
-	};
 	var readonly = record.header.DocumentOutstanding != record.header.DocumentAmount || '!{{ReadOnly}}';
 	var dataEntered = readonly || record.detail.length > 0;
 // {{#if Settings.RecordVat}}
@@ -51,7 +41,6 @@ $(function() {
 		record.header.DocumentAmount = round(record.header.Net + record.header.Vat);
 	}
 	calculateDocument();
-	record.detail.push(_.clone(emptyRow));
 	var headerColumns = [
 		'DocumentAccountName/Account',
 		{
@@ -144,6 +133,19 @@ $(function() {
 					form.header.draw();
 				};
 			},
+			addRows: true,
+			emptyRow: {
+				AccountId: null,
+				Memo: '',
+				VatCodeId: null,
+				VatRate: 0.00,
+				VatAmount: 0.00,
+				LineAmount: 0.00,
+				Gross: 0.00
+			},
+			hasData: function(row) {
+				return row.AccountId;
+			},
 			columns: [
 				{
 					data: 'AccountId',
@@ -209,14 +211,6 @@ $(function() {
 		form.data.header.DocumentAmount = round(form.data.header.Net + form.data.header.Vat);
 		form.header.draw();
 	}
-	function checkForNewRow() {
-		if(form.data.detail[form.data.detail.length - 1].AccountId) {
-			form.detail.find('tbody tr.noDeleteButton').removeClass('noDeleteButton');
-			form.detail.addRow(_.clone(emptyRow));
-			$('#docs input#r' + (form.data.detail.length - 1) + 'cVatAmount').prop('disabled', true);
-			return true;
-		}
-	}
 	function disableVatAmounts() {
 		for(var r = 0; r < form.data.detail.length; r++) {
 			if(form.data.detail[r].VatCodeId == null)
@@ -225,7 +219,6 @@ $(function() {
 	}
 	if(readonly)
 		form.header.fields.DocumentAccountName.cell.find(':input').prop('disabled', true);
-	checkForNewRow();
 	disableVatAmounts();
 	form.header.bind('changed.field', function(e, newValue, rowData, col, input) {
 		if(col.name == 'DocumentName') {
@@ -245,7 +238,6 @@ $(function() {
 						calculateDocument();
 						form.header.draw();
 						form.detail.dataReady(record.detail);
-						checkForNewRow();
 						disableVatAmounts();
 						message('Last matching document copied - please check and correct the accounts and amounts');
 					}
@@ -275,12 +267,11 @@ $(function() {
 			case 'VatAmount':
 				break;
 			default:
-				setTimeout(checkForNewRow, 10);	// Wait for data to be updated after we return
+				setTimeout(disableVatAmounts, 10);	// Wait for data to be updated after we return
 				return;
 		}
 		calculateLine(rowData, newValues);
 		form.detail.drawRow(input);
-		checkForNewRow();
 		return false;		// We have updated the line - don't do it again
 	});
 	if(matchingStatement()) {

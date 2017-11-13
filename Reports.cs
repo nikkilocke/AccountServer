@@ -1091,7 +1091,7 @@ WHERE TableName = "
 		JObject getJson(int id, string defaultTitle) {
 			string reportType = OriginalMethod.ToLower();
 			dynamic json = null;
-			if (PostParameters == null || PostParameters["json"] == null && SessionData.Report != null) {
+			if ((PostParameters == null || PostParameters["json"] == null) && SessionData.Report != null) {
 				json = SessionData.Report.reportType;
 			}
 			if (json == null || json.idReport != id || json.ReportType.ToString().ToLower() != reportType) {

@@ -21,18 +21,6 @@ $(function() {
 	var vatCodes = record.VatCodes;
 	var vatCodesHash = hashFromArray(vatCodes);
 	var customers = record.Names;
-	var emptyRow = {
-		'@class': 'noDeleteButton',
-		Qty: 1,
-		ProductId: 0,
-		Memo: '',
-		UnitPrice: 0.00,
-		VatCodeId: null,
-		VatRate: 0.00,
-		VatAmount: 0.00,
-		LineAmount: 0.00,
-		Account: 0
-	};
 	var readonly = record.header.DocumentOutstanding != record.header.DocumentAmount;
 	record.header.Net = record.header.Vat = 0;
 	_.each(record.detail, function(line) {
@@ -43,7 +31,6 @@ $(function() {
 	});
 	record.header.Net = round(record.header.Net);
 	record.header.Vat = round(record.header.Vat);
-	record.detail.push(_.clone(emptyRow));
 	var form = makeHeaderDetailForm('#form', '#docs', {
 		validate: function() {
 			for(var i = 0; i < form.data.detail.length - 1; i++) {
@@ -120,6 +107,21 @@ $(function() {
 				data.VatRate = 0;
 				calculateLine(data);
 			},
+			addRows: true,
+			emptyRow: {
+				Qty: 1,
+				ProductId: 0,
+				Memo: '',
+				UnitPrice: 0.00,
+				VatCodeId: null,
+				VatRate: 0.00,
+				VatAmount: 0.00,
+				LineAmount: 0.00,
+				Account: 0
+			},
+			hasData: function(row) {
+				return row.ProductId;
+			},
 			columns: [
 				{
 					data: 'ProductId',
@@ -174,16 +176,8 @@ $(function() {
 		form.data.header.DocumentAmount = round(form.data.header.Net + form.data.header.Vat);
 		form.header.draw();
 	}
-	function checkForNewRow() {
-		if(form.data.detail[form.data.detail.length - 1].ProductId) {
-			form.detail.find('tbody tr.noDeleteButton').removeClass('noDeleteButton');
-			form.detail.addRow(_.clone(emptyRow));
-			return true;
-		}
-	}
 	if(readonly)
 		form.header.fields.DocumentName.cell.find(':input').prop('disabled', true);
-	checkForNewRow();
 	form.header.bind('changed.field', function(e, newValue, rowData, col, input) {
 		if(col.name == 'DocumentName') {
 			var customer = _.find(customers, function(v) { return v.value == newValue});
@@ -224,12 +218,10 @@ $(function() {
 				rowData.UnitPrice = newValue;
 				break;
 			default:
-				setTimeout(checkForNewRow, 10);	// Wait for data to be updated after we return
 				return;
 		}
 		calculateLine(rowData);
 		form.detail.drawRow(input);
-		checkForNewRow();
 	});
 	if(record.header.idDocument) {
 		if(readonly)

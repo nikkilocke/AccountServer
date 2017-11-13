@@ -19,13 +19,6 @@
 $(function() {
 	var record = '!{{Record}}';
 	var names = record.Names;
-	var emptyRow = {
-		'@class': 'noDeleteButton',
-		AccountId: 0,	// Cannot be null, as Journal requires an AccountId
-		Memo: '',
-		Amount: 0.00,
-		Name: record.header.DocumentName
-	};
 	var readonly = record.header.DocumentOutstanding != record.header.DocumentAmount || '!{{ReadOnly}}';
 	var dataEntered = readonly || record.detail.length > 0;
 	function calculateDocument() {
@@ -89,10 +82,19 @@ $(function() {
 					return false;
 				return function() {
 					calculateDocument();
-					checkForNewRow();
 					form.header.draw();
 					form.detail.draw();
 				};
+			},
+			addRow: true,
+			hasData: function(row) {
+				return row.AccountId;
+			},
+			emptyRow: {
+				AccountId: 0,	// Cannot be null, as Journal requires an AccountId
+				Memo: '',
+				Amount: 0.00,
+				Name: record.header.DocumentName
 			},
 			columns: [
 				{
@@ -123,18 +125,8 @@ $(function() {
 			]
 		}
 	});
-	function checkForNewRow() {
-		if(form.data.detail[form.data.detail.length - 1].AccountId) {
-			form.detail.find('tbody tr.noDeleteButton').removeClass('noDeleteButton');
-			var newRow = _.clone(emptyRow);
-			newRow.Amount = form.data.header.AmountToBalance;
-			form.detail.addRow(newRow);
-			return true;
-		}
-	}
 	if(readonly)
 		form.header.fields.AccountName.cell.find(':input').prop('disabled', true);
-	checkForNewRow();
 	form.detail.bind('changed.field', function(e, newValue, rowData, col, input) {
 		dataEntered = true;
 		if(col.name == 'Credit' || col.name == 'Debit') {
@@ -156,8 +148,6 @@ $(function() {
 			var name = _.find(names, function(v) { return v.value == newValue});
 			rowData.NameAddressId = name ? name.id : 0;
 		}
-
-		setTimeout(checkForNewRow, 10);	// Wait for data to be updated after we return
 	});
 	if(record.header.idDocument) {
 		actionButton('Audit').click(function () {
