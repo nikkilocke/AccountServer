@@ -31,7 +31,6 @@ $(function() {
 		record.header.Vat = round(record.header.Vat);
 	}
 	calculateDocument();
-	record.detail.push(_.clone(emptyRow));
 	var form = makeHeaderDetailForm('#form', '#docs', {
 		validate: function() {
 			for(var i = 0; i < form.data.detail.length - 1; i++) {

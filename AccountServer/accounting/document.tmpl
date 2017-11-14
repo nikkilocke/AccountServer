@@ -34,7 +34,6 @@ $(function() {
 			lastRow.Amount = record.header.AmountToBalance;
 	}
 	calculateDocument();
-	record.detail.push(_.clone(emptyRow));
 	var form = makeHeaderDetailForm('#form', '#docs', {
 		validate: function() {
 			if(record.header.AmountToBalance != 0)
