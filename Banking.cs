@@ -737,7 +737,7 @@ ORDER BY DocumentDate, idDocument"));
 					float maxsimilarity = 0.4999f;
 					foreach (NameAddress n in Database.Query<NameAddress>("SELECT * FROM NameAddress WHERE Type = " + Database.Quote(nameType) 
 							+ " AND Name <= " + Database.Quote(currentName) 
-							+ " AND Name LIKE " + Database.Quote(currentName.Substring(0, 5) + "%"))) {
+							+ " AND Name LIKE " + Database.Quote(currentName.Length <= 5 ? currentName : currentName.Substring(0, 5) + "%"))) {
 						float similarity = n.Name.SimilarTo(currentName);
 							if (similarity > maxsimilarity) {
 								doc.DocumentName = n.Name;

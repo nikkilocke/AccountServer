@@ -515,4 +515,10 @@ ORDER BY idDocument");
 
 	}
 
+	/// <summary>
+	/// Class to show errors
+	/// </summary>
+	public class ErrorModule : AppModule {
+	}
+
 }
