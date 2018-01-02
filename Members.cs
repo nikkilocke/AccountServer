@@ -162,7 +162,6 @@ ORDER BY JournalNum")
 		}
 
 		public AjaxReturn DocumentSave(SubscriptionDocument json) {
-			Database.Logging = CodeFirstWebFramework.LogLevel.Writes;
 			AjaxReturn result = new AjaxReturn();
 			Database.BeginTransaction();
 			JObject oldDoc = null;
