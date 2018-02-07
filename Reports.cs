@@ -62,7 +62,7 @@ namespace AccountServer {
 			[Writeable]
 			public bool DescendingOrder;
 			/// <summary>
-			///  How/whether to total (0 = none, 1 = data & totals, 2 = totals only)
+			///  How/whether to total (0 = none, 1 = data &amp; totals, 2 = totals only)
 			/// </summary>
 			[Writeable]
 			public int Totalling;

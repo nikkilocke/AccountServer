@@ -12,7 +12,7 @@ namespace AccountServer {
 		}
 
 		public void Admin_Import() {
-			ReturnHelpFrom(Server.FileInfo("/help/admin_import.tmpl"));
+			ReturnHelpFrom(FileInfo("/help/admin_import.tmpl"));
 		}
 
 	}

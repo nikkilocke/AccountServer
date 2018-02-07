@@ -11,11 +11,12 @@ using CodeFirstWebFramework;
 
 namespace AccountServer {
 	[Auth(AccessLevel.Admin)]
+	[Implementation(typeof(AdminHelper))]
 	public class AdminModule : AppModule {
 
 		protected override void Init() {
 			base.Init();
-			insertMenuOptions(
+			InsertMenuOptions(
 				new MenuOption("Settings", "/admin/editsettings.html"),
 				new MenuOption("Users", "/admin/users"),
 				new MenuOption("Integrity Check", "/admin/integritycheck.html"),
@@ -25,8 +26,8 @@ namespace AccountServer {
 			);
 			if (SecurityOn) {
 				if (Session.User != null)
-					insertMenuOption(new MenuOption("Change password", "/admin/changepassword"));
-				insertMenuOption(new MenuOption(Session.User == null ? "Login" : "Logout", "/admin/login"));
+					InsertMenuOption(new MenuOption("Change password", "/admin/changepassword"));
+				InsertMenuOption(new MenuOption(Session.User == null ? "Login" : "Logout", "/admin/login"));
 			}
 		}
 
@@ -37,15 +38,13 @@ namespace AccountServer {
 		}
 
 		public void EditSettings() {
-			JObject header = Settings.ToJObject();
+			Form form = new AdminHelper(this).EditSettings();
+			JObject header = (JObject)form.Data;
 			header.Add("YearStart", Settings.YearStart(Utils.Today));
 			header.Add("YearEnd", Settings.YearEnd(Utils.Today));
-			DirectoryInfo skinFolder = Server.DirectoryInfo("skin");
 			Record = new JObject().AddRange("header", header,
 				"BankAccounts", SelectBankAccounts(),
-				"Skins", skinFolder.EnumerateFiles("*.css")
-						.Where(f => File.Exists(Path.ChangeExtension(f.FullName, ".js")))
-						.Select(f => new { value = Path.GetFileNameWithoutExtension(f.Name) })
+				"Skins", form["Skin"].Options["selectOptions"]
 					);
 		}
 
@@ -53,32 +52,6 @@ namespace AccountServer {
 			if (!SecurityOn)
 				json["RequireAuthorisation"] = false;
 			return new AdminHelper(this).EditSettingsSave(json);
-		}
-
-		[Auth(AccessLevel.Any)]
-		public AjaxReturn BatchStatus(int id) {
-			return new AdminHelper(this).BatchStatus(id);
-		}
-
-		public void Backup() {
-			new AdminHelper(this).Backup();
-		}
-
-		public void Restore() {
-			new AdminHelper(this).Restore();
-		}
-
-		public DataTableForm Users() {
-			insertMenuOption(new MenuOption("New User", "/admin/EditUser?id=0&from=%2Fadmin%2Fusers"));
-			return new AdminHelper(this).Users();
-		}
-
-		public JObjectEnumerable UsersListing() {
-			return new AdminHelper(this).UsersListing();
-		}
-
-		public void EditUser(int id) {
-			new AdminHelper(this).EditUser(id);
 		}
 
 		public AjaxReturn EditUserSave(JObject json) {
@@ -103,30 +76,6 @@ namespace AccountServer {
 				Database.AuditUpdate("User", header.AsInt("idUser"), old, json);
 			}
 			return result;
-		}
-
-		public AjaxReturn EditUserDelete(int id) {
-			return new AdminHelper(this).EditUserDelete(id);
-		}
-
-		[Auth(AccessLevel.Any)]
-		public Form ChangePassword() {
-			return new AdminHelper(this).ChangePassword();
-		}
-
-		[Auth(AccessLevel.Any)]
-		public AjaxReturn ChangePasswordSave(JObject json) {
-			return new AdminHelper(this).ChangePasswordSave(json);
-		}
-
-		[Auth(AccessLevel.Any)]
-		public void Login() {
-			new AdminHelper(this).Login();
-		}
-
-		[Auth(AccessLevel.Any)]
-		public void Logout() {
-			new AdminHelper(this).Login();
 		}
 
 		public void Import() {

@@ -26,12 +26,12 @@ namespace AccountServer {
 
 		protected override void Init() {
 			base.Init();
-			insertMenuOptions(
+			InsertMenuOptions(
 				new MenuOption("Summary", "/home/default.html"),
 				new MenuOption("To Do", "/home/schedule.html")
 				);
 			if (!SecurityOn || UserAccessLevel >= AccessLevel.ReadWrite)
-				insertMenuOptions(
+				InsertMenuOptions(
 					new MenuOption("New To Do", "/home/job.html?id=0")
 				);
 		}

@@ -11,12 +11,12 @@ namespace AccountServer {
 	public class Investments : BankingAccounting {
 		protected override void Init() {
 			base.Init();
-			insertMenuOptions(
+			InsertMenuOptions(
 				new MenuOption("Listing", "/investments/default.html"),
 				new MenuOption("Securities", "/investments/securities.html")
 				);
 			if (!SecurityOn || UserAccessLevel >= AccessLevel.ReadWrite)
-				insertMenuOptions(
+				InsertMenuOptions(
 					new MenuOption("New Account", "/investments/detail.html?id=0")
 				);
 		}

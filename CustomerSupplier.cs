@@ -43,11 +43,11 @@ namespace AccountServer {
 
 		protected override void Init() {
 			base.Init();
-			insertMenuOptions(new MenuOption("Listing", _module + "default.html"));
+			InsertMenuOptions(new MenuOption("Listing", _module + "default.html"));
 			if(Settings.RecordVat)
-				insertMenuOptions(new MenuOption("VAT codes", _module + "vatcodes.html"));
+				InsertMenuOptions(new MenuOption("VAT codes", _module + "vatcodes.html"));
 			if (!SecurityOn || UserAccessLevel >= AccessLevel.ReadWrite)
-				insertMenuOptions(
+				InsertMenuOptions(
 					new MenuOption("New " + Name, _module + "detail.html?id=0"),
 					new MenuOption("New " + InvoiceDoc.UnCamel(), _module + "document.html?id=0&type=" + (int)InvoiceDoc),
 					new MenuOption("New " + CreditDoc.UnCamel(), _module + "document.html?id=0&type=" + (int)CreditDoc),

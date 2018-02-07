@@ -15,12 +15,12 @@ namespace AccountServer {
 
 		protected override void Init() {
 			base.Init();
-			insertMenuOptions(
+			InsertMenuOptions(
 				new MenuOption("Listing", "/banking/default.html"),
 				new MenuOption("Names", "/banking/names.html")
 				);
 			if (!SecurityOn || UserAccessLevel >= AccessLevel.ReadWrite)
-				insertMenuOptions(
+				InsertMenuOptions(
 					new MenuOption("New Account", "/banking/detail.html?id=0")
 				);
 		}

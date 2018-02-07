@@ -9,20 +9,20 @@ namespace AccountServer {
 
 		protected override void Init() {
 			base.Init();
-			insertMenuOptions(
+			InsertMenuOptions(
 				new MenuOption("Listing", "/members/default.html"),
 				new MenuOption("Subscription Payments", "/members/subscriptions.html"),
 				new MenuOption("Membership Types", "/members/types.html")
 				);
 			if (!SecurityOn || UserAccessLevel >= AccessLevel.ReadWrite)
-				insertMenuOptions(
+				InsertMenuOptions(
 					new MenuOption("New Subscription Payments", "/members/document.html?id=0")
 				);
 		}
 
 		public override void Default() {
 			if (!SecurityOn || UserAccessLevel >= AccessLevel.ReadWrite)
-				insertMenuOptions(
+				InsertMenuOptions(
 					new MenuOption("New Member", "/members/detail.html?id=0"),
 					new MenuOption("Year End", "/members/yearend.html")
 					);
@@ -271,7 +271,7 @@ ORDER BY JournalNum")
 
 		public void Types() {
 			if (!SecurityOn || UserAccessLevel >= AccessLevel.ReadWrite)
-				insertMenuOption(new MenuOption("New Membership Type", "/members/type.html?id=0&from=%2Fmembers%2Ftypes.html"));
+				InsertMenuOption(new MenuOption("New Membership Type", "/members/type.html?id=0&from=%2Fmembers%2Ftypes.html"));
 			DataTableForm form = new DataTableForm(this, typeof(MemberType));
 			Form = form;
 			form.Options["select"] = "/members/type.html";

@@ -22,7 +22,7 @@ namespace AccountServer {
 
 		protected override void Init() {
 			base.Init();
-			insertMenuOption(new MenuOption("Products", "/customer/products.html"));
+			InsertMenuOption(new MenuOption("Products", "/customer/products.html"));
 		}
 
 		/// <summary>
