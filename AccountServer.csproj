@@ -151,6 +151,7 @@
     <Content Include="AccountServer\help\members.md" />
     <Content Include="AccountServer\help\reports.md" />
     <Content Include="contentFiles\CodeFirstWebFramework\default.css" />
+    <Content Include="contentFiles\CodeFirstWebFramework\default.inc" />
     <Content Include="contentFiles\CodeFirstWebFramework\default.js" />
     <Content Include="contentFiles\CodeFirstWebFramework\images\close.png" />
     <Content Include="contentFiles\CodeFirstWebFramework\images\menu.png" />
