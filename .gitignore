@@ -30,3 +30,5 @@
 /Setup/*.msi
 /contentFiles
 /Setup/Release
+/docs
+/*.cmd

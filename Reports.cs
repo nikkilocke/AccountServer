@@ -53,37 +53,31 @@ namespace AccountServer {
 		/// </summary>
 		DateFilter _dates;
 
+		[Writeable]
 		public class ReportSettings : JsonObject {
 			/// <summary>
 			/// Sort order to use
 			/// </summary>
-			[Writeable]
 			public string SortBy;
-			[Writeable]
 			public bool DescendingOrder;
 			/// <summary>
 			///  How/whether to total (0 = none, 1 = data &amp; totals, 2 = totals only)
 			/// </summary>
-			[Writeable]
 			public int Totalling;
 			/// <summary>
 			/// Whether to show a grand total (not, e.g., for the VAT detail report!)
 			/// </summary>
-			[Writeable]
 			public bool GrandTotal = true;
 			/// <summary>
 			/// Whether to split lines
 			/// </summary>
-			[Writeable]
 			[Field(Heading = "Compact to save paper")]
 			public bool Split;
 			/// <summary>
 			/// Reverse sign in journal reports
 			/// </summary>
-			[Writeable]
 			[Field(Heading = "Reverse sign of amounts")]
 			public bool ReverseSign;
-			[Writeable]
 			public int PeriodLength = 1;
 		}
 
@@ -141,7 +135,7 @@ namespace AccountServer {
 				addReport(reports, new JObject().AddRange("ReportName", "Audit Users", "ReportType", "AuditUsers", "idReport", 0));
 			addReport(reports, new JObject().AddRange("ReportName", "Reconciliation Report", "ReportType", "AuditReconciliation", "idReport", 0));
 			groups["Audit Reports"] = reports;
-			foreach (JObject report in Database.Query("SELECT idReport, ReportGroup, ReportName, ReportType FROM Report ORDER BY ReportGroup, ReportName").ToList()) {
+			foreach (JObject report in Database.Query("SELECT idReport, ReportGroup, ReportName, ReportType FROM Report WHERE Chart = 0 ORDER BY ReportGroup, ReportName").ToList()) {
 				string group = report.AsString("ReportGroup");
 				if (!groups.TryGetValue(group, out reports)) {
 					reports = new List<JObject>();
@@ -2253,9 +2247,9 @@ JOIN Security ON idSecurity = SecurityId")) {
 					case DateRange.LastYear:
 						return "Year Ending " + period[1].AddDays(-1).ToString("d");
 					case DateRange.NDays:
-						return (period[1] - period[0]).TotalDays + " days up to " + period[1].ToString("d");
+						return (period[1] - period[0]).TotalDays + " days up to " + period[1].AddDays(-1).ToString("d");
 					case DateRange.NMonths:
-						return (period[1].Month - period[0].Month + 12 * (period[1].Year - period[0].Year)) + " months from " + period[0].ToString("d") + " - " + period[1].ToString("d");
+						return (period[1].Month - period[0].Month + 12 * (period[1].Year - period[0].Year)) + " months from " + period[0].ToString("d") + " - " + period[1].AddDays(-1).ToString("d");
 					default:
 						return period[0].ToString("d") + " - " + period[1].AddDays(-1).ToString("d");
 				}
@@ -2285,11 +2279,11 @@ JOIN Security ON idSecurity = SecurityId")) {
 						_end = json["end"].To<DateTime>();
 						break;
 					case DateRange.NDays:
-						_end = DateTime.Today;
+						_end = DateTime.Today.AddDays(1);
 						_start = _end.AddDays(-(json as JObject).AsInt("count"));
 						break;
 					case DateRange.NMonths:
-						_end = DateTime.Today;
+						_end = DateTime.Today.AddDays(1);
 						_start = _end.AddMonths(-(json as JObject).AsInt("count"));
 						break;
 					default:
@@ -2396,11 +2390,11 @@ JOIN Security ON idSecurity = SecurityId")) {
 						_start = _settings.YearStart(_end.AddDays(-1));
 						break;
 					case DateRange.NDays:
-						_end = Utils.Today;
+						_end = Utils.Today.AddDays(1);
 						_start = _end.AddDays(-7);
 						break;
 					case DateRange.NMonths:
-						_end = Utils.Today;
+						_end = Utils.Today.AddDays(1);
 						_start = _end.AddMonths(-1);
 						break;
 				}
@@ -2422,6 +2416,7 @@ JOIN Security ON idSecurity = SecurityId")) {
 		/// </summary>
 		public class RecordFilter : Filter {
 			protected List<int> _ids;
+			public bool Negate;
 
 			/// <summary>
 			/// Constructor
@@ -2437,7 +2432,7 @@ JOIN Security ON idSecurity = SecurityId")) {
 			}
 
 			public override JToken Data() {
-				return _ids.ToJToken();
+				return new JObject().AddRange("items", _ids, "negate", Negate);
 			}
 
 			public void Set(params int[] values) {
@@ -2450,10 +2445,19 @@ JOIN Security ON idSecurity = SecurityId")) {
 			}
 
 			public override void Parse(JToken json) {
-				if (json == null)
+				if (json == null) {
 					_ids = null;
-				else
-					_ids = json.To<List<int>>();
+					Negate = false;
+				} else {
+					JObject o = json as JObject;
+					if (o == null) {
+						_ids = json.To<List<int>>();
+						Negate = false;
+					} else {
+						_ids = o["items"].To<List<int>>();
+						Negate = o.AsBool("negate");
+					}
+				}
 				if (_ids == null)
 					_ids = new List<int>();
 				Active = _ids.Count != 0;
@@ -2467,12 +2471,12 @@ JOIN Security ON idSecurity = SecurityId")) {
 			}
 
 			public override string Where(Database db) {
-				return FieldName + " " + db.In(_ids);
+				return FieldName + (Negate ? " NOT " : " ") + db.In(_ids);
 			}
 
 			public override bool Test(JObject data) {
 				int id = data.AsInt(JObjectFieldName);
-				return _ids.Contains(id);
+				return Negate ^ _ids.Contains(id);
 			}
 		}
 
@@ -2481,6 +2485,7 @@ JOIN Security ON idSecurity = SecurityId")) {
 		/// </summary>
 		public class SelectFilter : Filter {
 			List<string> _ids;
+			public bool Negate;
 
 			public SelectFilter(string name, string fieldName, IEnumerable<JObject> options)
 				: base(name) {
@@ -2490,14 +2495,23 @@ JOIN Security ON idSecurity = SecurityId")) {
 			}
 
 			public override JToken Data() {
-				return _ids.ToJToken();
+				return new JObject().AddRange("items", _ids, "negate", Negate);
 			}
 
 			public override void Parse(JToken json) {
-				if (json == null)
+				if (json == null) {
 					_ids = null;
-				else
-					_ids = json.To<List<string>>();
+					Negate = false;
+				} else {
+					JObject o = json as JObject;
+					if (o == null) {
+						_ids = json.To<List<string>>();
+						Negate = false;
+					} else {
+						_ids = o["items"].To<List<string>>();
+						Negate = o.AsBool("negate");
+					}
+				}
 				if (_ids == null)
 					_ids = new List<string>();
 				Active = _ids.Count != 0;
@@ -2511,12 +2525,12 @@ JOIN Security ON idSecurity = SecurityId")) {
 			}
 
 			public override string Where(Database db) {
-				return FieldName + " " + db.In(_ids);
+				return FieldName + (Negate ? " NOT " : " ") + db.In(_ids);
 			}
 
 			public override bool Test(JObject data) {
 				string id = data.AsString(JObjectFieldName);
-				return _ids.Contains(id);
+				return Negate ^ _ids.Contains(id);
 			}
 		}
 

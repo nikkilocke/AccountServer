@@ -68,8 +68,8 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CodeFirstWebFramework, Version=1.1.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\CodeFirstWebFramework.1.1.2\lib\net452\CodeFirstWebFramework.dll</HintPath>
+    <Reference Include="CodeFirstWebFramework, Version=1.1.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\CodeFirstWebFramework.1.1.4\lib\net452\CodeFirstWebFramework.dll</HintPath>
     </Reference>
     <Reference Include="Markdig, Version=0.14.9.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\Markdig.0.14.9\lib\net40\Markdig.dll</HintPath>
@@ -121,6 +121,7 @@
     <Compile Include="AppModule.cs" />
     <Compile Include="Banking.cs" />
     <Compile Include="BankingAccounting.cs" />
+    <Compile Include="Charts.cs" />
     <Compile Include="Help.cs" />
     <Compile Include="Home.cs" />
     <Compile Include="CsvParser.cs" />

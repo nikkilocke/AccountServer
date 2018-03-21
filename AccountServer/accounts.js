@@ -60,6 +60,51 @@ var DocType = {
 		Gain:16,
 		Subscriptions:17
 };
+// Replace default multi select filter with one with negation
+Type.multiSelectFilter = {
+		// Report multi select filter
+		defaultContent: function(index, col) {
+			return '<div><select multiple data-col="' + col.name + '" ' + col.attributes + '/>Exclude selected items <input type="checkbox" data-col="' + col.name + '" ' + col.attributes + '/></div>';
+		},
+		draw: function(data, rowno, row) {
+			var select = '<div><select id="r' + rowno + 'c' + this.name + '" data-col="' + this.name + '" multiple />Exclude selected items <input type="checkbox" data-col="' + this.name + '" ' + this.attributes + '/></div>';
+			var jselect = $(select);
+			if(this.selectOptions) {
+				addOptionsToSelect(jselect.find('select'), this.selectOptions, data, this);
+				select = jselect.html();
+				_.each(data.items, function(d) {
+					select = select.replace(' value="' + d + '"', ' value="' + d + '" selected');
+				});
+			}
+			if(data.negate)
+				jselect.find('input').attr('checked', data.negate);
+			return select;
+		},
+		update: function(cell, data, rowno, row) {
+			var i = cell.find('select');
+			if(i.length && i.attr('id')) {
+				i.val(data);
+			} else {
+				cell.html(this.draw(data, rowno, row));
+				i = cell.find('select');
+			}
+			if(i.css('display') != 'none')
+				i.multiselect({
+					selectedList: 2,
+					uncheckAllText: 'No filter',
+					noneSelectedText: 'No filter'
+				});
+			cell.find('input').prop('checked', data.negate);
+		},
+		inputValue: function(field, row) {
+			var cell = $(field).closest('td');
+			return {
+				items: cell.find('select').multiselect("getChecked").map(function() { return this.value; }).get(),
+				negate: cell.find('input').prop('checked')
+			};
+		}
+	};
+
 
 /**
  * When user clicks on an item in a list, open it

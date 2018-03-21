@@ -393,6 +393,8 @@ JOIN NameAddress ON idNameAddress = NameAddressId")]
 		public string ReportSettings;
 		[Unique("Name_Index")]
 		public string ReportGroup;
+		[DefaultValue("0")]
+		public bool Chart;
 		public override int? Id {
 			get { return idReport; }
 			set { idReport = value; }
@@ -583,7 +585,7 @@ JOIN NameAddress ON idNameAddress = NameAddressId")]
 		public DateTime QuarterStart(DateTime date) {
 			DateTime result = YearStart(date);
 			result = result.AddDays(1 - (int)result.Day);
-			for (DateTime end = result.AddMonths(3); end < date; end = result.AddMonths(3))
+			for (DateTime end = result.AddMonths(3); end <= date; end = result.AddMonths(3))
 				result = end;
 			return result;
 		}

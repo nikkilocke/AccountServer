@@ -77,6 +77,7 @@ namespace AccountServer {
 				try {
 					HttpWebRequest req = WebRequest.Create("https://api.github.com/repos/nikkilocke/AccountServer/releases/latest") as HttpWebRequest;
 					req.ServicePoint.Expect100Continue = false;
+					ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 					req.UserAgent = "AccountServer (Windows; " + CultureInfo.CurrentCulture.Name + "; AccountServer)";
 					using (WebResponse resp = req.GetResponse()) {
 						using (var stream = resp.GetResponseStream()) {
