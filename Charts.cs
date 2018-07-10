@@ -619,7 +619,7 @@ namespace AccountServer {
 			_settings.Y = "Amount";
 			_settings.X1 = "AccountName";
 			_filters.Add(_dates = new Reports.DateFilter(Settings, "DocumentDate", Reports.DateRange.LastYear));
-			_filters.Add(new Reports.RecordFilter("Account", "Journal.AccountId", selectAccounts(acctTypes)));
+			_filters.Add(new Reports.RecordFilter("Account", "idAccount", selectAccounts(acctTypes)));
 			_filters.Add(new Reports.RecordFilter("AccountType", "AccountTypeId", SelectAccountTypes().Where(t => acctTypes.Contains(t.AsInt("id")))));
 			readSettings(json);
 			string sql = buildSql(acctTypes, out NameList fields, out NameList sort);
