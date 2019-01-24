@@ -77,7 +77,7 @@ namespace AccountServer {
 				FullAccount acct = null;
 				DocType type = (DocType)document.DocumentTypeId;
 				switch (type) {
-					case DocType.Cheque:
+					case DocType.Withdrawal:
 					case DocType.Deposit:
 					case DocType.CreditCardCharge:
 					case DocType.CreditCardCredit:
@@ -105,7 +105,7 @@ namespace AccountServer {
 					case DocType.GeneralJournal:
 						nextDocId = Settings.NextNumber(type);
 						break;
-					case DocType.Cheque:
+					case DocType.Withdrawal:
 					case DocType.Deposit:
 					case DocType.CreditCardCharge:
 					case DocType.CreditCardCredit:

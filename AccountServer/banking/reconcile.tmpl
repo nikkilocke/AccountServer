@@ -127,7 +127,7 @@ $(function() {
 					form[0].submit();
 				});
 			});
-	addButton('New cheque', 'document.html?id=0&type=' + DocType.Cheque + '&acct=' + record.idAccount);
+	addButton('New withdrawal', 'document.html?id=0&type=' + DocType.Withdrawal + '&acct=' + record.idAccount);
 	addButton('New deposit', 'document.html?id=0&type=' + DocType.Deposit + '&acct=' + record.idAccount);
 	addButton('New transfer', 'transfer.html?id=0&acct=' + record.idAccount);
 	form.detail.on('dblclick', 'tbody tr', function(e) {

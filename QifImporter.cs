@@ -68,21 +68,23 @@ namespace AccountServer {
 				_transactions = new List<Transaction>();
 				if (!getLine()) return;
 				while (!_eof) {
-					switch (_line) {
+					switch (_line.Trim()) {
 						case "!Type:Cash":
 						case "!Type:Bank":
-							importTransactions(DocType.Cheque, DocType.Deposit);
+							importTransactions(DocType.Withdrawal, DocType.Deposit);
 							break;
 						case "!Type:CCard":
 							importTransactions(DocType.CreditCardCharge, DocType.CreditCardCredit);
 							break;
+						case "!Type:Oth A":
+						case "!Type:Oth L":
+							importTransactions(DocType.GeneralJournal, DocType.GeneralJournal);
+							break;
 						case "!Type:Invst":
 							importInvestments();
 							break;
-						case "!Type:Oth A":
-						case "!Type:Oth L":
 						case "!Account":
-							importAccount();
+							importAccounts();
 							break;
 						case "!Type:Cat":
 							importCategories();
@@ -130,7 +132,7 @@ namespace AccountServer {
 					switch (_line) {
 						case "!Type:Cash":
 						case "!Type:Bank":
-							importTransactions(DocType.Cheque, DocType.Deposit);
+							importTransactions(DocType.Withdrawal, DocType.Deposit);
 							break;
 						case "!Type:CCard":
 							importTransactions(DocType.CreditCardCharge, DocType.CreditCardCredit);
@@ -165,6 +167,11 @@ namespace AccountServer {
 		public string DateFormat;
 
 		/// <summary>
+		/// Allow transactions which don't balance - post difference to "Imbalanced Transactions"
+		/// </summary>
+		public bool AllowImbalancedTransactions;
+
+		/// <summary>
 		/// For error reporting
 		/// </summary>
 		public int Line { get; private set; }
@@ -172,14 +179,40 @@ namespace AccountServer {
 		/// <summary>
 		/// Input a wierd Quicken date
 		/// </summary>
-		/// <returns></returns>
-		DateTime getDate() {
-			// 'nn is year 2000 + nn
-			_value = Regex.Replace(_value, @"'\d+$", delegate(Match m) {
-				int year = int.Parse(m.Value.Substring(1));
-				return "/" + (year + 2000);
-			});
-			return string.IsNullOrWhiteSpace(DateFormat) ? DateTime.Parse(_value) : DateTime.ParseExact(_value, DateFormat, System.Globalization.CultureInfo.InvariantCulture);
+		DateTime getDate(string value) {
+			Match match = Regex.Match(value, @"(\d+)/ ?(\d+)(['/]) ?(\d+)");
+			if(match.Success) {
+				int d = int.Parse(match.Groups[1].Value);
+				int m = int.Parse(match.Groups[2].Value);
+				int y = int.Parse(match.Groups[4].Value);
+				if (match.Groups[3].Value == "'") {
+					// 'nn is year 2000 + nn
+					y += 2000;
+				} else if (y < 1000) {
+					y += 1900;
+				}
+				value = string.Format("{0:00}/{1:00}/{2}", d, m, y);
+			}
+			return string.IsNullOrWhiteSpace(DateFormat) ? DateTime.Parse(value) : DateTime.ParseExact(value, DateFormat, System.Globalization.CultureInfo.InvariantCulture);
+		}
+
+		/// <summary>
+		/// Input a wierd Quicked double value (e.g. share price)
+		/// </summary>
+		double getDouble(string value) {
+			if(value.Contains("/")) {
+				string [] parts = value.Split(' ');
+				if(parts.Length == 1)
+					parts = new string[] { "0", parts[0] };
+				Utils.Check(parts.Length == 2, "Invalid fraction value {0}", value);
+				string[] fract = parts[1].Split('/');
+				Utils.Check(fract.Length == 2, "Invalid fraction value {0}", value);
+				double d = double.Parse(parts[0]);
+				double f = double.Parse(fract[0]) / double.Parse(fract[1]);
+				d += d < 0 ? -f : f;
+				return d;
+			}
+			return double.Parse(value);
 		}
 
 		/// <summary>
@@ -200,9 +233,9 @@ namespace AccountServer {
 		}
 
 		/// <summary>
-		/// Import account info for a single bank/card/security account
+		/// Import account info for a bank/card/security accounts
 		/// </summary>
-		void importAccount() {
+		void importAccounts() {
 			status("Importing Account");
 			JObject o = new JObject();
 			while (getLine()) {
@@ -212,8 +245,8 @@ namespace AccountServer {
 					case "^":		// End of record
 						if(!string.IsNullOrEmpty(o.AsString("AccountName")))
 							_account = (int)_module.Database.ForeignKey("Account", o);
-						getLine();	// Get next line for caller to process
-						return;
+						o = new JObject();
+						break;
 					case "N":
 						o["AccountName"] = _accountName = _value;
 						break;
@@ -232,14 +265,23 @@ namespace AccountServer {
 								break;
 							case "Stock":
 							case "Invst":
+							case "Port":
+							case "Mutual":
+							case "401(k)":
 								o["AccountTypeId"] = (int)AcctType.Investment;
+								break;
+							case "Oth A":
+								o["AccountTypeId"] = (int)AcctType.OtherCurrentAsset;
+								break;
+							case "Oth L":
+							case "Tax":
+							case "Bill":
+								o["AccountTypeId"] = (int)AcctType.OtherCurrentLiability;
 								break;
 							default:
 								throw new CheckException("Unexpected account type:{0}", _line);
 						}
 						break;
-					default:
-						throw new CheckException("Unexpected input:{0}", _line);
 				}
 			}
 		}
@@ -273,11 +315,11 @@ namespace AccountServer {
 						break;
 					case "B":
 						break;
-					default:
-						throw new CheckException("Unexpected input:{0}", _line);
 				}
 			}
 		}
+
+		int nextTicker;
 
 		void importInvestments() {
 			decimal value;
@@ -293,7 +335,7 @@ namespace AccountServer {
 						startInvestment();
 						break;
 					case "D":
-						_transaction.DocumentDate = getDate();
+						_transaction.DocumentDate = getDate(_value);
 						break;
 					case "M":	// Memo
 						if (_transaction.DocumentMemo == null)
@@ -315,14 +357,15 @@ namespace AccountServer {
 					case "Y":	// Security name
 						if (!string.IsNullOrEmpty(_value)) {
 							_transaction.SecurityName = _value;
-							_transaction.Stock.SecurityId = (int)_module.Database.ForeignKey("Security", "SecurityName", _value);
+							_transaction.Stock.SecurityId = (int)_module.Database.ForeignKey("Security", "SecurityName", _value,
+								"Ticker", "T" + nextTicker++.ToString("00"));
 						}
 						break;
 					case "Q":	// Quantity (of shares)
-						_transaction.Stock.Quantity = double.Parse(_value);
+						_transaction.Stock.Quantity = getDouble(_value);
 						break;
 					case "I":	// Price
-						_transaction.Stock.Price = double.Parse(_value);
+						_transaction.Stock.Price = getDouble(_value);
 						break;
 					case "O":	// Commission cost
 						value = decimal.Parse(_value);
@@ -342,12 +385,10 @@ namespace AccountServer {
 						break;
 					case "U":	// ?? Same value as T
 					case "$":	// Split amount
-						break;
 					case "C":	// Cleared
 					case "E":	// Split memo
-					case "S":	// Split category/account
-					default:
-						throw new CheckException("Unexpected input:{0}", _line);
+					case "S":   // Split category/account
+						break;
 				}
 			}
 		}
@@ -368,13 +409,16 @@ namespace AccountServer {
 						string[] fields = _line.Split(',');
 						string d = Utils.RemoveQuotes(fields[2]);
 						StockPrice p = new StockPrice();
-						p.SecurityId = (int)_module.Database.ForeignKey("Security", "Ticker", Utils.RemoveQuotes(fields[0]));
-						p.Price = double.Parse(fields[1]);
-						p.Date = string.IsNullOrWhiteSpace(DateFormat) ? DateTime.Parse(d) : DateTime.ParseExact(d, DateFormat, System.Globalization.CultureInfo.InvariantCulture);
+						try {
+							p.SecurityId = (int)_module.Database.ForeignKey("Security", "Ticker", Utils.RemoveQuotes(fields[0]));
+						} catch(Exception ex) {
+							// Security doesn't exist - ignore price
+							break;
+						}
+						p.Price = getDouble(fields[1]);
+						p.Date = getDate(d);
 						_module.Database.Update(p);;
 						break;
-					default:
-						throw new CheckException("Unexpected input:{0}", _line);
 				}
 			}
 		}
@@ -400,8 +444,6 @@ namespace AccountServer {
 						break;
 					case "T":	// Type? (Stock)
 						break;
-					default:
-						throw new CheckException("Unexpected input:{0}", _line);
 				}
 			}
 		}
@@ -426,7 +468,7 @@ namespace AccountServer {
 						_transaction.Cleared = _value;
 						break;
 					case "D":
-						_transaction.DocumentDate = getDate();
+						_transaction.DocumentDate = getDate(_value);
 						break;
 					case "M":	// Memo
 						if(_transaction.DocumentMemo == null)
@@ -490,9 +532,8 @@ namespace AccountServer {
 					case "Y":	// Security name
 					case "Q":	// Quantity (of shares)
 					case "I":	// Price
-					case "O":	// Commission cost
-					default:
-						throw new CheckException("Unexpected input:{0}", _line);
+					case "O":   // Commission cost
+						break;
 				}
 			}
 		}
@@ -537,19 +578,67 @@ namespace AccountServer {
 					addSell();
 					addTransfer(1);
 					return;
-				case "ReinvDiv":	// Receive a dividend and use it to buy
-					addDividend();
+				case "ReinvDiv":    // Receive a dividend and use it to buy
+					addIncome("Dividends");
+					addBuy();
+					return;
+				case "ReinvInt":    // Receive interest and use it to buy
+					addIncome("Interest");
 					addBuy();
 					return;
 				case "Div":
-					addDividend();
+					addIncome("Dividends");
 					return;
-				case "DivX":		// Receive a dividend and transfer it to another account
-					addDividend();
+				case "DivX":        // Receive a dividend and transfer it to another account
+					addIncome("Dividends");
+					addTransfer(1);
+					return;
+				case "CGLong":
+					addIncome("Long Term Capital Gains");
+					return;
+				case "CGLongX":        // Receive a gain and transfer it to another account
+					addIncome("Long Term Capital Gains");
+					addTransfer(1);
+					return;
+				case "ReinvLg":    // Receive gain and use it to buy
+					addIncome("Long Term Capital Gains");
+					addBuy();
+					return;
+				case "ReinvMd":    // Receive gain and use it to buy
+					addIncome("Mid Term Capital Gains");
+					addBuy();
+					return;
+				case "ReinvSh":    // Receive gain and use it to buy
+					addIncome("Short Term Capital Gains");
+					addBuy();
+					return;
+				case "CGMid":
+					addIncome("Mid Term Capital Gains");
+					return;
+				case "CGMidX":        // Receive a gain and transfer it to another account
+					addIncome("Mid Term Capital Gains");
+					addTransfer(1);
+					return;
+				case "CGShort":
+					addIncome("Short Term Capital Gains");
+					return;
+				case "CGShortX":        // Receive a gain and transfer it to another account
+					addIncome("Short Term Capital Gains");
+					addTransfer(1);
+					return;
+				case "IntInc":
+					addIncome("Interest");
+					return;
+				case "IntIncX":        // Receive a dividend and transfer it to another account
+					addIncome("Interest");
 					addTransfer(1);
 					return;
 			}
-			Utils.Check(_transaction.Stock.SecurityId == 0, "Unexpected stock transaction {0}", _transaction.DocumentIdentifier);
+			if(_transaction.Journals[0].AccountId == 0) {
+				addIncome(_transaction.DocumentIdentifier);
+				return;
+			}
+//			Utils.Check(_transaction.Stock.SecurityId == 0, "Unexpected stock transaction {0}", _transaction.DocumentIdentifier);
 			if (_accountsProcessed.Contains(_transaction.Journals[0].AccountId)) {
 				setClearedStatus(_transaction);
 				return;
@@ -557,7 +646,7 @@ namespace AccountServer {
 			_transaction.Stock = null;
 			Account acct = _module.Database.Get<Account>(_transaction.Journals[0].AccountId);
 			_transaction.DocumentTypeId = (int)(acct.AccountTypeId == (int)AcctType.Bank || acct.AccountTypeId == (int)AcctType.CreditCard || acct.AccountTypeId == (int)AcctType.Investment ?
-				DocType.Transfer : _transaction.Amount < 0 ? DocType.Cheque : DocType.Deposit);
+				DocType.Transfer : _transaction.Amount < 0 ? DocType.Withdrawal : DocType.Deposit);
 			_transactions.Add(_transaction);
 		}
 
@@ -597,7 +686,7 @@ namespace AccountServer {
 			_transactions.Add(t);
 		}
 
-		void addDividend() {
+		void addIncome(string accountName) { 
 			Transaction t = new Transaction();
 			t.AccountId = _account;
 			t.Amount = _transaction.Amount;
@@ -610,7 +699,7 @@ namespace AccountServer {
 			t.NameAddressId = _transaction.NameAddressId;
 			t.Journals.Add(new Journal() {
 				AccountId = (int)_module.Database.ForeignKey("Account", 
-					"AccountName", "Dividends",
+					"AccountName", accountName,
 					"AccountTypeId", (int)AcctType.OtherIncome),
 				Amount = -_transaction.Amount,
 				Outstanding = -_transaction.Amount
@@ -697,12 +786,26 @@ namespace AccountServer {
 					l.idLine = d.idJournal;
 					l.LineAmount = sign * d.Amount;
 					_module.Database.Insert(l);
-					if (i == 0 && t.Stock != null) {
+					if (i == 0 && t.Stock != null && t.Stock.Quantity != 0) {
 						t.Stock.idStockTransaction = d.idJournal;
 						t.Stock.ParentAccountId = t.AccountId;
 						t.Stock.CostPer = -(double)t.Amount / t.Stock.Quantity;
 						_module.Database.Insert(t.Stock);
 					}
+				}
+				if(total != 0 && AllowImbalancedTransactions) {
+					Journal d = new Journal();
+					d.DocumentId = docid;
+					d.JournalNum = t.Journals.Count + 2;
+					d.NameAddressId = t.NameAddressId;
+					d.AccountId = (int)_module.Database.ForeignKey("Account", "AccountName", "Imbalanced Transactions", "AccountTypeId", (int)AcctType.Expense);
+					d.Amount = -total;
+					total += d.Amount;
+					_module.Database.Insert(d);
+					Line l = new Line();
+					l.idLine = d.idJournal;
+					l.LineAmount = sign * d.Amount;
+					_module.Database.Insert(l);
 				}
 				Utils.Check(total == 0, "Transaction total not zero {0}", t);
 			}

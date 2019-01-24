@@ -18,7 +18,7 @@ When you display a security, all the prices you have input so far (most recent f
 
 ## Adding transactions
 
-You can transfer money into or out of your investment accounts using a Transfer from another account, or make deposits or pay out cheques, just like a bank account. 
+You can transfer money into or out of your investment accounts using a Transfer from another account, or make deposits or withdrawals, just like a bank account. 
 
 You can also make a *Balance adjustment*, which is useful for an account, like a pension, where the value may change due to gain (or loss) - all you have to do is enter the new value from the provider's statement, and a transaction will be added to account for the change.
 

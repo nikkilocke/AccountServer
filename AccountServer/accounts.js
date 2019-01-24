@@ -48,7 +48,7 @@ var DocType = {
 		Bill:4,
 		BillPayment:5,
 		Credit:6,
-		Cheque:7,
+		Withdrawal:7,
 		Deposit:8,
 		CreditCardCharge:9,
 		CreditCardCredit:10,
@@ -190,7 +190,7 @@ function documentUrl(data) {
 		case DocType.BillPayment:
 			s = '/supplier/payment';
 			break;
-		case DocType.Cheque:
+        case DocType.Withdrawal:
 		case DocType.Deposit:
 		case DocType.CreditCardCharge:
 		case DocType.CreditCardCredit:

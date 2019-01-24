@@ -81,7 +81,7 @@ namespace AccountServer {
 		public void Import() {
 		}
 
-		public void ImportFile(UploadedFile file, string dateFormat) {
+		public void ImportFile(UploadedFile file, string dateFormat, bool allowImbalancedTransactions) {
 			Method = "import";
 			Stream s = null;
 			try {
@@ -94,6 +94,7 @@ namespace AccountServer {
 							Batch.Status = "Importing file " + file.Name + " as QIF";
 							Database.BeginTransaction();
 							qif.DateFormat = dateFormat;
+							qif.AllowImbalancedTransactions = allowImbalancedTransactions;
 							qif.Import(new StreamReader(s), this);
 							Database.Commit();
 						} catch (Exception ex) {

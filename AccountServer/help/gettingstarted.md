@@ -1,6 +1,6 @@
 # Getting Started
 
-The first thing is to go to *Admin* *Settings* and fill in all the details there. It is particularly important to get your year start correct - this should be set to your own financial year - if you want to use the UK the government tax year, it starts on the first Monday on April, but only use this if you don't have your own accounting year.
+The first thing is to go to *Admin* *Settings* and fill in all the details there. It is particularly important to get your year start correct - this should be set to your own financial year - if you want to use the UK government tax year, it starts on the 6th April, but only use this if you don't have your own accounting year.
 
 For AccountServer to be able to send emails (e.g. invoices to your customers), you must fill in the details of your mail server - you should be able to get them from your ISP. The defaults are suitable for use with GMail (once you have entered your GMail user name and password).
 

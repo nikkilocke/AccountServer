@@ -264,14 +264,14 @@ JOIN Document ON idDocument = Journal.DocumentId
 JOIN Journal AS J ON J.DocumentId = idDocument AND J.JournalNum = 2
 JOIN Account ON idAccount = J.AccountId
 WHERE Journal.JournalNum = 1
-AND DocumentTypeID IN (" + (int)DocType.Cheque + "," + (int)DocType.Deposit + @")
+AND DocumentTypeID IN (" + (int)DocType.Withdrawal + "," + (int)DocType.Deposit + @")
 AND Journal.AccountId = " + acct);
 				doc.AccountId = o.AsInt("AccountId");
 				doc.AccountName = o.AsString("AccountName");
 				doc.NameAddressId = 1;
 				doc.Name = "";
 			} else {
-				checkDocType(doc.DocumentTypeId, DocType.Cheque, DocType.Deposit);
+				checkDocType(doc.DocumentTypeId, DocType.Withdrawal, DocType.Deposit);
 				foreach (Journal j in Database.Query<Journal>("SELECT * FROM Journal WHERE DocumentId = " + id)) {
 					switch (j.JournalNum) {
 						case 1:
@@ -314,7 +314,7 @@ AND Journal.AccountId = " + acct);
 				checkNameType(json.NameAddressId, "O");
 			JObject old = getCompleteDocument(json.idDocument);
 			json.Amount = json.NewBalance - json.ExistingBalance;
-			json.DocumentTypeId = (int)(json.Amount < 0 ? DocType.Cheque : DocType.Deposit);
+			json.DocumentTypeId = (int)(json.Amount < 0 ? DocType.Withdrawal : DocType.Deposit);
 			Database.BeginTransaction();
 			Database.Update(json);
 			Journal j = new Journal();

@@ -285,7 +285,7 @@ ORDER BY DocumentDate DESC, idDocument DESC");
 		/// <param name="id">A specific VAT return, or 0 to get one for last quarter</param>
 		public void VatReturn(int id) {
 			// Find the VAT payment to HMRC
-			// It will be a cheque, credit, or credit card equivalent
+			// It will be a withdrawal, deposit, or credit card equivalent
 			// Journal line 2 will be to VAT control
 			// If no id provided, get the most recently posted one
 			Extended_Document header = Database.QueryOne<Extended_Document>(@"SELECT Extended_Document.*
@@ -293,7 +293,7 @@ FROM Extended_Document
 JOIN Journal ON DocumentId = idDocument
 WHERE AccountId = " + (int)Acct.VATControl + @"
 AND JournalNum = 2
-AND DocumentTypeId " + Database.In(DocType.Cheque, DocType.Deposit, DocType.CreditCardCharge, DocType.CreditCardCredit)
+AND DocumentTypeId " + Database.In(DocType.Withdrawal, DocType.Deposit, DocType.CreditCardCharge, DocType.CreditCardCredit)
 				+ (id == 0 ? "" : "AND idDocument = " + id) + @"
 ORDER BY idDocument DESC");
 			if (header.idDocument == null) {
@@ -345,7 +345,7 @@ ORDER BY idDocument DESC");
 			DocType t;
 			switch ((AcctType)acct.AccountTypeId) {
 				case AcctType.Bank:
-					t = toPay < 0 ? DocType.Deposit : DocType.Cheque;
+					t = toPay < 0 ? DocType.Deposit : DocType.Withdrawal;
 					break;
 				case AcctType.CreditCard:
 					t = toPay < 0 ? DocType.CreditCardCredit : DocType.CreditCardCharge;

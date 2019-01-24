@@ -78,7 +78,7 @@ namespace AccountServer {
 		Bill,
 		BillPayment,
 		Credit,
-		Cheque,
+		Withdrawal,
 		Deposit,
 		CreditCardCharge,
 		CreditCardCredit,
@@ -102,7 +102,7 @@ namespace AccountServer {
 	/// Class for accessing the database
 	/// </summary>
 	public class Database : CodeFirstWebFramework.Database {
-		public override int CurrentDbVersion { get { return 3; } }
+		public override int CurrentDbVersion { get { return 4; } }
 
 		/// <summary>
 		/// Coded updates - make sure all required records exist, etc.
@@ -162,7 +162,7 @@ namespace AccountServer {
 			ensureDocTypeExists(DocType.Bill, "S", (int)Acct.PurchaseLedger);
 			ensureDocTypeExists(DocType.BillPayment, "S", (int)Acct.PurchaseLedger);
 			ensureDocTypeExists(DocType.Credit, "S", (int)Acct.PurchaseLedger);
-			ensureDocTypeExists(DocType.Cheque, "O", null);
+			ensureDocTypeExists(DocType.Withdrawal, "O", null);
 			ensureDocTypeExists(DocType.Deposit, "O", null);
 			ensureDocTypeExists(DocType.CreditCardCharge, "O", null);
 			ensureDocTypeExists(DocType.CreditCardCredit, "O", null);
@@ -197,6 +197,7 @@ namespace AccountServer {
 					}
 					break;
 				case 3:
+				case 4:
 					break;
 				default:
 					throw new CheckException("Database has more recent version {0} than program {1}",

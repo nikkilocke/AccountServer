@@ -301,7 +301,7 @@ namespace AccountServer {
 				int n;
 				bool save = false;
 				if (_lastChequeNumber.TryGetValue(k, out n))
-					save |= acct.RegisterNumber(DocType.Cheque, n);
+					save |= acct.RegisterNumber(DocType.Withdrawal, n);
 				if (_lastDepositNumber.TryGetValue(k, out n))
 					save |= acct.RegisterNumber(DocType.Deposit, n);
 				if (save)
@@ -357,7 +357,7 @@ AND DocumentDate < " + _module.Database.Quote(q));
 					case DocType.Credit:
 						if (number > _lastBillNumber) _lastBillNumber = number;
 						break;
-					case DocType.Cheque:
+					case DocType.Withdrawal:
 					case DocType.CreditCardCharge:
 						registerNumber(_lastChequeNumber, dataOut.AsInt("AccountId"), number);
 						break;

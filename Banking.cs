@@ -75,8 +75,8 @@ namespace AccountServer {
 			if (account.AccountTypeId == (int)AcctType.Bank) {
 				plus.Add(new JObject().AddRange("text", "Deposit",
 					"href", "document?id=0&type=" + (int)DocType.Deposit + "&acct=" + account.idAccount));
-				minus.Add(new JObject().AddRange("text", "Cheque",
-					"href", "document?id=0&type=" + (int)DocType.Cheque + "&acct=" + account.idAccount));
+				minus.Add(new JObject().AddRange("text", "Withdrawal",
+					"href", "document?id=0&type=" + (int)DocType.Withdrawal + "&acct=" + account.idAccount));
 			} else {
 				plus.Add(new JObject().AddRange("text", "Card Credit",
 					"href", "document?id=0&type=" + (int)DocType.CreditCardCredit + "&acct=" + account.idAccount));
@@ -120,7 +120,7 @@ namespace AccountServer {
 					}
 				}
 			} else {
-				checkDocType(header.DocumentTypeId, DocType.Cheque, DocType.Deposit, DocType.CreditCardCharge, DocType.CreditCardCredit);
+				checkDocType(header.DocumentTypeId, DocType.Withdrawal, DocType.Deposit, DocType.CreditCardCharge, DocType.CreditCardCredit);
 			}
 			return new JObject().AddRange("header", header,
 				"detail", Database.Query("idJournal, DocumentId, Line.VatCodeId, VatRate, JournalNum, Journal.AccountId, Memo, LineAmount, VatAmount",
@@ -144,7 +144,7 @@ namespace AccountServer {
 		}
 
 		public AjaxReturn DocumentDelete(int id) {
-			return deleteDocument(id, DocType.Cheque, DocType.Deposit, DocType.CreditCardCharge, DocType.CreditCardCredit);
+			return deleteDocument(id, DocType.Withdrawal, DocType.Deposit, DocType.CreditCardCharge, DocType.CreditCardCredit);
 		}
 
 		/// <summary>
@@ -154,7 +154,7 @@ namespace AccountServer {
 			Database.BeginTransaction();
 			Extended_Document document = json.header;
 			JObject oldDoc = getCompleteDocument(document.idDocument);
-			DocType t = checkDocType(document.DocumentTypeId, DocType.Cheque, DocType.Deposit, DocType.CreditCardCharge, DocType.CreditCardCredit);
+			DocType t = checkDocType(document.DocumentTypeId, DocType.Withdrawal, DocType.Deposit, DocType.CreditCardCharge, DocType.CreditCardCredit);
 			FullAccount acct = Database.Get<FullAccount>((int)document.DocumentAccountId);
 			checkAcctType(acct.AccountTypeId, AcctType.Bank, AcctType.CreditCard, AcctType.Investment);
 			allocateDocumentIdentifier(document, acct);
@@ -162,7 +162,7 @@ namespace AccountServer {
 			Extended_Document original = getDocument(document);
 			decimal vat = 0;
 			decimal net = 0;
-			bool lineVat = false;		// Flag to indicate this is a cheque to pay the VAT to HMRC
+			bool lineVat = false;       // Flag to indicate this is a withdrawal to pay the VAT to HMRC
 			foreach (InvoiceLine detail in json.detail) {
 				if (detail.AccountId == 0 || detail.AccountId == null) {
 					Utils.Check(detail.LineAmount == 0 && detail.VatAmount == 0, "All lines must be allocated to an account");
@@ -196,11 +196,11 @@ namespace AccountServer {
 			Database.Update(journal);
 			foreach (InvoiceLine detail in json.detail) {
 				if (detail.AccountId == 0 || detail.AccountId == null) continue;
-				Utils.Check(!lineVat, "Cheque to VAT account may only have 1 line");
+				Utils.Check(!lineVat, "Withdrawal to VAT account may only have 1 line");
 				if (detail.AccountId == (int)Acct.VATControl) {
 					// This is a VAT payment to HMRC
-					Utils.Check(lineNum == 2, "Cheque to VAT account may only have 1 line");
-					Utils.Check(vat == 0, "Cheque to VAT account may not have a VAT amount");
+					Utils.Check(lineNum == 2, "Withdrawal to VAT account may only have 1 line");
+					Utils.Check(vat == 0, "Withdrawal to VAT account may not have a VAT amount");
 					vat = detail.LineAmount;
 					lineVat = true;
 				}
@@ -305,12 +305,12 @@ ORDER BY DocumentDate, idDocument"));
 		/// Prepare to memorise a transaction for automatic retrieval and saving later.
 		/// </summary>
 		public void Memorise(int id) {
-			dynamic record = GetDocument(id, DocType.Cheque);
+			dynamic record = GetDocument(id, DocType.Withdrawal);
 			Utils.Check(record.header.idDocument != null, "Document {0} not found", id);
 			DocType type = (DocType)record.header.DocumentTypeId;
 			Schedule job = new Schedule() {
 				ActionDate = record.header.DocumentDate,
-				Task = type.UnCamel() + " " + record.header.DocumentAmount.ToString("0.00") + (type == DocType.Cheque || type == DocType.CreditCardCharge ? " to " : " from ") + record.header.DocumentName + " " + record.header.DocumentMemo,
+				Task = type.UnCamel() + " " + record.header.DocumentAmount.ToString("0.00") + (type == DocType.Withdrawal || type == DocType.CreditCardCharge ? " to " : " from ") + record.header.DocumentName + " " + record.header.DocumentMemo,
 				Url = "banking/standingordersave",
 				Parameters = record.ToString(),
 				RepeatFrequency = 1,
@@ -586,7 +586,7 @@ ORDER BY DocumentDate, idDocument"));
 				checkDocType(transaction.DocumentTypeId,
 					DocType.Payment,
 					DocType.BillPayment,
-					DocType.Cheque,
+					DocType.Withdrawal,
 					DocType.Deposit,
 					DocType.CreditCardCharge,
 					DocType.CreditCardCredit,
@@ -639,9 +639,9 @@ ORDER BY DocumentDate, idDocument"));
 					case "Subscriptions":
 						type = DocType.Subscriptions;
 						break;
-					case "Cheque":
-						Utils.Check(account.AccountTypeId == (int)AcctType.Bank, "Cheque not to bank account");
-						type = DocType.Cheque;
+					case "Withdrawal":
+						Utils.Check(account.AccountTypeId == (int)AcctType.Bank, "Withdrawal not to bank account");
+						type = DocType.Withdrawal;
 						break;
 					case "CardCharge":
 						Utils.Check(account.AccountTypeId == (int)AcctType.CreditCard, "Charge not to credit card");
@@ -682,7 +682,7 @@ ORDER BY DocumentDate, idDocument"));
 					payment = true;
 					nameType = "S";
 					break;
-				case DocType.Cheque:
+				case DocType.Withdrawal:
 				case DocType.Deposit:
 				case DocType.CreditCardCharge:
 				case DocType.CreditCardCredit:
@@ -822,7 +822,7 @@ ORDER BY DocumentDate, idDocument"));
 			MatchInfo match = SessionData.StatementMatch.ToObject<MatchInfo>();
 			JArray transactions = SessionData.StatementImport.transactions;
 			dynamic transaction = match.transaction < 0 ? null : SessionData.StatementImport.transactions[match.transaction];
-			DocType type = match.transaction < 0 ? match.type == "Transfer" ? DocType.Transfer : DocType.Cheque : 
+			DocType type = match.transaction < 0 ? match.type == "Transfer" ? DocType.Transfer : DocType.Withdrawal : 
 				(DocType)((JObject)transactions[match.transaction]).AsInt("DocumentTypeId");
 			AjaxReturn result;
 			switch (type) {
@@ -842,7 +842,7 @@ ORDER BY DocumentDate, idDocument"));
 						Parameters = Parameters,
 					}.PaymentSave(json.To<CustomerSupplier.PaymentDocument>());
 					break;
-				case DocType.Cheque:
+				case DocType.Withdrawal:
 				case DocType.Deposit:
 				case DocType.CreditCardCharge:
 				case DocType.CreditCardCredit:
@@ -923,7 +923,7 @@ ORDER BY DocumentDate, idDocument"));
 
 		public int NextNumber(DocType docType) {
 			switch (docType) {
-				case DocType.Cheque:
+				case DocType.Withdrawal:
 				case DocType.CreditCardCharge:
 					return NextChequeNumber;
 				case DocType.Deposit:
@@ -936,7 +936,7 @@ ORDER BY DocumentDate, idDocument"));
 
 		public bool RegisterNumber(DocType docType, int current) {
 			switch (docType) {
-				case DocType.Cheque:
+				case DocType.Withdrawal:
 				case DocType.CreditCardCharge:
 					return registerNumber(ref NextChequeNumber, current);
 				case DocType.Deposit:

@@ -24,7 +24,7 @@ Click on *Pay Out* or *Pay In* to create a new transaction. Usually a drop-down 
 
 |  |Option|Description|
 |--|------|-----------|
-|Pay Out|Cheque|A direct payment from your bank account. Use this also for direct debits, standing orders, BACS payments, etc. Only appears for Bank accounts.|
+|Pay Out|Withdrawal|A direct payment from your bank account. Use this for cheques, direct debits, standing orders, BACS payments, etc. Only appears for Bank accounts.|
 ||Card Charge|A payment from your credit card. Only appears for Credit Cards.|
 ||Transfer|A transfer to another account (bank, credit card or investment account). Only appears if you have other accounts.|
 ||Bill Payment|A payment of a bill you have already entered into Suppliers. Only appears if you have Suppliers. See [Suppliers](supplier.md)|
@@ -36,13 +36,13 @@ Click on *Pay Out* or *Pay In* to create a new transaction. Usually a drop-down 
 
 If there is only one of the above options available, you will be taken straight to it without having to choose it from a menu.
 
-### Cheques and deposits
+### Withdrawals and deposits
 
-Type the name of the payee or payer - as you type, a drop down of existing people with similar names appears, which you can click on to choose one. If you type a new name in, when you leave the field you will be asked if you want to create a new name. If you choose an existing name, the lines from the last cheque to or deposit from that name will be copied in, which you can amend or delete as appropriate.
+Type the name of the payee or payer - as you type, a drop down of existing people with similar names appears, which you can click on to choose one. If you type a new name in, when you leave the field you will be asked if you want to create a new name. If you choose an existing name, the lines from the last withdrawal to or deposit from that name will be copied in, which you can amend or delete as appropriate.
 
 Now add the invoice lines - for each line, choose an account. 
 
-If you are recording VAT, you can choose to enter amounts in cheques and deposits including, or excluding VAT. If you tick _Enter Gross Amounts_, you can enter amounts including VAT (Gross). If you leave it unticked, you can enter amounts excluding VAT (Net). The initial state of the checkbox is set from _Enter Gross Amounts_ in _Admin/Settings_. Enter the Vat Code and Amount, and the system will calculate the VAT for you. Note that you can overwrite the calculated VAT if the other party has calculated the VAT differently (perhaps they use a different rounding method). 
+If you are recording VAT, you can choose to enter amounts in withdrawals and deposits including, or excluding VAT. If you tick _Enter Gross Amounts_, you can enter amounts including VAT (Gross). If you leave it unticked, you can enter amounts excluding VAT (Net). The initial state of the checkbox is set from _Enter Gross Amounts_ in _Admin/Settings_. Enter the Vat Code and Amount, and the system will calculate the VAT for you. Note that you can overwrite the calculated VAT if the other party has calculated the VAT differently (perhaps they use a different rounding method). 
 
 Otherwise simply enter the amount. 
 
@@ -74,7 +74,7 @@ The fields you can use are:
 |Amount|The amount paid out (if the bank shows payments and deposits in the same column, with a minus sign or a CR for credits)|
 |Name|The person paid or paying in|
 |Memo|Data to include in the Memo field of the transaction|
-|Id|Document identifier (e.g. cheque number or deposit number)|
+|Id|Document identifier (e.g. cheque number or deposit slip number)|
 |Any|Indicates there is some data on the bank's web page that you are not interested in|
 |Tab|Indicates a column divider|
 |Newline|Indicates a row end|
@@ -93,7 +93,7 @@ If the highlighted transaction from the bank statement is the same as one alread
 
 If the highlighted transaction from the bank statement is similar to one already on the system (e.g. a monthly payment where last month's payment is on the system, but the bank one isn't yet), click the New checkbox against the one in the system. A new transaction will be created as a copy of the old one, with the correct new amount and date. Check the transaction, and click Save to add it to the system. The bank statement transaction will then disappear (because it has been matched to the new one on the system).
 
-If the highlighted transaction from the bank statement doesn't match any of the ones already on the system, click New next to the bank statement transaction. A dropdown menu will appear so you can choose the type of transaction (e.g. Transfer, Deposit, Customer Payment, Cheque, Bill Payment), then the system will create a new transaction of the selected type for you to complete, with the data from the bank statement already filled in.
+If the highlighted transaction from the bank statement doesn't match any of the ones already on the system, click New next to the bank statement transaction. A dropdown menu will appear so you can choose the type of transaction (e.g. Transfer, Deposit, Customer Payment, Withdrawal, Bill Payment), then the system will create a new transaction of the selected type for you to complete, with the data from the bank statement already filled in.
 
 Once all the bank statement transactions have been matched, you are done.
 
