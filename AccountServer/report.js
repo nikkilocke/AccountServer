@@ -1,8 +1,9 @@
 /**
  * Set up a report
+ * @param {*} record Report data
  * @param {function} select Function to call when clicking on a report row
  * @param {function} [update] Function to call after loading report data
- * @returns {*}
+ * @returns {*} Report data
  */
 function initialiseReport(record, select, update) {
 	var report;
@@ -13,7 +14,7 @@ function initialiseReport(record, select, update) {
 	/**
 	 * Select function for report row
 	 * @param row Data for the whole row
-	 * @returns {*}
+	 * @returns {*} Result of select call
 	 */
 	function selectFunction(row) {
 		return select.call(this, row, record, report);
@@ -21,7 +22,7 @@ function initialiseReport(record, select, update) {
 
 	/**
 	 * Display the report
-	 * @param record
+	 * @param record Report data
 	 */
 	function loadData(record) {
 		$('#reportTitle').text(record.settings.ReportName);
@@ -198,7 +199,7 @@ function initialiseReport(record, select, update) {
 
 	/**
 	 * Extract the columns to show on the report
-	 * @returns {*|Array}
+	 * @returns {*|Array} Columns to show
 	 */
 	function getReportColumns() {
 		return _.filter(fields, function(field) { return field.Include; }).map(function(f) {
@@ -328,8 +329,8 @@ function initialiseReport(record, select, update) {
 /**
  * A select function to create a new report with extra filters
  * @param {string} reportType to create (e.g. 'journals'
- * @param settings Existing report settings
- * @param extraFilters
+ * @param {*} settings Existing report settings
+ * @param {*} extraFilters Extra filters to add
  */
 function postReportSettings(reportType, settings, extraFilters) {
 	var url = getGoto('/reports/' + reportType + '.html?id=0');

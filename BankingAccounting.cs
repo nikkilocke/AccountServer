@@ -63,8 +63,10 @@ namespace AccountServer {
 			} else {
 				checkDocType(header.DocumentTypeId, DocType.Transfer);
 				header.TransferAccountId = Database.QueryOne("SELECT AccountId FROM Journal WHERE DocumentId = " + id + " AND JournalNum = 2").AsInt("AccountId");
-				checkAccountIsAcctType(header.DocumentAccountId, AcctType.Bank, AcctType.CreditCard, AcctType.Investment);
-				checkAccountIsAcctType(header.TransferAccountId, AcctType.Bank, AcctType.CreditCard, AcctType.Investment);
+				checkAccountIsAcctType(header.DocumentAccountId, AcctType.Bank, AcctType.CreditCard, AcctType.Investment, 
+					AcctType.OtherAsset, AcctType.OtherLiability);
+				checkAccountIsAcctType(header.TransferAccountId, AcctType.Bank, AcctType.CreditCard, AcctType.Investment,
+					AcctType.OtherAsset, AcctType.OtherLiability);
 				if (acct == null)
 					acct = header.DocumentAccountId;
 			}
@@ -88,8 +90,10 @@ namespace AccountServer {
 		public AjaxReturn TransferSave(TransferDocument json) {
 			Database.BeginTransaction();
 			checkDocType(json.DocumentTypeId, DocType.Transfer);
-			checkAccountIsAcctType(json.DocumentAccountId, AcctType.Bank, AcctType.CreditCard, AcctType.Investment);
-			checkAccountIsAcctType(json.TransferAccountId, AcctType.Bank, AcctType.CreditCard, AcctType.Investment);
+			checkAccountIsAcctType(json.DocumentAccountId, AcctType.Bank, AcctType.CreditCard, AcctType.Investment,
+					AcctType.OtherAsset, AcctType.OtherLiability);
+			checkAccountIsAcctType(json.TransferAccountId, AcctType.Bank, AcctType.CreditCard, AcctType.Investment,
+					AcctType.OtherAsset, AcctType.OtherLiability);
 			fixNameAddress(json, "O");
 			JObject oldDoc = getCompleteDocument(json.idDocument);
 			Database.Update(json);

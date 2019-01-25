@@ -31,7 +31,8 @@ namespace AccountServer {
 		/// <returns></returns>
 		public object DefaultListing() {
 			return Database.Query("Account.*, AcctType, SUM(Amount) AS Balance",
-				"WHERE AccountTypeId " + Database.In(AcctType.Bank, AcctType.CreditCard) + " GROUP BY idAccount ORDER BY AccountName",
+				"WHERE AccountTypeId " + Database.In(AcctType.Bank, AcctType.CreditCard,
+					AcctType.OtherAsset, AcctType.OtherLiability) + " GROUP BY idAccount ORDER BY AccountName",
 				"Account", "Journal");
 		}
 
@@ -46,7 +47,8 @@ namespace AccountServer {
 			record.CurrentBalance = record.Balance - Database.QueryOne("SELECT SUM(Amount) AS Future FROM Journal JOIN Document ON idDocument = DocumentId WHERE AccountId = "
 				+ id + " AND DocumentDate > " + Database.Quote(Utils.Today)).AsDecimal("Future");
 			if (record.Id != null) {
-				checkAcctType(record.AccountTypeId, AcctType.Bank, AcctType.CreditCard);
+				checkAcctType(record.AccountTypeId, AcctType.Bank, AcctType.CreditCard,
+					AcctType.OtherAsset, AcctType.OtherLiability);
 				Title += " - " + record.AccountName;
 			}
 			JObject r = record.ToJObject();
@@ -65,25 +67,26 @@ namespace AccountServer {
 		/// Update account details after editing
 		/// </summary>
 		public AjaxReturn DetailSave(Account json) {
-			checkAcctType(json.AccountTypeId, AcctType.Bank, AcctType.CreditCard);
+			checkAcctType(json.AccountTypeId, AcctType.Bank, AcctType.CreditCard, AcctType.OtherAsset, AcctType.OtherLiability);
 			return SaveRecord(json, true);
 		}
 
 		void addMenuOptionstoRecord(JObject record, Account account) {
 			List<JObject> plus = new List<JObject>();
 			List<JObject> minus = new List<JObject>();
-			if (account.AccountTypeId == (int)AcctType.Bank) {
-				plus.Add(new JObject().AddRange("text", "Deposit",
-					"href", "document?id=0&type=" + (int)DocType.Deposit + "&acct=" + account.idAccount));
-				minus.Add(new JObject().AddRange("text", "Withdrawal",
-					"href", "document?id=0&type=" + (int)DocType.Withdrawal + "&acct=" + account.idAccount));
-			} else {
+			if (account.AccountTypeId == (int)AcctType.CreditCard) {
 				plus.Add(new JObject().AddRange("text", "Card Credit",
 					"href", "document?id=0&type=" + (int)DocType.CreditCardCredit + "&acct=" + account.idAccount));
 				minus.Add(new JObject().AddRange("text", "Card Charge",
 					"href", "document?id=0&type=" + (int)DocType.CreditCardCharge + "&acct=" + account.idAccount));
+			} else {
+				plus.Add(new JObject().AddRange("text", "Deposit",
+					"href", "document?id=0&type=" + (int)DocType.Deposit + "&acct=" + account.idAccount));
+				minus.Add(new JObject().AddRange("text", "Withdrawal",
+					"href", "document?id=0&type=" + (int)DocType.Withdrawal + "&acct=" + account.idAccount));
 			}
-			JObject c = Database.Query("SELECT COUNT(*) AS numAccounts FROM Account WHERE AccountTypeId " + Database.In((int)AcctType.Bank, (int)AcctType.CreditCard)).FirstOrDefault();
+			JObject c = Database.Query("SELECT COUNT(*) AS numAccounts FROM Account WHERE AccountTypeId " + Database.In((int)AcctType.Bank, (int)AcctType.CreditCard,
+					AcctType.OtherAsset, AcctType.OtherLiability)).FirstOrDefault();
 			if (c != null && c.AsInt("numAccounts") > 1) {
 				plus.Add(new JObject().AddRange("text", "Transfer",
 					"href", "transfer?id=0&acct2=" + account.idAccount));
@@ -156,7 +159,8 @@ namespace AccountServer {
 			JObject oldDoc = getCompleteDocument(document.idDocument);
 			DocType t = checkDocType(document.DocumentTypeId, DocType.Withdrawal, DocType.Deposit, DocType.CreditCardCharge, DocType.CreditCardCredit);
 			FullAccount acct = Database.Get<FullAccount>((int)document.DocumentAccountId);
-			checkAcctType(acct.AccountTypeId, AcctType.Bank, AcctType.CreditCard, AcctType.Investment);
+			checkAcctType(acct.AccountTypeId, AcctType.Bank, AcctType.CreditCard, AcctType.Investment,
+					AcctType.OtherAsset, AcctType.OtherLiability);
 			allocateDocumentIdentifier(document, acct);
 			int sign = SignFor(t);
 			Extended_Document original = getDocument(document);
@@ -262,7 +266,8 @@ namespace AccountServer {
 				+ " AND Cleared = 'X'");
 			header["OpeningBalance"] = openingBalance == null ? 0 : openingBalance.AsDecimal("OpeningBalance");
 			Title += " - " + header.AsString("AccountName");
-			checkAccountIsAcctType(id, AcctType.Bank, AcctType.CreditCard);
+			checkAccountIsAcctType(id, AcctType.Bank, AcctType.CreditCard,
+					AcctType.OtherAsset, AcctType.OtherLiability);
 			Record = new JObject().AddRange("header", header,
 				"detail", Database.Query(@"SELECT Extended_Document.*, Journal.idJournal, Journal.Cleared, Journal.Amount
 FROM Journal
@@ -394,7 +399,8 @@ ORDER BY DocumentDate, idDocument"));
 		[Auth(AccessLevel.ReadWrite, Hide = true)]
 		public void StatementImport(int id) {
 			Account account = Database.Get<Account>(id);
-			checkAcctType(account.AccountTypeId, AcctType.Bank, AcctType.CreditCard);
+			checkAcctType(account.AccountTypeId, AcctType.Bank, AcctType.CreditCard,
+					AcctType.OtherAsset, AcctType.OtherLiability);
 			Title += " - " + account.AccountName;
 			Record = new JObject().AddRange(
 				"Id", id,
@@ -413,7 +419,8 @@ ORDER BY DocumentDate, idDocument"));
 		/// <param name="dateFormat">For Qif import</param>
 		public void StatementImportSave(int id, string format, string data, UploadedFile file, string dateFormat) {
 			Account account = Database.Get<Account>(id);
-			checkAcctType(account.AccountTypeId, AcctType.Bank, AcctType.CreditCard);
+			checkAcctType(account.AccountTypeId, AcctType.Bank, AcctType.CreditCard,
+					AcctType.OtherAsset, AcctType.OtherLiability);
 			JArray result;
 			DateTime minDate = DateTime.MaxValue;
 			if (!string.IsNullOrWhiteSpace(file.Content)) {
@@ -578,7 +585,7 @@ ORDER BY DocumentDate, idDocument"));
 		/// </summary>
 		public AjaxReturn StatementMatchingSave(MatchInfo json) {
 			int acct = SessionData.StatementImport.id;
-			checkAccountIsAcctType(acct, AcctType.Bank, AcctType.CreditCard);
+			checkAccountIsAcctType(acct, AcctType.Bank, AcctType.CreditCard, AcctType.OtherAsset, AcctType.OtherLiability);
 			JObject current = SessionData.StatementImport.import[json.current];
 			Utils.Check(current != null, "Current not found");
 			if (json.transaction >= 0) {
@@ -623,7 +630,8 @@ ORDER BY DocumentDate, idDocument"));
 				type = (DocType)transaction.DocumentTypeId;
 			else switch(match.type) {
 					case "Deposit":
-						Utils.Check(account.AccountTypeId == (int)AcctType.Bank, "Deposit not to bank account");
+						Utils.Check(account.AccountTypeId == (int)AcctType.Bank || account.AccountTypeId == (int)AcctType.OtherAsset
+							|| account.AccountTypeId == (int)AcctType.OtherLiability, "Deposit not to bank account");
 						type = DocType.Deposit;
 						break;
 					case "CardCredit":
@@ -640,7 +648,8 @@ ORDER BY DocumentDate, idDocument"));
 						type = DocType.Subscriptions;
 						break;
 					case "Withdrawal":
-						Utils.Check(account.AccountTypeId == (int)AcctType.Bank, "Withdrawal not to bank account");
+						Utils.Check(account.AccountTypeId == (int)AcctType.Bank || account.AccountTypeId == (int)AcctType.OtherAsset
+							|| account.AccountTypeId == (int)AcctType.OtherLiability, "Withdrawal not to bank account");
 						type = DocType.Withdrawal;
 						break;
 					case "CardCharge":

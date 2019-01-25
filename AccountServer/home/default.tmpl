@@ -3,6 +3,9 @@
 		tr.due {
 			color: red;
 		}
+		table.balances th:first-child {
+			width: 30%;
+		}
 	</style>
 <script>
 var i = sessionStorage.length;
@@ -57,19 +60,24 @@ $(function() {
 
 		}
 	});
-	if(record.banking.length) {
-		makeListForm('#bankingTable', {
-			table: 'Account',
-			select: '/banking/detail.html',
-			data: record.banking,
-			columns: [
-				'AcctType',
-				'AccountName',
-				'AccountDescription',
-				'#Balance'
-			]
-		});
+	function addForm(formname) {
+		if(record[formname].length) {
+			makeListForm('#' + formname + 'Table', {
+				table: 'Account',
+				select: '/banking/detail.html',
+				data: record[formname],
+				columns: [
+					'AccountName',
+					'AccountDescription',
+					'#Balance'
+				]
+			});
+		}
 	}
+	addForm('bank');
+	addForm('creditcard');
+	addForm('asset');
+	addForm('liability');
 	if(record.investments.length) {
 		makeListForm('#investmentsTable', {
 			table: 'Account',
@@ -124,10 +132,25 @@ $(function() {
 <h3 class="noprint">To do</h3>
 <table id="scheduleTable" class="noprint"></table>
 <h3>Banking</h3>
-<table id="bankingTable" style="width:100%"></table>
+{{#if Record.bank.Count}}
+<h4>Bank Accounts</h4>
+<table id="bankTable" class="balances" style="width:100%"></table>
+{{/if}}
+{{#if Record.creditcard.Count}}
+<h4>Credit Cards</h4>
+<table id="creditcardTable" class="balances" style="width:100%"></table>
+{{/if}}
+{{#if Record.asset.Count}}
+<h4>Other Assets</h4>
+<table id="assetTable" class="balances" style="width:100%"></table>
+{{/if}}
+{{#if Record.liability.Count}}
+<h4>Other liability</h4>
+<table id="liabilityTable" class="balances" style="width:100%"></table>
+{{/if}}
 {{#if Record.investments.Count}}
 <h3>Investments</h3>
-<table id="investmentsTable" style="width:100%"></table>
+<table id="investmentsTable" class="balances" style="width:100%"></table>
 {{/if}}
 {{#if Record.customer.Count}}
 <h3>Customers</h3>

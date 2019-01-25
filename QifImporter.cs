@@ -271,12 +271,12 @@ namespace AccountServer {
 								o["AccountTypeId"] = (int)AcctType.Investment;
 								break;
 							case "Oth A":
-								o["AccountTypeId"] = (int)AcctType.OtherCurrentAsset;
+								o["AccountTypeId"] = (int)AcctType.OtherAsset;
 								break;
 							case "Oth L":
 							case "Tax":
 							case "Bill":
-								o["AccountTypeId"] = (int)AcctType.OtherCurrentLiability;
+								o["AccountTypeId"] = (int)AcctType.OtherLiability;
 								break;
 							default:
 								throw new CheckException("Unexpected account type:{0}", _line);
@@ -645,7 +645,8 @@ namespace AccountServer {
 			}
 			_transaction.Stock = null;
 			Account acct = _module.Database.Get<Account>(_transaction.Journals[0].AccountId);
-			_transaction.DocumentTypeId = (int)(acct.AccountTypeId == (int)AcctType.Bank || acct.AccountTypeId == (int)AcctType.CreditCard || acct.AccountTypeId == (int)AcctType.Investment ?
+			_transaction.DocumentTypeId = (int)(acct.AccountTypeId == (int)AcctType.Bank || acct.AccountTypeId == (int)AcctType.CreditCard || acct.AccountTypeId == (int)AcctType.Investment 
+				|| acct.AccountTypeId == (int)AcctType.OtherAsset || acct.AccountTypeId == (int)AcctType.OtherLiability ?
 				DocType.Transfer : _transaction.Amount < 0 ? DocType.Withdrawal : DocType.Deposit);
 			_transactions.Add(_transaction);
 		}
@@ -716,7 +717,8 @@ namespace AccountServer {
 			t.DocumentDate = _transaction.DocumentDate;
 			t.DocumentIdentifier = _transaction.DocumentIdentifier;
 			t.DocumentMemo = _transaction.DocumentMemo ?? _transaction.SecurityName;
-			t.DocumentTypeId = (int)(a.AccountTypeId == (int)AcctType.Bank || a.AccountTypeId == (int)AcctType.CreditCard || a.AccountTypeId == (int)AcctType.Investment ? DocType.Transfer : DocType.GeneralJournal);
+			t.DocumentTypeId = (int)(a.AccountTypeId == (int)AcctType.Bank || a.AccountTypeId == (int)AcctType.CreditCard || a.AccountTypeId == (int)AcctType.Investment 
+				|| a.AccountTypeId == (int)AcctType.OtherAsset || a.AccountTypeId == (int)AcctType.OtherLiability ? DocType.Transfer : DocType.GeneralJournal);
 			t.Line = _transaction.Line;
 			t.NameAddressId = _transaction.NameAddressId;
 			t.Journals.Add(new Journal() {
@@ -824,6 +826,8 @@ namespace AccountServer {
 					case AcctType.Bank:
 					case AcctType.CreditCard:
 					case AcctType.Investment:
+					case AcctType.OtherAsset:
+					case AcctType.OtherLiability:
 						break;
 					default:
 						return;

@@ -12,7 +12,9 @@ You can change the Name, description, etc. by clicking on the *Edit* button.
 
 You can create a new account by clicking the *New Account* button. 
 
-Each account must have a unique name. Choose the type (Bank or Credit Card). The remaining fields are optional - Statement Format tells AccountServer how statements copied from the bank web page are laid out, so you can easily reconcile AccountServer with the bank, but you can leave that until you are ready to actually reconcile transactions. Next Cheque and Deposit numbers (from your cheque and deposit books) enable AccountServer to fill these details automatically, if required.
+Each account must have a unique name. Choose the type (Bank, Credit Card, Asset or Liability - see below). The remaining fields are optional - Statement Format tells AccountServer how statements copied from the bank web page are laid out, so you can easily reconcile AccountServer with the bank, but you can leave that until you are ready to actually reconcile transactions. Next Cheque and Deposit numbers (from your cheque and deposit books) enable AccountServer to fill these details automatically, if required.
+
+Account type Liability is for something you owe to someone else - e.g. a Mortgage. Account type Asset is for something someone else owes to you (e.g. you have loaned them some money).
 
 ## Names
 
@@ -26,7 +28,7 @@ Click on *Pay Out* or *Pay In* to create a new transaction. Usually a drop-down 
 |--|------|-----------|
 |Pay Out|Withdrawal|A direct payment from your bank account. Use this for cheques, direct debits, standing orders, BACS payments, etc. Only appears for Bank accounts.|
 ||Card Charge|A payment from your credit card. Only appears for Credit Cards.|
-||Transfer|A transfer to another account (bank, credit card or investment account). Only appears if you have other accounts.|
+||Transfer|A transfer to another account (bank, credit card, investment account, asset or liability). Only appears if you have other accounts.|
 ||Bill Payment|A payment of a bill you have already entered into Suppliers. Only appears if you have Suppliers. See [Suppliers](supplier.md)|
 |Pay In|Deposit|A direct payment into your bank account. Use this also for incoming standing orders, BACS payments, etc. Only appears for Bank accounts.|
 ||Card Credit|A payment into your credit card, including refunds of card charges, cash back payments, etc. Only appears for Credit Cards.|
@@ -35,6 +37,10 @@ Click on *Pay Out* or *Pay In* to create a new transaction. Usually a drop-down 
 ||Subscriptions|A subscription payment from one or more Members. Only appears if you have Members. See [Members](members.md)|
 
 If there is only one of the above options available, you will be taken straight to it without having to choose it from a menu.
+
+Note that if you have a mortgage account on the system (as a Liability), you should always use a transfer for your mortgage payments from your bank account, as you want to decrease the amount owing on your mortgage as well as reducing the bank balance. Mortgage interest should be added as a payment to the mortgage account.
+
+Likewise if you have a loan to someone else on the system (as an Asset),  you should always use a transfer when they pay back part of the loan into your bank account, as you want to decrease the amount owing on the loan as well as increasing the bank balance. Loan interest should be added as a deposit to the loan account.
 
 ### Withdrawals and deposits
 

@@ -391,14 +391,21 @@ WHERE Journal.DocumentId = " + document.idDocument));
 
 		public JObjectEnumerable SelectBankAccounts() {
 			return Database.Query(@"idAccount AS id, AccountName AS value, AcctType AS category, HideAccount AS hide",
-				"WHERE AccountTypeId in (" + (int)AcctType.Bank + "," + (int)AcctType.CreditCard + ")"
+				"WHERE AccountTypeId " + Database.In(AcctType.Bank,AcctType.CreditCard)
+				+ " ORDER BY idAccountType, AccountName",
+					 "Account");
+		}
+
+		public JObjectEnumerable SelectBankOrOtherALAccounts() {
+			return Database.Query(@"idAccount AS id, AccountName AS value, AcctType AS category, HideAccount AS hide",
+				"WHERE AccountTypeId " + Database.In(AcctType.Bank, AcctType.CreditCard, AcctType.OtherAsset, AcctType.OtherLiability)
 				+ " ORDER BY idAccountType, AccountName",
 					 "Account");
 		}
 
 		public JObjectEnumerable SelectBankOrStockAccounts() {
 			return Database.Query(@"idAccount AS id, AccountName AS value, AcctType AS category, HideAccount AS hide",
-				"WHERE AccountTypeId in (" + (int)AcctType.Bank + "," + (int)AcctType.CreditCard + "," + (int)AcctType.Investment + ")"
+				"WHERE AccountTypeId " + Database.In(AcctType.Bank, AcctType.CreditCard, AcctType.Investment, AcctType.OtherAsset, AcctType.OtherLiability)
 				+ " ORDER BY idAccountType, AccountName",
 					 "Account");
 		}

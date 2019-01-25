@@ -39,11 +39,26 @@ namespace AccountServer {
 		public override void Default() {
 			Record = new JObject().AddRange(
 				"schedule", DefaultScheduleListing(),
-				"banking", total(Database.Query("Account.*, AcctType, SUM(Amount) AS Balance", 
-					"WHERE AccountTypeId " + Database.In(AcctType.Bank, AcctType.CreditCard) 
+				"bank", total(Database.Query("Account.*, SUM(Amount) AS Balance", 
+					"WHERE AccountTypeId = " + (int)AcctType.Bank 
 					+ " AND DocumentDate <= " + Database.Quote(Utils.Today)
 					+ " AND HideAccount != 1 GROUP BY idAccount ORDER BY AccountTypeId, AccountName",
-					"Account", "Journal", "Document"), "AcctType", "Balance"),
+					"Account", "Journal", "Document"), "AccountName", "Balance"),
+				"creditcard", total(Database.Query("Account.*, SUM(Amount) AS Balance",
+					"WHERE AccountTypeId = " + (int)AcctType.CreditCard
+					+ " AND DocumentDate <= " + Database.Quote(Utils.Today)
+					+ " AND HideAccount != 1 GROUP BY idAccount ORDER BY AccountTypeId, AccountName",
+					"Account", "Journal", "Document"), "AccountName", "Balance"),
+				"asset", total(Database.Query("Account.*, SUM(Amount) AS Balance",
+					"WHERE AccountTypeId = " + (int)AcctType.OtherAsset
+					+ " AND DocumentDate <= " + Database.Quote(Utils.Today)
+					+ " AND HideAccount != 1 GROUP BY idAccount ORDER BY AccountTypeId, AccountName",
+					"Account", "Journal", "Document"), "AccountName", "Balance"),
+				"liability", total(Database.Query("Account.*, SUM(Amount) AS Balance",
+					"WHERE AccountTypeId = " + (int)AcctType.OtherLiability
+					+ " AND DocumentDate <= " + Database.Quote(Utils.Today)
+					+ " AND HideAccount != 1 GROUP BY idAccount ORDER BY AccountTypeId, AccountName",
+					"Account", "Journal", "Document"), "AccountName", "Balance"),
 				"investments", total(Database.Query(@"SELECT Account.*, Amount AS CashBalance, Value
 FROM (SELECT AccountId, SUM(Amount) AS Amount FROM Journal GROUP BY AccountId) AS Balances
 JOIN Account ON idAccount = Balances.AccountId

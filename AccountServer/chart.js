@@ -54,9 +54,10 @@ function getColours(length) {
 }
 /**
  * Set up a chart
+ * @param {object} record Chart info
  * @param {function} select Function to call when clicking on a chart item
  * @param {function} [update] Function to call after loading chart data
- * @returns {*}
+ * @returns {*} record
  */
 function initialiseChart(record, select, update) {
 	var chart;
@@ -70,7 +71,7 @@ function initialiseChart(record, select, update) {
 	});
 	/**
 	 * Display the chart
-	 * @param record
+	 * @param {object} record incoming data
 	 */
 	function loadData(record) {
 		var colours = getColours(Math.max(record.chart.datasets.length, record.chart.labels.length));

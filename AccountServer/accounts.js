@@ -108,7 +108,7 @@ Type.multiSelectFilter = {
 
 /**
  * When user clicks on an item in a list, open it
- * @param data for item - must contain idAccount and idAccountType
+ * @param {object} data for item - must contain idAccount and idAccountType
  * @returns {boolean} true if there was somewhere to go to
  */
 function openDetail(data) {
@@ -121,8 +121,8 @@ function openDetail(data) {
 
 /**
  * When user clicks on a document in a list, open it
- * @param data for item - must contain idDocument and DocumentTypeId
- * @param acct Parent account (e.g. bank account) if relevant
+ * @param {object} data for item - must contain idDocument and DocumentTypeId
+ * @param {number} acct Parent account (e.g. bank account) if relevant
  * @returns {boolean} true if there was somewhere to go to
  */
 function openDocument(data, acct) {
@@ -135,9 +135,9 @@ function openDocument(data, acct) {
 
 /**
  * Work out the url to go to when someone clicks on an item in a list
- * @param data for item - must contain idAccount and idAccountType
- * @param {number} data.idAccount
- * @param {number} data.idAccountType
+ * @param {object} data for item - must contain idAccount and idAccountType
+ * @param {number} data.idAccount Account record no
+ * @param {number} data.idAccountType Account Type record no
  * @returns {*} [url] (or null)
  */
 function detailUrl(data) {
@@ -146,7 +146,9 @@ function detailUrl(data) {
 		return;
 	switch(data.idAccountType) {
 		case AcctType.Bank:
-		case AcctType.CreditCard:
+        case AcctType.CreditCard:
+        case AcctType.OtherAsset:
+        case AcctType.OtherLiability:
 			url = '/banking';
 			break;
 		case AcctType.Investment:
@@ -166,9 +168,9 @@ function detailUrl(data) {
 
 /**
  * Work out the url to go to when someone clicks on an document in a list
- * @param data for item - must contain idDocument and DocumentTypeId
- * @param {number} data.idDocument
- * @param {number} data.DocumentTypeId
+ * @param {object} data for item - must contain idDocument and DocumentTypeId
+ * @param {number} data.idDocument Document record no
+ * @param {number} data.DocumentTypeId Document Type record no
  * @returns {*} [url] (or null)
  */
 function documentUrl(data) {
@@ -228,15 +230,14 @@ var repeatSelectOptions = [
 ];
 
 /**
- * Return true if currently matching a statement
- * @returns {boolean}
+ * @returns {boolean} True if matching statement
  */
 function matchingStatement() {
 	return window.location.pathname == '/banking/statementmatch.html';
 }
 
 /**
- *
+ * @returns {boolean} True if posting job
  */
 function postingJob() {
 	return getParameter('postjob') == '1';
@@ -244,7 +245,8 @@ function postingJob() {
 
 /**
  * Adjust form options if matching statements (remove deletem next, previous, save and close, save and new buttons)
- * @returns {boolean}
+ * @param {object} options Form options
+ * @returns {object} Form options as modified
  */
 function checkForStatementMatching(options) {
 	var matching = matchingStatement();

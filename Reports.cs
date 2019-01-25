@@ -291,7 +291,7 @@ namespace AccountServer {
 			fieldFor("DocumentTypeId").MakeEssential().Hide();
 			addTable("Journal", "Amount", "Cleared");
 			fieldFor("Cleared")["type"] = "checkbox";
-			_filters.Add(new RecordFilter("Account", "idAccount", SelectBankAccounts()));
+			_filters.Add(new RecordFilter("Account", "idAccount", SelectBankOrOtherALAccounts()));
 			_filters.Add(new StringFilter("AccountCode", "AccountCode"));
 			_settings.Split = true;
 			return auditReportData(json, "Reconciliation", "AccountName", "OpeningBalance", "EndingBalance", "ClearedBalance", "DocumentDate", "DocType", "DocumentIdentifier", "DocumentName", "Cleared", "Amount");
