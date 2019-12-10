@@ -53,7 +53,7 @@ namespace AccountServer {
 			PaymentHeader document = json.header;
 			PaymentHeader original = getDocument(document);
 			changeInDocumentAmount = document.DocumentAmount - original.DocumentAmount;
-			changeInOutstanding = original.DocumentOutstanding + changeInDocumentAmount - amount;
+			changeInOutstanding = document.DocumentOutstanding - original.DocumentOutstanding;
 			Utils.Check(document.DocumentOutstanding == document.Remaining, "Remaining {0:0.00} does not agree with outstanding {1:0.00}",
 				document.Remaining, document.DocumentOutstanding);
 		}
