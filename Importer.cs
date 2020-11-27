@@ -142,7 +142,7 @@ namespace AccountServer {
 		/// Save an individual record to the database
 		/// </summary>
 		public virtual void Update(JObject dataOut) {
-			Index index = _table.IndexFor(dataOut);
+			CodeFirstWebFramework.Index index = _table.IndexFor(dataOut);
 			if (index != null) {
 				string key = index.Where(dataOut);
 				Utils.Check(!_keys.Contains(key), "Duplicate key in import {0}", key);

@@ -302,7 +302,7 @@ namespace AccountServer {
 			JObject result = null;
 			if (withAudit) {
 				// Primary index.
-				Index index = table.Indexes[0];
+				CodeFirstWebFramework.Index index = table.Indexes[0];
 				// Retrieve any existing record with the same primary key.
 				// If auditing, get all the foreign key fields too.
 				result = QueryOne("+", "WHERE " + index.Where(d), table.Name);

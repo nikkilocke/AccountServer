@@ -11,6 +11,7 @@ namespace AccountServer {
 	/// <summary>
 	/// Hidden AppModule which allows you to query the database
 	/// </summary>
+	[Auth(AccessLevel.Admin)]               // All methods only accessable to Admins
 	public class Query : AppModule {
 		/// <summary>
 		/// Column headings
