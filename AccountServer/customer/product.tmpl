@@ -8,10 +8,8 @@
 				canDelete: record.allowDelete,
 				readonly: '!{{ReadOnly}}',
 				validate: function() {
-					if(!form.data.VatCodeId)
-						return "The product must have a VAT code";
 					if(!form.data.AccountId)
-						return "You product must have an account";
+						return "Product must have an account";
 				},
 				columns: [
 					{

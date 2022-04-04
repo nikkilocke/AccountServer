@@ -667,7 +667,7 @@ LEFT JOIN User ON idUser = Authorised
 Journal.DocumentId, Journal.JournalNum, Journal.Memo, Journal.AccountId, Account.AccountName, Account.AccountDescription
 FROM Line
 JOIN Product ON Product.idProduct = Line.ProductId
-JOIN VatCode ON VatCode.idVatCode = Line.VatCodeId
+LEFT JOIN VatCode ON VatCode.idVatCode = Line.VatCodeId
 JOIN Journal ON Journal.idJournal = Line.idLine
 JOIN Account ON Account.idAccount = Journal.AccountId
 ")]
